@@ -1,0 +1,51 @@
+name: 功能建议
+description: 从实际市场或投研任务出发提出改进建议
+title: "[Feature] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景
+      description: 谁在什么任务中遇到了什么困难？
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: 当前做法与不足
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议方案
+      description: 请描述预期入口、输入、输出和可信边界。
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 主要范围
+      options:
+        - 市场监测
+        - 投研工作流
+        - 信用观察
+        - 全球宏观与外汇
+        - AI 辅助
+        - 数据可信与运维
+        - 安装与低门槛体验
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 可接受的替代方案
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: 可信边界
+      options:
+        - label: 我理解项目不承诺实时性、连续性或准确性，也不生成自动投资结论。
+          required: true

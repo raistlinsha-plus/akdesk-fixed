@@ -1,0 +1,12 @@
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+extend-exclude = ["data"]
+
+[tool.ruff.lint]
+# Start with correctness checks so the gate is useful without mechanically
+# rewriting the existing single-file provider/database modules in a patch release.
+select = ["E9", "F"]
+
+[tool.ruff.format]
+quote-style = "double"

@@ -1,0 +1,78 @@
+name: 数据源异常
+description: 报告 AKShare、FRED、World Bank、GDELT 或 AIHubMix 连接与数据问题
+title: "[Data] "
+labels: ["data-source", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        外部接口会受交易时段、上游改版、限流和网络影响。请先查看“数据健康”页。不要粘贴 API Key，也不要上传数据库。
+  - type: dropdown
+    id: source
+    attributes:
+      label: 数据源
+      options:
+        - AKShare / AKTools
+        - FRED
+        - World Bank
+        - GDELT
+        - AIHubMix
+        - 不确定或多个来源
+    validations:
+      required: true
+  - type: input
+    id: dataset
+    attributes:
+      label: 页面与数据集
+      placeholder: 收益率曲线 / 中国国债 / FRED DGS10
+    validations:
+      required: true
+  - type: input
+    id: observed_at
+    attributes:
+      label: 发生时间与时区
+      placeholder: 2026-08-02 10:30 Asia/Shanghai
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: AKDesk、macOS 与 Python 版本
+      placeholder: v1.0.0 / macOS 15.x / Python 3.13.x
+    validations:
+      required: true
+  - type: textarea
+    id: health
+    attributes:
+      label: 数据健康状态
+      description: 请转录来源状态、错误类型、缓存年龄和连续失败次数；不要包含 Key。
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 实际表现与复现步骤
+    validations:
+      required: true
+  - type: dropdown
+    id: cache
+    attributes:
+      label: 页面是否显示缓存、过期、降级或演示标识
+      options:
+        - 没有
+        - 缓存
+        - 过期
+        - 降级
+        - 演示
+        - 不确定
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已确认当前交易时段或数据发布频率，并尝试过数据健康页的单源重试。
+          required: true
+        - label: 我没有提交 API Key、数据库或敏感研究信息。
+          required: true

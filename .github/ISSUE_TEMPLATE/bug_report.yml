@@ -1,0 +1,77 @@
+name: Bug 报告
+description: 报告可复现的产品功能或交互问题
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请勿粘贴 API Key、上传本机数据库或包含敏感研究内容的截图。行情或外部接口不可用请改用“数据源异常”模板。
+  - type: input
+    id: version
+    attributes:
+      label: AKDesk 版本
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 运行环境
+      description: 请填写 Mac 型号、macOS 和 Python 版本。
+      placeholder: MacBook Air M2 / macOS 15.x / Python 3.13.x
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: 启动模式
+      options:
+        - 实时模式
+        - 演示模式
+        - 不确定
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: 出现问题的页面或模块
+      placeholder: 市场变化 / 信用观察 R2 / AI 助手
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 启动应用
+        2. 打开……
+        3. 点击……
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期结果
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 脱敏截图或日志
+      description: 请删除 Key、账户、数据库路径和未公开研究内容；没有可留空。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已确认反馈中不含 API Key、数据库或敏感研究信息。
+          required: true
+        - label: 我已搜索现有 Issues，没有找到相同问题。
+          required: true

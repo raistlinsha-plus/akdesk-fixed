@@ -1,0 +1,1270 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:a01ea355-12bd-54b2-a1d1-d5fb863d7cb2",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-08-01T23:47:44.625399Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:generic/akdesk-fixed@1.0.0",
+      "name": "AKDesk Fixed",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "akdesk:python-lock-sha256",
+        "value": "28da8032f24994e7153a49e4f7c8a346ec7a28cfdeaf1bb2d209659c1e07a728"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/akshare@1.18.64",
+      "name": "akshare",
+      "version": "1.18.64",
+      "purl": "pkg:pypi/akshare@1.18.64",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/annotated-doc@0.0.4",
+      "name": "annotated-doc",
+      "version": "0.0.4",
+      "purl": "pkg:pypi/annotated-doc@0.0.4",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/annotated-types@0.7.0",
+      "name": "annotated-types",
+      "version": "0.7.0",
+      "purl": "pkg:pypi/annotated-types@0.7.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "OSI Approved / MIT License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/anyio@4.14.2",
+      "name": "anyio",
+      "version": "4.14.2",
+      "purl": "pkg:pypi/anyio@4.14.2",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/beautifulsoup4@4.15.0",
+      "name": "beautifulsoup4",
+      "version": "4.15.0",
+      "purl": "pkg:pypi/beautifulsoup4@4.15.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/certifi@2026.6.17",
+      "name": "certifi",
+      "version": "2026.6.17",
+      "purl": "pkg:pypi/certifi@2026.6.17",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MPL-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/cffi@2.1.0",
+      "name": "cffi",
+      "version": "2.1.0",
+      "purl": "pkg:pypi/cffi@2.1.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT-0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/charset-normalizer@3.4.9",
+      "name": "charset-normalizer",
+      "version": "3.4.9",
+      "purl": "pkg:pypi/charset-normalizer@3.4.9",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/click@8.4.2",
+      "name": "click",
+      "version": "8.4.2",
+      "purl": "pkg:pypi/click@8.4.2",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/curl-cffi@0.15.0",
+      "name": "curl_cffi",
+      "version": "0.15.0",
+      "purl": "pkg:pypi/curl-cffi@0.15.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/decorator@5.3.1",
+      "name": "decorator",
+      "version": "5.3.1",
+      "purl": "pkg:pypi/decorator@5.3.1",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-2-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/et-xmlfile@2.0.0",
+      "name": "et_xmlfile",
+      "version": "2.0.0",
+      "purl": "pkg:pypi/et-xmlfile@2.0.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/fastapi@0.139.0",
+      "name": "fastapi",
+      "version": "0.139.0",
+      "purl": "pkg:pypi/fastapi@0.139.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/h11@0.16.0",
+      "name": "h11",
+      "version": "0.16.0",
+      "purl": "pkg:pypi/h11@0.16.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/h2@4.3.0",
+      "name": "h2",
+      "version": "4.3.0",
+      "purl": "pkg:pypi/h2@4.3.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "OSI Approved / MIT License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/hpack@4.2.0",
+      "name": "hpack",
+      "version": "4.2.0",
+      "purl": "pkg:pypi/hpack@4.2.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/html5lib@1.1",
+      "name": "html5lib",
+      "version": "1.1",
+      "purl": "pkg:pypi/html5lib@1.1",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/httpcore@1.0.9",
+      "name": "httpcore",
+      "version": "1.0.9",
+      "purl": "pkg:pypi/httpcore@1.0.9",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/httptools@0.8.0",
+      "name": "httptools",
+      "version": "0.8.0",
+      "purl": "pkg:pypi/httptools@0.8.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/httpx@0.28.1",
+      "name": "httpx",
+      "version": "0.28.1",
+      "purl": "pkg:pypi/httpx@0.28.1",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/hyperframe@6.1.0",
+      "name": "hyperframe",
+      "version": "6.1.0",
+      "purl": "pkg:pypi/hyperframe@6.1.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "OSI Approved / MIT License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/idna@3.18",
+      "name": "idna",
+      "version": "3.18",
+      "purl": "pkg:pypi/idna@3.18",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/jsonpath@0.82.2",
+      "name": "jsonpath",
+      "version": "0.82.2",
+      "purl": "pkg:pypi/jsonpath@0.82.2",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/lxml@6.1.1",
+      "name": "lxml",
+      "version": "6.1.1",
+      "purl": "pkg:pypi/lxml@6.1.1",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/markdown-it-py@4.2.0",
+      "name": "markdown-it-py",
+      "version": "4.2.0",
+      "purl": "pkg:pypi/markdown-it-py@4.2.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "OSI Approved / MIT License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/mdurl@0.1.2",
+      "name": "mdurl",
+      "version": "0.1.2",
+      "purl": "pkg:pypi/mdurl@0.1.2",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "OSI Approved / MIT License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/mini-racer@0.14.1",
+      "name": "mini-racer",
+      "version": "0.14.1",
+      "purl": "pkg:pypi/mini-racer@0.14.1",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/numpy@2.4.6",
+      "name": "numpy",
+      "version": "2.4.6",
+      "purl": "pkg:pypi/numpy@2.4.6",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/openpyxl@3.1.5",
+      "name": "openpyxl",
+      "version": "3.1.5",
+      "purl": "pkg:pypi/openpyxl@3.1.5",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pandas@2.3.3",
+      "name": "pandas",
+      "version": "2.3.3",
+      "purl": "pkg:pypi/pandas@2.3.3",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "OSI Approved / BSD License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pycparser@3.0",
+      "name": "pycparser",
+      "version": "3.0",
+      "purl": "pkg:pypi/pycparser@3.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pydantic@2.13.4",
+      "name": "pydantic",
+      "version": "2.13.4",
+      "purl": "pkg:pypi/pydantic@2.13.4",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pydantic-core@2.46.4",
+      "name": "pydantic_core",
+      "version": "2.46.4",
+      "purl": "pkg:pypi/pydantic-core@2.46.4",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pygments@2.20.0",
+      "name": "Pygments",
+      "version": "2.20.0",
+      "purl": "pkg:pypi/pygments@2.20.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-2-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/python-dateutil@2.9.0.post0",
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "purl": "pkg:pypi/python-dateutil@2.9.0.post0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Dual License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/python-dotenv@1.2.2",
+      "name": "python-dotenv",
+      "version": "1.2.2",
+      "purl": "pkg:pypi/python-dotenv@1.2.2",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pytz@2026.2",
+      "name": "pytz",
+      "version": "2026.2",
+      "purl": "pkg:pypi/pytz@2026.2",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pyyaml@6.0.3",
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "purl": "pkg:pypi/pyyaml@6.0.3",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/requests@2.34.2",
+      "name": "requests",
+      "version": "2.34.2",
+      "purl": "pkg:pypi/requests@2.34.2",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/rich@15.0.0",
+      "name": "rich",
+      "version": "15.0.0",
+      "purl": "pkg:pypi/rich@15.0.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/six@1.17.0",
+      "name": "six",
+      "version": "1.17.0",
+      "purl": "pkg:pypi/six@1.17.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/soupsieve@2.8.4",
+      "name": "soupsieve",
+      "version": "2.8.4",
+      "purl": "pkg:pypi/soupsieve@2.8.4",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/starlette@1.3.1",
+      "name": "starlette",
+      "version": "1.3.1",
+      "purl": "pkg:pypi/starlette@1.3.1",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/tabulate@0.10.0",
+      "name": "tabulate",
+      "version": "0.10.0",
+      "purl": "pkg:pypi/tabulate@0.10.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/tqdm@4.68.4",
+      "name": "tqdm",
+      "version": "4.68.4",
+      "purl": "pkg:pypi/tqdm@4.68.4",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MPL-2.0 AND MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/typing-inspection@0.4.2",
+      "name": "typing-inspection",
+      "version": "0.4.2",
+      "purl": "pkg:pypi/typing-inspection@0.4.2",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/typing-extensions@4.16.0",
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "purl": "pkg:pypi/typing-extensions@4.16.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "PSF-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/tzdata@2026.3",
+      "name": "tzdata",
+      "version": "2026.3",
+      "purl": "pkg:pypi/tzdata@2026.3",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/urllib3@2.7.0",
+      "name": "urllib3",
+      "version": "2.7.0",
+      "purl": "pkg:pypi/urllib3@2.7.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/uvicorn@0.51.0",
+      "name": "uvicorn",
+      "version": "0.51.0",
+      "purl": "pkg:pypi/uvicorn@0.51.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/uvloop@0.22.1",
+      "name": "uvloop",
+      "version": "0.22.1",
+      "purl": "pkg:pypi/uvloop@0.22.1",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT License"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/watchfiles@1.2.0",
+      "name": "watchfiles",
+      "version": "1.2.0",
+      "purl": "pkg:pypi/watchfiles@1.2.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/webencodings@0.5.1",
+      "name": "webencodings",
+      "version": "0.5.1",
+      "purl": "pkg:pypi/webencodings@0.5.1",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/websockets@16.1",
+      "name": "websockets",
+      "version": "16.1",
+      "purl": "pkg:pypi/websockets@16.1",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/xlrd@2.0.2",
+      "name": "xlrd",
+      "version": "2.0.2",
+      "purl": "pkg:pypi/xlrd@2.0.2",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "PyPI"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/echarts@6.1.0",
+      "name": "echarts",
+      "version": "6.1.0",
+      "purl": "pkg:npm/echarts@6.1.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "npm"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lucide-react@0.525.0",
+      "name": "lucide-react",
+      "version": "0.525.0",
+      "purl": "pkg:npm/lucide-react@0.525.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "npm"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "ISC"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/react@19.2.7",
+      "name": "react",
+      "version": "19.2.7",
+      "purl": "pkg:npm/react@19.2.7",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "npm"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/react-dom@19.2.7",
+      "name": "react-dom",
+      "version": "19.2.7",
+      "purl": "pkg:npm/react-dom@19.2.7",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "npm"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/scheduler@0.27.0",
+      "name": "scheduler",
+      "version": "0.27.0",
+      "purl": "pkg:npm/scheduler@0.27.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "npm"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/tslib@2.3.0",
+      "name": "tslib",
+      "version": "2.3.0",
+      "purl": "pkg:npm/tslib@2.3.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "npm"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "0BSD"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/zrender@6.1.0",
+      "name": "zrender",
+      "version": "6.1.0",
+      "purl": "pkg:npm/zrender@6.1.0",
+      "properties": [
+        {
+          "name": "akdesk:ecosystem",
+          "value": "npm"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "BSD-3-Clause"
+          }
+        }
+      ]
+    }
+  ]
+}

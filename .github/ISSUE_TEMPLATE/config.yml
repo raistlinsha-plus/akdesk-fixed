@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 使用文档
+    url: https://github.com/raistlinsha-plus/akdesk-fixed/blob/main/docs/AKDesk-Fixed-v1.0.0-%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C.md
+    about: 提交反馈前请先查看用户手册与数据健康说明
+  - name: 安全漏洞
+    url: https://github.com/raistlinsha-plus/akdesk-fixed/security/advisories/new
+    about: 请通过私密安全报告提交漏洞，不要公开披露
