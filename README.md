@@ -9,7 +9,7 @@
 
 > 本地优先 · 免费开源 · 个人研究使用 · 不构成投资建议
 
-[English](./README_EN.md) · [下载最新版](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) · [提交 Bug / 建议](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose) · [参与贡献](./CONTRIBUTING.md) · [安全报告](./SECURITY.md)
+[English](./README_EN.md) · [下载最新版](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) · [提交 Bug / 建议](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose) · [公开路线图](./ROADMAP.md) · [参与贡献](./CONTRIBUTING.md) · [安全报告](./SECURITY.md)
 
 ![AKDesk Fixed 市场变化中心](./docs/audits/v0.18.0-release-readiness-20260728/screenshots/01-market-changes.png)
 
@@ -219,3 +219,5 @@ PYTHONPATH=backend AKDESK_NO_BROWSER=1 .venv/bin/python -m app.main
 AKDesk Fixed 的自有代码使用 [MIT License](./LICENSE)。第三方组件、数据接口及其返回内容仍分别受原作者许可、数据源条款和署名要求约束，详见 [第三方声明](./THIRD_PARTY_NOTICES.md)。MIT 协议不等于授予任何第三方行情或内容的再分发权。
 
 欢迎通过 GitHub Issues 提交 Bug、数据源异常和产品建议。反馈前请先查看“数据健康”页，并提供 AKDesk 版本、macOS/Python 版本、页面、数据源状态和可复现步骤。请勿上传 API Key、本机数据库、账户信息或包含敏感研究内容的截图。
+
+项目下一阶段计划见 [公开路线图](./ROADMAP.md)。如果你愿意分享真实使用场景、安装体验或优先需求，可以参加 [欢迎与反馈讨论](https://github.com/raistlinsha-plus/akdesk-fixed/discussions/16)。对外介绍项目时可复用 [运营推广素材包](./docs/AKDesk-Fixed-v1.0-运营推广素材包.md)。

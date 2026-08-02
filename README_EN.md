@@ -8,7 +8,7 @@ AKDesk Fixed is a local-first, open-source research workstation for fixed-income
 
 > Local-first · Free and open source · Personal research use · Not investment advice
 
-[中文说明](./README.md) · [Download](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) · [Feedback](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose) · [Contributing](./CONTRIBUTING.md)
+[中文说明](./README.md) · [Download](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) · [Feedback](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose) · [Roadmap](./ROADMAP.md) · [Contributing](./CONTRIBUTING.md)
 
 ![AKDesk Fixed market-change center](./docs/audits/v0.18.0-release-readiness-20260728/screenshots/01-market-changes.png)
 
