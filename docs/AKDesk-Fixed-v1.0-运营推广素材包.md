@@ -4,6 +4,8 @@
 > 产品：AKDesk Fixed v1.0.0  
 > 仓库：https://github.com/raistlinsha-plus/akdesk-fixed  
 > 下载：https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest
+> 路线图：https://github.com/raistlinsha-plus/akdesk-fixed/issues/20  
+> 需求投票：https://github.com/raistlinsha-plus/akdesk-fixed/discussions/21
 
 ## 1. 统一定位
 

@@ -40,6 +40,8 @@
 
 ## 如何影响路线图
 
+- 当前版本汇总：[v1.0.1 低门槛与反馈收口](https://github.com/raistlinsha-plus/akdesk-fixed/issues/20)；
+- 下一步需求投票：[选择最希望优先改善的方向](https://github.com/raistlinsha-plus/akdesk-fixed/discussions/21)；
 - 开放场景讨论：[Discussions](https://github.com/raistlinsha-plus/akdesk-fixed/discussions)；
 - 可复现 Bug、数据源异常和明确需求：[Issues](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)；
 - 已经可以实现的改进：提交 Pull Request，并遵循 [贡献指南](./CONTRIBUTING.md)。
