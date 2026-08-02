@@ -1,4 +1,4 @@
-akshare==1.18.64
+akshare==1.18.81
 certifi>=2024.8.30
 fastapi>=0.115,<1
 httpx>=0.28,<1
