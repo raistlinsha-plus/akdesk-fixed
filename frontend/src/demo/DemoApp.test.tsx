@@ -1,26 +1,46 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DemoApp } from "./DemoApp";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEMO_BRIEF, DEMO_CURVE } from "./demoData";
 import { briefMarkdown } from "../brief";
+import { BarChart, LineChart } from "../components/Charts";
 
-vi.mock("../components/Charts", () => ({
-  LineChart: ({ series }: { series: Array<{ name: string }> }) => <div aria-label="示例曲线图">{series.map((item) => item.name).join(" / ")}</div>,
-  BarChart: () => <div aria-label="示例变动图" />,
-}));
+vi.mock("../components/Charts", async (importOriginal) => {
+  const charts = await importOriginal<typeof import("../components/Charts")>();
+  // Replace the actual exports too: concurrent lazy imports can receive the
+  // original namespace from Vitest while another import resolves its mock.
+  return {
+    ...charts,
+    LineChart: vi.spyOn(charts, "LineChart").mockImplementation(({ series }) => <div role="img" aria-label="示例曲线图">{series.map((item) => item.name).join(" / ")}</div>),
+    BarChart: vi.spyOn(charts, "BarChart").mockImplementation(() => <div role="img" aria-label="示例变动图" />),
+  };
+});
+
+let DemoApp: typeof import("./DemoApp")["DemoApp"];
+
+beforeAll(async () => {
+  // Resolve the mocked module before DemoApp creates its two lazy chart imports.
+  // Otherwise a pending chart import can outlive a fast route change in jsdom.
+  expect(BarChart).toBeDefined();
+  expect(LineChart).toBeDefined();
+  const chartModules = await Promise.all([import("../components/Charts"), import("../components/Charts")]);
+  chartModules.forEach((module) => expect(module.BarChart).toBe(BarChart));
+  ({ DemoApp } = await import("./DemoApp"));
+});
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/akdesk-fixed/#/overview");
   vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
   vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("Demo must not request a backend"))));
 });
-afterEach(() => {
+afterEach(async () => {
   cleanup();
-  vi.restoreAllMocks();
+  await vi.dynamicImportSettled();
+  vi.clearAllMocks();
   vi.unstubAllGlobals();
 });
+afterAll(() => vi.restoreAllMocks());
 
 describe("static GitHub demo", () => {
   it("completes the sample workflow without calling any backend", async () => {
@@ -37,6 +57,9 @@ describe("static GitHub demo", () => {
     expect(screen.queryByRole("heading", { name: "短端资金分化，隔夜利率下行" })).toBeNull();
     await user.click(screen.getByRole("button", { name: "核验收益率曲线" }));
     await screen.findByRole("heading", { name: "曲线核验" });
+    // Exercise both lightweight chart replacements, never ECharts/canvas effects.
+    await screen.findByRole("img", { name: "示例曲线图" });
+    await screen.findByRole("img", { name: "示例变动图" });
     await user.selectOptions(screen.getByLabelText("查看曲线"), "policy");
     await waitFor(() => expect(screen.getByLabelText("示例曲线图").textContent).toContain("国开债 · 固定样例"));
     expect((screen.getByRole("checkbox", { name: "对照国债前值" }) as HTMLInputElement).disabled).toBe(true);
