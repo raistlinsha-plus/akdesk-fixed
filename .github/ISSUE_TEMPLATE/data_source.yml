@@ -31,7 +31,7 @@ body:
     id: observed_at
     attributes:
       label: 发生时间与时区
-      placeholder: 2026-08-02 10:30 Asia/Shanghai
+      placeholder: 2026-10-22 10:30 Asia/Shanghai
     validations:
       required: true
   - type: input

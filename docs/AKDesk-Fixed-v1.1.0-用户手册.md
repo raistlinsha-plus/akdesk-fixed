@@ -30,6 +30,8 @@ v1.1 保留 v1.0 的全部原有功能。本手册重点介绍新增入口；资
 
 主要适配 Apple Silicon MacBook Air，要求 macOS 12 或更高版本、Python 3.11/3.12/3.13。首次安装需要访问 Python 软件源，建议保留至少 1 GB 空间。正式包包含预构建界面，普通使用无需 Docker、Rust 或常驻 Node.js。
 
+macOS 12+ 是兼容目标，本轮实际实机验证为 macOS 26.6.2 / Apple Silicon；关键二进制依赖有兼容较早系统的官方wheel，但这不等于已在所有macOS版本完成运行验收。其他环境欢迎按兼容性反馈模板补充。
+
 普通用户优先选择 GitHub Release 中明确标注版本的 `AKDesk-Fixed-v1.1.0.zip` 正式资源，核对对应 SHA-256 后完整解压；若该版本资源尚未发布，请以 Release 页面实际可用版本为准。
 
 GitHub 自动生成的“Source code”压缩包主要用于源码查看和开发，不等于经过发布清单、资源构建与执行权限校验的正式包。源码用户应按 [贡献指南](../CONTRIBUTING.md) 准备环境；缺少 `frontend/dist/index.html` 时需要构建前端。

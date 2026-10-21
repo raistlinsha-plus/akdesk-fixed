@@ -18,6 +18,8 @@ The static demo uses fixed **2026-08-03 synthetic data**, not live quotes. It ne
 
 Targets Apple Silicon MacBook Air, **macOS 12+ and Python 3.11–3.13**. Initial installation needs network access and about 1 GB of free space. The official package includes a prebuilt UI; normal use requires no Node.js, Docker or Rust.
 
+macOS 12+ is a compatibility target. This release was physically tested on macOS 26.6.2 / Apple Silicon; other OS versions have not each been tested in this cycle.
+
 1. Install a supported Python; with Homebrew, use `brew install python@3.13`.
 2. Select the `AKDesk-Fixed-v1.1.0.zip` asset in [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest), verify its SHA-256 and unzip the whole package.
 3. Double-click `start-macos.command`. It runs local checks, installs locked dependencies and opens `http://127.0.0.1:8765`.

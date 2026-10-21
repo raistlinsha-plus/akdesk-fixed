@@ -18,6 +18,8 @@
 
 主要适配 Apple Silicon MacBook Air，要求 **macOS 12+、Python 3.11–3.13**。首次安装需要网络与约 1 GB 可用空间。正式包已带预构建界面，普通使用无需 Node.js、Docker 或 Rust。
 
+macOS 12+ 为兼容目标；本轮实际验证环境为 macOS 26.6.2 / Apple Silicon，其他系统小版本未逐一实机验收。
+
 1. 准备受支持的 Python。使用 Homebrew 时可执行 `brew install python@3.13`。
 2. 在 [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) 选择 `AKDesk-Fixed-v1.1.0.zip` 正式资源，核对对应 SHA-256，完整解压。
 3. 双击 `start-macos.command`。启动器执行本地预检、安装锁定依赖，并打开 `http://127.0.0.1:8765`。

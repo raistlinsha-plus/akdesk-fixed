@@ -4,7 +4,7 @@
   "serialNumber": "urn:uuid:8b6a60d7-000d-5e11-b69d-21c2c0bdd563",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-10-21T17:53:45.348348Z",
+    "timestamp": "2026-10-21T18:05:31.944636Z",
     "component": {
       "type": "application",
       "bom-ref": "pkg:generic/akdesk-fixed@1.1.0",

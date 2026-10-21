@@ -1,5 +1,5 @@
-name: 功能建议
-description: 从实际市场或投研任务出发提出改进建议
+name: 场景与体验反馈
+description: 想做什么、卡在哪一步、是否愿意再次使用；有明确功能建议也欢迎补充
 title: "[Feature] "
 labels: ["enhancement", "needs-triage"]
 body:
@@ -23,27 +23,23 @@ body:
   - type: textarea
     id: scenario
     attributes:
-      label: 使用场景
-      description: 谁在什么任务中遇到了什么困难？
+      label: 你想完成什么任务？
+      description: 描述任务和原来的做法即可，不必提供岗位身份或业务材料。
     validations:
       required: true
   - type: textarea
     id: current
     attributes:
-      label: 当前做法与不足
-    validations:
-      required: true
+      label: 在哪一步停住，或已经完成了什么？（可选）
   - type: textarea
     id: proposal
     attributes:
-      label: 建议方案
-      description: 请描述预期入口、输入、输出和可信边界。
-    validations:
-      required: true
+      label: 下周是否还会使用，为什么？（可选）
+      description: 不需要设计解决方案；有明确改进想法也可以写在这里。
   - type: dropdown
     id: area
     attributes:
-      label: 主要范围
+      label: 主要范围（可选）
       options:
         - 市场监测
         - 投研工作流
@@ -52,13 +48,12 @@ body:
         - AI 辅助
         - 数据可信与运维
         - 安装与低门槛体验
+        - 在线示例与一页简报
         - 其他
-    validations:
-      required: true
   - type: textarea
     id: alternatives
     attributes:
-      label: 可接受的替代方案
+      label: 其他补充（可选）
   - type: checkboxes
     id: boundaries
     attributes:

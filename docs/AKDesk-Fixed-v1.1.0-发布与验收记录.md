@@ -19,13 +19,26 @@
 | 前端 | 87项通过 | ESLint、CSS令牌、TypeScript、本地与独立演示生产构建通过；主包532.15kB、示例主包258.86kB（均未压缩，图表按需加载） |
 | 数据库兼容 | 通过 | schema 701/800/900/1100/1201/1301 的历史备份副本分别迁移到 1600，记录保留、完整性、外键、备份恢复及损坏拒绝通过；未修改原库 |
 | 3 分钟稳态 | 通过 | 35 轮、11 个核心 API/轮，无 HTTP 失败；线程 3、文件描述符 14 保持稳定，4 份备份完整，数据库 quick_check=ok、外键错误 0；见[记录](./audits/v1.1.0/soak.json) |
-| 静态子路径/路由 | 本地复核通过，公网待部署复核 | `/akdesk-fixed/`，hash 深链接、刷新、筛选与曲线切换 |
+| 静态子路径/路由 | 本地交互、公网资源通过 | `/akdesk-fixed/`，hash深链接、刷新、筛选与曲线切换通过；公网HTML/视频200，部署JS与本地构建SHA-256一致 |
 | 响应式 | 通过 | 1440×900、1280×800、390×844，无文档级横向溢出；窄屏重置已实际操作复核；[浏览器记录](./audits/v1.1.0/browser-verification.md) |
 | Markdown 导出 | 通过 | 真实浏览器下载，固定日期、样例标识、BP/%、逐源时间与人工备注一致；[样例](./media/v1.1.0/示例-固收简报.md) |
 | 打印/PDF | 离线排版通过；原生交互未测 | 真实组件+实际CSS输出默认一页A4横向；千字备注两页且逐字完整。桌面锁定阻止系统打印窗口验收，作为本次明确例外，不宣称浏览器原生通过；见[排版记录](./audits/v1.1.0/print-layout-verification.md) |
 | 启动/重复启动/停止 | 通过 | 干净候选ZIP实际创建venv/从PyPI安装55个锁定包、核心API、重复启动同PID、真实PTY Control+C与独立停止器通过；提供有效CA条件及模拟错误分支单独说明，见[启动验收](./audits/v1.1.0/startup-verification.md) |
 | 安全依赖审计 | 当次已知漏洞0 | Python生产锁55包、开发环境64包，均0跳过；npm全依赖审计0（官方registry，镜像未实现审计接口）；单次扫描不等同于无安全风险 |
-| 正式 ZIP/Pages/Release | 待发布 | 发布后补充地址、校验与线上动作结果 |
+| 正式ZIP | 洁净发布验证通过 | 白名单、文件级manifest、SBOM、版本、可执行权限、文档链接、凭据与用户数据排除通过；体积小于25MB；最终文件校验见Release的SHA256SUMS |
+| GitHub CI/Pages | 通过 | 修复并发懒加载图表mock的测试竞争后，完整CI与Pages构建/部署成功；见下方链接 |
+
+## 对外交付
+
+- [在线示例](https://raistlinsha-plus.github.io/akdesk-fixed/)：GitHub Pages静态托管，仅上传独立示例产物；没有公开Python后端。
+- [v1.1.0正式下载](https://github.com/raistlinsha-plus/akdesk-fixed/releases/tag/v1.1.0)：正式ZIP、SHA256SUMS、视频和示例简报；实际发布资源以此页面为准。
+- [通过的完整CI](https://github.com/raistlinsha-plus/akdesk-fixed/actions/runs/39649132538)与[Pages部署](https://github.com/raistlinsha-plus/akdesk-fixed/actions/runs/39649132420)，对应实现与测试修复提交a9e87e0。首次CI抓到的并发lazy import测试竞争已修复；不是跳过失败用例。
+- About/Homepage与Topics已更新；[欢迎反馈](https://github.com/raistlinsha-plus/akdesk-fixed/discussions/16)收敛为任务、卡点、再次使用三个问题；[过期投票](https://github.com/raistlinsha-plus/akdesk-fixed/discussions/21)保留原文并按过期历史关闭。
+- [四周观察表](./AKDesk-Fixed-v1.1.0-四周反馈观察表.md)留空待真实记录，没有预填用户数或制造增长结果。
+
+公网浏览器自动化在导航后读取页面时持续超时，未获得额外公网复拍。因此本次线上验证采用HTTP状态、媒体类型/体积、部署结果与相同JS构建的SHA-256比对；交互与视觉验证来自本地同一构建。没有将工具超时写成产品错误，也没有声称已完成额外公网浏览器验收。
+
+截至封版，GitHub仍保留20条历史npm依赖告警，未手动屏蔽。当前锁文件对应包已升级，逐条按告警的漏洞版本范围比对没有命中；npm官方审计和Python当次审计均为0。GitHub的历史告警刷新状态与本次锁文件检查分别记录，不假定平台已同步清零。
 
 ## 60 秒导览与案例
 

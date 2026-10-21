@@ -18,8 +18,8 @@ body:
     id: environment
     attributes:
       label: 运行环境
-      description: 请填写 Mac 型号、macOS 和 Python 版本。
-      placeholder: MacBook Air M2 / macOS 15.x / Python 3.13.x
+      description: 在线示例填写系统与浏览器；本地版填写 Mac、macOS 与 Python。不需要设备序列号或个人路径。
+      placeholder: 在线示例 / Windows或macOS / Chrome或Safari；本地版 / MacBook Air / Python 3.13.x
     validations:
       required: true
   - type: dropdown
