@@ -11,34 +11,12 @@ import {
 } from "../components/UI";
 import type { DailyReport, DailyReportArchiveItem, HealthItem } from "../types";
 import { PageHeading } from "./MarketPages";
+import { briefMarkdown, briefMode, briefModeLabel, reportToBrief } from "../brief";
+import { OnePageBrief } from "../components/OnePageBrief";
 
 function reportMarkdown(report: DailyReport) {
   const lines = [
-    `# AKDesk 固收复盘 · ${report.report_date}`,
-    "",
-    `> ${report.headline}（${report.market_status}）`,
-    `> 可信度：${report.confidence.score} / 100，${report.confidence.message}`,
-    "",
-    "## 资金面",
-    "",
-    `- 判断：${report.funding.tone}`,
-    `- 平均变动：${formatNumber(report.funding.average_change_bp, 2)} BP`,
-    ...report.funding.items.map(
-      (item) => `- ${item.name}：${formatNumber(item.value, 4)}%，${formatNumber(item.change_bp, 2)} BP`,
-    ),
-    "",
-    "## 收益率曲线",
-    "",
-    `- 10Y：${formatNumber(report.curve.tenors["10Y"], 4)}%`,
-    `- 10Y–1Y：${formatNumber(report.curve.spreads_bp["10Y-1Y"], 2)} BP`,
-    `- 30Y–10Y：${formatNumber(report.curve.spreads_bp["30Y-10Y"], 2)} BP`,
-    `- 10Y 日变动：${formatNumber(report.curve.ten_year_change_bp, 2)} BP`,
-    "",
-    "## 国债期货",
-    "",
-    ...report.futures.map(
-      (item) => `- ${item.contract}：${formatNumber(item.price, 3)}，${formatNumber(item.change_pct, 3)}%`,
-    ),
+    briefMarkdown(reportToBrief(report)),
     "",
     "## 活跃现券",
     "",
@@ -46,9 +24,6 @@ function reportMarkdown(report: DailyReport) {
       (item) => `- ${item.name}：收益率 ${formatNumber(item.yield, 4)}%，变动 ${formatNumber(item.change_bp, 2)} BP`,
     ),
   ];
-  if (report.data_notes.length) {
-    lines.push("", "## 数据说明", "", ...report.data_notes.map((item) => `- ${item}`));
-  }
   if (report.research_workflow) {
     lines.push(
       "",
@@ -62,7 +37,6 @@ function reportMarkdown(report: DailyReport) {
       ),
     );
   }
-  lines.push("", "仅供个人研究参考，不构成投资建议。");
   return lines.join("\n");
 }
 
@@ -72,6 +46,8 @@ export function ResearchPage({ refreshSeed }: { refreshSeed: number }) {
   const [selectedDate, setSelectedDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<"brief" | "full">("brief");
+  const [notesByDate, setNotesByDate] = useState<Record<string, string>>({});
 
   useEffect(() => {
     apiGet<DailyReportArchiveItem[]>("/research/daily-reports")
@@ -152,11 +128,22 @@ export function ResearchPage({ refreshSeed }: { refreshSeed: number }) {
       ) : null}
       {report ? (
         <>
+          <div className="ak-brief-view-switch" role="group" aria-label="复盘视图">
+            <button type="button" aria-pressed={view === "brief"} onClick={() => setView("brief")}>一页简报</button>
+            <button type="button" aria-pressed={view === "full"} onClick={() => setView("full")}>完整复盘</button>
+          </div>
+          {view === "brief" ? <OnePageBrief
+            key={report.report_date}
+            document={reportToBrief(report)}
+            notes={notesByDate[report.report_date] ?? ""}
+            onNotesChange={(notes) => setNotesByDate((current) => ({ ...current, [report.report_date]: notes }))}
+          /> : <>
           <section className="report-hero">
             <div>
               <span className="eyebrow">{reportModeLabel(report.report_mode).toUpperCase()} BRIEF</span>
               <h2>{report.headline}</h2>
               <p>{report.market_status} · {report.report_date} · 生成于 {formatDateTime(report.generated_at)}</p>
+              <p>{briefModeLabel(briefMode(reportToBrief(report)))}</p>
               <div className={`confidence-strip ${report.confidence.level}`}>
                 <strong>可信度 {report.confidence.score}</strong>
                 <span>{report.confidence.message}</span>
@@ -264,6 +251,7 @@ export function ResearchPage({ refreshSeed }: { refreshSeed: number }) {
               )}
             </Panel>
           </div>
+          </>}
         </>
       ) : null}
     </div>

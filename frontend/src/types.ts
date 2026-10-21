@@ -1147,6 +1147,18 @@ export interface DailyReport {
     }>;
   };
   data_notes: string[];
+  /** Absent in older archives; missing provenance must not imply live data. */
+  data_sources?: Array<{
+    adapter: string;
+    label: string;
+    source: string | null;
+    source_url: string | null;
+    observation_time: string | null;
+    fetched_at: string | null;
+    data_state: string;
+    trust_level: SourceMeta["trust_level"];
+    demo: boolean | null;
+  }>;
 }
 
 export interface DailyReportArchiveItem {

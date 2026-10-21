@@ -1,15 +1,15 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "serialNumber": "urn:uuid:a01ea355-12bd-54b2-a1d1-d5fb863d7cb2",
+  "serialNumber": "urn:uuid:8b6a60d7-000d-5e11-b69d-21c2c0bdd563",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-08-01T23:47:44.625399Z",
+    "timestamp": "2026-10-21T17:53:45.348348Z",
     "component": {
       "type": "application",
-      "bom-ref": "pkg:generic/akdesk-fixed@1.0.0",
+      "bom-ref": "pkg:generic/akdesk-fixed@1.1.0",
       "name": "AKDesk Fixed",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "licenses": [
         {
           "license": {
@@ -21,17 +21,17 @@
     "properties": [
       {
         "name": "akdesk:python-lock-sha256",
-        "value": "28da8032f24994e7153a49e4f7c8a346ec7a28cfdeaf1bb2d209659c1e07a728"
+        "value": "4adf1fb958b5591441e0ff8016e101c11b8de063b09bb9c7987d78cf10cb2560"
       }
     ]
   },
   "components": [
     {
       "type": "library",
-      "bom-ref": "pkg:pypi/akshare@1.18.64",
+      "bom-ref": "pkg:pypi/akshare@1.19.1",
       "name": "akshare",
-      "version": "1.18.64",
-      "purl": "pkg:pypi/akshare@1.18.64",
+      "version": "1.19.1",
+      "purl": "pkg:pypi/akshare@1.19.1",
       "properties": [
         {
           "name": "akdesk:ecosystem",
@@ -128,10 +128,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:pypi/certifi@2026.6.17",
+      "bom-ref": "pkg:pypi/certifi@2026.10.19",
       "name": "certifi",
-      "version": "2026.6.17",
-      "purl": "pkg:pypi/certifi@2026.6.17",
+      "version": "2026.10.19",
+      "purl": "pkg:pypi/certifi@2026.10.19",
       "properties": [
         {
           "name": "akdesk:ecosystem",
@@ -308,10 +308,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:pypi/h2@4.3.0",
+      "bom-ref": "pkg:pypi/h2@4.4.1",
       "name": "h2",
-      "version": "4.3.0",
-      "purl": "pkg:pypi/h2@4.3.0",
+      "version": "4.4.1",
+      "purl": "pkg:pypi/h2@4.4.1",
       "properties": [
         {
           "name": "akdesk:ecosystem",
@@ -321,7 +321,7 @@
       "licenses": [
         {
           "license": {
-            "name": "OSI Approved / MIT License"
+            "name": "MIT"
           }
         }
       ]
@@ -848,10 +848,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:pypi/soupsieve@2.8.4",
+      "bom-ref": "pkg:pypi/soupsieve@2.9",
       "name": "soupsieve",
-      "version": "2.8.4",
-      "purl": "pkg:pypi/soupsieve@2.8.4",
+      "version": "2.9",
+      "purl": "pkg:pypi/soupsieve@2.9",
       "properties": [
         {
           "name": "akdesk:ecosystem",
@@ -988,10 +988,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:pypi/urllib3@2.7.0",
+      "bom-ref": "pkg:pypi/urllib3@2.8.0",
       "name": "urllib3",
-      "version": "2.7.0",
-      "purl": "pkg:pypi/urllib3@2.7.0",
+      "version": "2.8.0",
+      "purl": "pkg:pypi/urllib3@2.8.0",
       "properties": [
         {
           "name": "akdesk:ecosystem",
@@ -1168,10 +1168,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/react@19.2.7",
+      "bom-ref": "pkg:npm/react@19.3.1",
       "name": "react",
-      "version": "19.2.7",
-      "purl": "pkg:npm/react@19.2.7",
+      "version": "19.3.1",
+      "purl": "pkg:npm/react@19.3.1",
       "properties": [
         {
           "name": "akdesk:ecosystem",
@@ -1188,10 +1188,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/react-dom@19.2.7",
+      "bom-ref": "pkg:npm/react-dom@19.3.1",
       "name": "react-dom",
-      "version": "19.2.7",
-      "purl": "pkg:npm/react-dom@19.2.7",
+      "version": "19.3.1",
+      "purl": "pkg:npm/react-dom@19.3.1",
       "properties": [
         {
           "name": "akdesk:ecosystem",
@@ -1208,10 +1208,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:npm/scheduler@0.27.0",
+      "bom-ref": "pkg:npm/scheduler@0.28.0",
       "name": "scheduler",
-      "version": "0.27.0",
-      "purl": "pkg:npm/scheduler@0.27.0",
+      "version": "0.28.0",
+      "purl": "pkg:npm/scheduler@0.28.0",
       "properties": [
         {
           "name": "akdesk:ecosystem",

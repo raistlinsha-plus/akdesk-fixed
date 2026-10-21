@@ -1,6 +1,6 @@
 # 获取帮助
 
-使用前请先阅读 [README](./README.md) 和 [用户手册](./docs/AKDesk-Fixed-v1.0.0-用户手册.md)。遇到行情不可用时，先打开“数据健康”页，区分未开盘、上游接口失败、缓存降级、凭据未配置和本机网络问题。
+使用前请先阅读 [README](./README.md) 和 [用户手册](./docs/AKDesk-Fixed-v1.1.0-用户手册.md)。遇到行情不可用时，先打开“数据健康”页，区分未开盘、上游接口失败、缓存降级、凭据未配置和本机网络问题。需要反馈时，可在“使用与反馈”主动生成并预览脱敏诊断，再自行决定是否分享；不会自动上传。
 
 - 产品 Bug、功能建议、数据源异常：使用 [Issue 模板](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)；
 - 安全漏洞或凭据泄漏：按 [安全政策](./SECURITY.md) 私下报告；

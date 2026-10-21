@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Activity,
@@ -14,6 +14,7 @@ import {
   FileText,
   Globe2,
   Landmark,
+  LifeBuoy,
   Layers3,
   LoaderCircle,
   Menu,
@@ -47,7 +48,6 @@ import { MarketChangesPage } from "./pages/MarketChangesPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
 import { CreditPage } from "./pages/CreditPage";
 import { ReleaseReviewPage } from "./pages/ReleaseReviewPage";
-import { ResearchPage } from "./pages/ResearchPage";
 import { SovereignPage } from "./pages/SovereignPage";
 import { ForexPage } from "./pages/ForexPage";
 import { TopicResearchPage } from "./pages/TopicResearchPage";
@@ -82,6 +82,9 @@ import {
   type ExperienceProfileId,
 } from "./experienceProfiles";
 
+const HelpPage = lazy(() => import("./pages/HelpPage").then((module) => ({ default: module.HelpPage })));
+const ResearchPage = lazy(() => import("./pages/ResearchPage").then((module) => ({ default: module.ResearchPage })));
+
 type PageId =
   | "research-desk"
   | "dashboard"
@@ -104,7 +107,8 @@ type PageId =
   | "report"
   | "weekly-review"
   | "watchlist"
-  | "health";
+  | "health"
+  | "help";
 
 interface NavItem {
   id: PageId;
@@ -146,6 +150,7 @@ const NAV_ITEMS: Record<PageId, NavItem> = {
   "weekly-review": { id: "weekly-review", label: "每周复盘", hint: "", icon: BookOpenCheck, keywords: "做每周复盘 到期研究" },
   watchlist: { id: "watchlist", label: "我的自选", hint: "", icon: Star },
   health: { id: "health", label: "数据健康", hint: "", icon: Database, keywords: "检查数据 为什么不可用 连接 缓存" },
+  help: { id: "help", label: "使用与反馈", hint: "", icon: LifeBuoy, keywords: "帮助 关于 诊断 反馈 Bug 版本" },
 };
 
 const ALL_NAVIGATION = Object.values(NAV_ITEMS);
@@ -215,6 +220,7 @@ function navigationForMode(
           item("weekly-review"),
           item("calculator"),
           item("health"),
+          item("help"),
         ],
       },
     ];
@@ -260,6 +266,7 @@ function navigationForMode(
         item("events"),
         item("calculator"),
         item("health"),
+        item("help"),
       ],
     },
   ];
@@ -768,11 +775,12 @@ export default function App() {
           {page === "credit" ? <CreditPage /> : null}
           {page === "convertibles" ? <ConvertiblesPage refreshSeed={refreshSeed} initialQuery={pageQuery} /> : null}
           {page === "events" ? <EventsPage refreshSeed={refreshSeed} /> : null}
-          {page === "report" ? <ResearchPage refreshSeed={refreshSeed} /> : null}
+          {page === "report" ? <Suspense fallback={<p role="status">正在打开每日复盘…</p>}><ResearchPage refreshSeed={refreshSeed} /></Suspense> : null}
           {page === "weekly-review" ? <WeeklyReviewPage refreshSeed={refreshSeed} /> : null}
           {page === "calculator" ? <CalculatorPage /> : null}
           {page === "watchlist" ? <WatchlistPage navigate={navigate} /> : null}
           {page === "health" ? <HealthPage /> : null}
+          {page === "help" ? <Suspense fallback={<p role="status">正在打开帮助与反馈…</p>}><HelpPage navigate={navigate} /></Suspense> : null}
         </main>
       </div>
 
@@ -970,7 +978,7 @@ export default function App() {
             aria-labelledby="workspace-onboarding-title"
           >
             <div className="workspace-onboarding-copy">
-              <span className="eyebrow">AKDESK FIXED · V1.0.0</span>
+              <span className="eyebrow">AKDESK FIXED · V1.1.0</span>
               <h1 id="workspace-onboarding-title">你通常先做哪件事？</h1>
               <p>选择一个使用场景即可开始。它只设置默认落地页和导航顺序；全部行情、投研、信用与全球模块仍可随时访问。</p>
             </div>

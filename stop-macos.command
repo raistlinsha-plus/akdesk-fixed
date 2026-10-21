@@ -4,7 +4,7 @@ set -u
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 URL="http://127.0.0.1:8765"
-EXPECTED_VERSION="1.0.0"
+EXPECTED_VERSION="1.1.0"
 
 fail() {
   echo
@@ -24,7 +24,7 @@ if [[ -z "$PID" ]]; then
   exit 0
 fi
 
-INFO="$(curl -fsS "$URL/api/v1/info" 2>/dev/null || true)"
+INFO="$(curl --connect-timeout 1 --max-time 2 -fsS "$URL/api/v1/info" 2>/dev/null || true)"
 if [[ -z "$INFO" ]] || \
   ! print -r -- "$INFO" | grep -q '"name":"AKDesk Fixed"' || \
   ! print -r -- "$INFO" | grep -q "\"version\":\"$EXPECTED_VERSION\""; then

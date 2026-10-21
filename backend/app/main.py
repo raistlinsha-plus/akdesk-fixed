@@ -50,6 +50,7 @@ from .credit_import import (
     parse_credit_file,
 )
 from .database import Database
+from .diagnostics import build_diagnostics
 from .gdelt import GdeltProviderError, GdeltRateLimitError, GdeltService
 from .macro import FredNotConfiguredError, MacroProviderError, MacroService
 from .models import (
@@ -216,6 +217,21 @@ def info() -> dict:
 @app.get("/api/v1/health")
 def basic_health() -> dict:
     return {"status": "ok", "version": __version__}
+
+
+@app.get("/api/v1/diagnostics")
+def shareable_diagnostics() -> dict:
+    return build_diagnostics(
+        [
+            *service.health_items(),
+            macro_service._health.model_copy(deep=True),
+            world_bank_service._health.model_copy(deep=True),
+            gdelt_service._health.model_copy(deep=True),
+        ],
+        data_dir=DATA_DIR,
+        project_root=PROJECT_ROOT,
+        demo_only=service.demo_only,
+    )
 
 
 @app.get("/api/v1/rates")

@@ -158,6 +158,7 @@ export function ErrorState({ message }: { message: string }) {
         <div className="state-recovery">
           <span>可先重试当前操作；如果是行情或连接问题，请查看数据源诊断。</span>
           <a href="#/health">打开数据健康</a>
+          <a href="#/help">生成诊断与反馈</a>
         </div>
       </div>
     </div>

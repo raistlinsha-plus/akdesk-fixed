@@ -21,7 +21,7 @@ body:
     validations:
       required: true
   - type: input
-    id: dataset
+    id: page
     attributes:
       label: 页面与数据集
       placeholder: 收益率曲线 / 中国国债 / FRED DGS10
@@ -38,7 +38,7 @@ body:
     id: version
     attributes:
       label: AKDesk、macOS 与 Python 版本
-      placeholder: v1.0.0 / macOS 15.x / Python 3.13.x
+      placeholder: v1.1.0 / macOS 15.x / Python 3.13.x
     validations:
       required: true
   - type: textarea
@@ -48,6 +48,14 @@ body:
       description: 请转录来源状态、错误类型、缓存年龄和连续失败次数；不要包含 Key。
     validations:
       required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: 启动模式
+      options:
+        - 实时模式
+        - 演示模式
+        - 不确定
   - type: textarea
     id: behavior
     attributes:

@@ -145,8 +145,10 @@ def generate_metadata(version: str) -> tuple[Path, Path]:
     rows = [
         "# AKDesk Fixed 第三方组件声明",
         "",
-        f"> 对应版本：v{version}  ",
-        f"> 生成时间：{timestamp.isoformat()}  ",
+        f"> 对应版本：v{version}",
+        ">",
+        f"> 生成时间：{timestamp.isoformat()}",
+        ">",
         "> 本文件用于帮助识别随产品交付或构建的第三方组件；实际授权以各组件许可证原文为准。",
         "",
         "AKDesk Fixed 自身采用 MIT License。运行时依赖及前端生产依赖如下，"

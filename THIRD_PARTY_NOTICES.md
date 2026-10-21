@@ -1,19 +1,21 @@
 # AKDesk Fixed 第三方组件声明
 
-> 对应版本：v1.0.0  
-> 生成时间：2026-08-01T23:47:44.625399+00:00  
+> 对应版本：v1.1.0
+>
+> 生成时间：2026-10-21T17:53:45.348348+00:00
+>
 > 本文件用于帮助识别随产品交付或构建的第三方组件；实际授权以各组件许可证原文为准。
 
 AKDesk Fixed 自身采用 MIT License。运行时依赖及前端生产依赖如下，机器可读清单见 `SBOM.cdx.json`。
 
 | 生态 | 组件 | 版本 | 声明许可证 |
 | --- | --- | --- | --- |
-| PyPI | `akshare` | `1.18.64` | MIT |
+| PyPI | `akshare` | `1.19.1` | MIT |
 | PyPI | `annotated-doc` | `0.0.4` | MIT |
 | PyPI | `annotated-types` | `0.7.0` | OSI Approved / MIT License |
 | PyPI | `anyio` | `4.14.2` | MIT |
 | PyPI | `beautifulsoup4` | `4.15.0` | MIT License |
-| PyPI | `certifi` | `2026.6.17` | MPL-2.0 |
+| PyPI | `certifi` | `2026.10.19` | MPL-2.0 |
 | PyPI | `cffi` | `2.1.0` | MIT-0 |
 | PyPI | `charset-normalizer` | `3.4.9` | MIT |
 | PyPI | `click` | `8.4.2` | BSD-3-Clause |
@@ -22,7 +24,7 @@ AKDesk Fixed 自身采用 MIT License。运行时依赖及前端生产依赖如�
 | PyPI | `et_xmlfile` | `2.0.0` | MIT |
 | PyPI | `fastapi` | `0.139.0` | MIT |
 | PyPI | `h11` | `0.16.0` | MIT |
-| PyPI | `h2` | `4.3.0` | OSI Approved / MIT License |
+| PyPI | `h2` | `4.4.1` | MIT |
 | PyPI | `hpack` | `4.2.0` | MIT |
 | PyPI | `html5lib` | `1.1` | MIT License |
 | PyPI | `httpcore` | `1.0.9` | BSD-3-Clause |
@@ -49,14 +51,14 @@ AKDesk Fixed 自身采用 MIT License。运行时依赖及前端生产依赖如�
 | PyPI | `requests` | `2.34.2` | Apache-2.0 |
 | PyPI | `rich` | `15.0.0` | MIT |
 | PyPI | `six` | `1.17.0` | MIT |
-| PyPI | `soupsieve` | `2.8.4` | MIT |
+| PyPI | `soupsieve` | `2.9` | MIT |
 | PyPI | `starlette` | `1.3.1` | BSD-3-Clause |
 | PyPI | `tabulate` | `0.10.0` | MIT |
 | PyPI | `tqdm` | `4.68.4` | MPL-2.0 AND MIT |
 | PyPI | `typing-inspection` | `0.4.2` | MIT |
 | PyPI | `typing_extensions` | `4.16.0` | PSF-2.0 |
 | PyPI | `tzdata` | `2026.3` | Apache-2.0 |
-| PyPI | `urllib3` | `2.7.0` | MIT |
+| PyPI | `urllib3` | `2.8.0` | MIT |
 | PyPI | `uvicorn` | `0.51.0` | BSD-3-Clause |
 | PyPI | `uvloop` | `0.22.1` | MIT License |
 | PyPI | `watchfiles` | `1.2.0` | MIT |
@@ -65,9 +67,9 @@ AKDesk Fixed 自身采用 MIT License。运行时依赖及前端生产依赖如�
 | PyPI | `xlrd` | `2.0.2` | BSD |
 | npm | `echarts` | `6.1.0` | Apache-2.0 |
 | npm | `lucide-react` | `0.525.0` | ISC |
-| npm | `react` | `19.2.7` | MIT |
-| npm | `react-dom` | `19.2.7` | MIT |
-| npm | `scheduler` | `0.27.0` | MIT |
+| npm | `react` | `19.3.1` | MIT |
+| npm | `react-dom` | `19.3.1` | MIT |
+| npm | `scheduler` | `0.28.0` | MIT |
 | npm | `tslib` | `2.3.0` | 0BSD |
 | npm | `zrender` | `6.1.0` | BSD-3-Clause |
 

@@ -1,12 +1,32 @@
-from datetime import datetime
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 import pandas as pd
+import pytest
 
 from app.database import Database
 from app.models import Dataset, SourceMeta, WatchlistCreate
 from app.provider import DataService
 from app.watchlist import enrich_watchlist
+
+
+@pytest.fixture(autouse=True)
+def fx_clock(monkeypatch):
+    """Freeze both request and database windows around the source fixture."""
+    class FixedDate(date):
+        @classmethod
+        def today(cls):
+            return cls(2026, 7, 20)
+
+    class FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            value = cls(2026, 7, 20, 12)
+            return value.replace(tzinfo=tz) if tz else value
+
+    for module in ("app.database", "app.provider"):
+        monkeypatch.setattr(f"{module}.date", FixedDate)
+        monkeypatch.setattr(f"{module}.datetime", FixedDatetime)
 
 
 class _FxAk:
@@ -21,7 +41,8 @@ class _FxAk:
 
     @staticmethod
     def currency_boc_sina(*, symbol: str, start_date: str, end_date: str):
-        assert start_date <= end_date
+        assert start_date == "20260605"
+        assert end_date == "20260720"
         values = {
             "美元": (680.0, 679.0),
             "欧元": (775.0, 776.0),

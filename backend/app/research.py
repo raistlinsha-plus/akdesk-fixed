@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
 
 from .database import Database
@@ -409,6 +410,40 @@ def build_daily_report(service: DataService, database: Database) -> dict[str, An
     events = _dataset(service, "issuance_events")
     health = service.health_items()
 
+    def provenance_url(value: str | None) -> str | None:
+        if not value:
+            return None
+        try:
+            parts = urlsplit(value)
+            if parts.scheme not in {"http", "https"} or not parts.netloc:
+                return None
+            if parts.username or parts.password:
+                return None
+            return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+        except ValueError:
+            return None
+
+    data_sources = [
+        {
+            "adapter": adapter,
+            "label": label,
+            "source": dataset.meta.source if dataset else None,
+            "source_url": provenance_url(dataset.meta.source_url) if dataset else None,
+            "observation_time": dataset.meta.observation_time if dataset else None,
+            "fetched_at": dataset.meta.fetched_at.isoformat() if dataset else None,
+            "data_state": dataset.meta.data_state if dataset else "unavailable",
+            "trust_level": dataset.meta.trust_level if dataset else "unavailable",
+            "demo": dataset.meta.demo if dataset else None,
+        }
+        for adapter, label, dataset in (
+            ("money_rates", "资金面", rates),
+            ("yield_curves", "收益率曲线", curves),
+            ("treasury_futures", "国债期货", futures),
+            ("spot_bonds", "现券", bonds),
+            ("issuance_events", "发行事件", events),
+        )
+    ]
+
     rate_rows = rates.data if rates and isinstance(rates.data, list) else []
     rate_changes = [
         number
@@ -420,20 +455,24 @@ def build_daily_report(service: DataService, database: Database) -> dict[str, An
         round(sum(rate_changes) / len(rate_changes), 3) if rate_changes else None
     )
     funding_tone = (
-        "边际收紧"
-        if average_rate_change is not None and average_rate_change > 1
+        "变动待核验"
+        if average_rate_change is None
+        else "边际收紧"
+        if average_rate_change > 1
         else "边际转松"
-        if average_rate_change is not None and average_rate_change < -1
+        if average_rate_change < -1
         else "变化有限"
     )
 
     curve = _curve_summary(curves)
     ten_year_change = curve["ten_year_change_bp"]
     duration_tone = (
-        "长端收益率上行"
-        if ten_year_change is not None and ten_year_change > 0.5
+        "长端变动待核验"
+        if ten_year_change is None or curve["tenors"].get("10Y") is None
+        else "长端收益率上行"
+        if ten_year_change > 0.5
         else "长端收益率下行"
-        if ten_year_change is not None and ten_year_change < -0.5
+        if ten_year_change < -0.5
         else "长端窄幅波动"
     )
 
@@ -633,4 +672,5 @@ def build_daily_report(service: DataService, database: Database) -> dict[str, An
         },
         "research_workflow": research_workflow,
         "data_notes": list(dict.fromkeys(data_notes)),
+        "data_sources": data_sources,
     }

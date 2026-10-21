@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 import json
 import sqlite3
 
@@ -16,6 +16,24 @@ from app.models import (
     WatchlistCreate,
     WatchlistUpdate,
 )
+
+
+@pytest.fixture
+def history_clock(monkeypatch):
+    """Keep July fixtures inside their query/retention window on any test date."""
+    class FixedDate(date):
+        @classmethod
+        def today(cls):
+            return cls(2026, 7, 20)
+
+    class FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            value = cls(2026, 7, 20, 12)
+            return value.replace(tzinfo=tz) if tz else value
+
+    monkeypatch.setattr("app.database.date", FixedDate)
+    monkeypatch.setattr("app.database.datetime", FixedDatetime)
 
 
 def test_watchlist_and_alert_roundtrip(tmp_path) -> None:
@@ -166,7 +184,7 @@ def test_inferred_bond_codes_are_marked_for_verification_in_search(tmp_path) -> 
     assert database.search_instruments("240011")[0].subtitle == "需核验 · 国债"
 
 
-def test_trusted_curve_history_is_compacted_and_queryable(tmp_path) -> None:
+def test_trusted_curve_history_is_compacted_and_queryable(tmp_path, history_clock) -> None:
     database = Database(tmp_path / "test.db")
     dataset = Dataset(
         data={
@@ -219,7 +237,24 @@ def test_demo_or_stale_data_never_enters_history(tmp_path) -> None:
     assert database.history_stats()["points"] == 0
 
 
-def test_intraday_refresh_overwrites_same_daily_research_point(tmp_path) -> None:
+def test_market_history_window_includes_cutoff_day(tmp_path, history_clock) -> None:
+    database = Database(tmp_path / "history-window.db")
+    for observed in ("2026-06-19", "2026-06-20", "2026-07-20"):
+        database.record_market_history(
+            "money_rates",
+            Dataset(
+                data=[{"name": "Shibor O/N", "value": 1.4}],
+                meta=SourceMeta(
+                    source="test", observation_time=observed,
+                    fetched_at=datetime(2026, 7, 20, 12),
+                ),
+            ),
+        )
+    result = database.market_history("money_rates", "value", days=30)
+    assert result["dates"] == ["2026-06-20", "2026-07-20"]
+
+
+def test_intraday_refresh_overwrites_same_daily_research_point(tmp_path, history_clock) -> None:
     database = Database(tmp_path / "test.db")
     for observed, price in (
         ("2026-07-13T10:00:00", 108.1),
@@ -244,7 +279,7 @@ def test_intraday_refresh_overwrites_same_daily_research_point(tmp_path) -> None
     assert result["series"][0]["values"] == [108.6]
 
 
-def test_suspicious_rows_never_enter_research_history(tmp_path) -> None:
+def test_suspicious_rows_never_enter_research_history(tmp_path, history_clock) -> None:
     database = Database(tmp_path / "test.db")
     dataset = Dataset(
         data=[

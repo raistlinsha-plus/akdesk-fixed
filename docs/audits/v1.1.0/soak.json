@@ -1,0 +1,32 @@
+{
+  "status": "ok",
+  "started_at": "2026-10-21T17:25:38.024851Z",
+  "duration_seconds": 180.25,
+  "requested_duration_seconds": 180,
+  "cycles": 35,
+  "failures": [],
+  "resources": {
+    "rss_kib": {
+      "start": 112256,
+      "end": 33968,
+      "max": 112256
+    },
+    "threads": {
+      "start": 3,
+      "end": 3,
+      "max": 3
+    },
+    "file_descriptors": {
+      "start": 14,
+      "end": 14,
+      "max": 14
+    }
+  },
+  "database": {
+    "path": "akdesk-fixed.db",
+    "schema": 1600,
+    "quick_check": "ok",
+    "foreign_key_errors": 0
+  },
+  "backup_count": 4
+}
