@@ -15,7 +15,7 @@ import tempfile
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import quote, unquote, urlsplit
 
 try:
     from .generate_release_metadata import generate_metadata
@@ -23,6 +23,44 @@ except ImportError:
     from generate_release_metadata import generate_metadata
 
 ROOT = Path(__file__).resolve().parents[1]
+REPOSITORY_URL = "https://github.com/raistlinsha-plus/akdesk-fixed"
+RAW_ARCHIVE_URL = "https://raw.githubusercontent.com/raistlinsha-plus/akdesk-fixed/main"
+# These are reviewed release documents, not a recursive archive of every past
+# audit and its screenshots. Future releases must deliberately extend this list.
+ROOT_DOCUMENTS = {
+    "README.md",
+    "README_EN.md",
+    "CHANGELOG.md",
+    "ROADMAP.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+    "SECURITY.md",
+    "SUPPORT.md",
+    "THIRD_PARTY_NOTICES.md",
+    "DATA_USAGE.md",
+}
+BASELINE_DOCUMENTS = {
+    "docs/AKDesk-Fixed-v1.1.0-用户手册.md",
+    "docs/AKDesk-Fixed-v1.1.0-产品介绍.md",
+    "docs/AKDesk-Fixed-v1.1.0-测试用例清单.md",
+    "docs/AKDesk-Fixed-v1.0.0-用户手册.md",
+    "docs/examples/AKShare-一页固收简报.md",
+    "examples/README.md",
+}
+SYNTHETIC_MEDIA = {
+    Path("docs/media/v1.1.0") / name
+    for name in (
+        "01-overview.png",
+        "02-market-changes.png",
+        "03-evidence.png",
+        "04-curves.png",
+        "05-brief.png",
+        "video-poster.png",
+        "AKDesk-60秒导览.mp4",
+        "demo-tour.zh-CN.vtt",
+        "示例-固收简报.md",
+    )
+}
 EXECUTABLES = {
     Path("start-macos.command"),
     Path("start-macos-demo.command"),
@@ -107,6 +145,9 @@ def verify_version_consistency(version: str) -> None:
     )
     if f"V{version.upper()}" not in app_source:
         raise RuntimeError("前端版本标识没有同步")
+    release_source = (ROOT / "frontend" / "src" / "release.ts").read_text(encoding="utf-8")
+    if f'APP_VERSION = "{version}"' not in release_source:
+        raise RuntimeError("前端发布版本标识没有同步")
 
 
 def run_frontend_build() -> None:
@@ -114,35 +155,78 @@ def run_frontend_build() -> None:
 
 
 def documentation_files() -> set[Path]:
-    files = {
-        ROOT / "README.md",
-        ROOT / "CHANGELOG.md",
-        *ROOT.joinpath("docs").rglob("*.md"),
+    return {
+        path
+        for path in (
+            *(ROOT / name for name in ROOT_DOCUMENTS | BASELINE_DOCUMENTS),
+            *ROOT.joinpath("docs").glob("AKDesk-Fixed-v1.1.1-*.md"),
+        )
+        if path.is_file()
     }
-    queue = list(files)
-    while queue:
-        source = queue.pop()
-        text = source.read_text(encoding="utf-8")
-        for raw_target in MARKDOWN_LINK.findall(text):
-            target_text = raw_target.strip().strip("<>").split(maxsplit=1)[0]
-            if (
-                not target_text
-                or target_text.startswith(("#", "http://", "https://", "mailto:"))
-            ):
-                continue
-            target_text = unquote(target_text.split("#", 1)[0].split("?", 1)[0])
-            target = (source.parent / target_text).resolve()
-            try:
-                target.relative_to(ROOT)
-            except ValueError as error:
-                raise RuntimeError(f"{source}: 链接越出项目目录：{raw_target}") from error
+
+
+def _local_markdown_target(
+    source: Path, raw_target: str, root: Path
+) -> tuple[Path, str, tuple[int, int]] | None:
+    # Preserve optional angle brackets and Markdown titles when replacing a URL.
+    match = re.match(r"\s*(?:<([^>]+)>|(\S+))", raw_target)
+    if not match:
+        return None
+    group = 1 if match.group(1) is not None else 2
+    location = match.group(group)
+    parsed = urlsplit(location)
+    if parsed.scheme or parsed.netloc or not parsed.path:
+        return None
+    target = (source.parent / unquote(parsed.path)).resolve()
+    try:
+        target.relative_to(root.resolve())
+    except ValueError as error:
+        raise RuntimeError(f"{source}: 链接越出项目目录：{raw_target}") from error
+    suffix = (f"?{parsed.query}" if parsed.query else "") + (
+        f"#{parsed.fragment}" if parsed.fragment else ""
+    )
+    return target, suffix, match.span(group)
+
+
+def rewrite_stage_markdown_links(stage: Path) -> None:
+    """Point omitted documents/media to GitHub without changing source files."""
+    for destination in stage.rglob("*.md"):
+        source = ROOT / destination.relative_to(stage)
+        text = destination.read_text(encoding="utf-8")
+
+        def replace(match: re.Match[str]) -> str:
+            raw_target = match.group(1)
+            local = _local_markdown_target(source, raw_target, ROOT)
+            if local is None:
+                return match.group(0)
+            target, suffix, span = local
             if not target.exists():
                 raise RuntimeError(f"{source}: 本地链接不存在：{raw_target}")
-            if target.is_file() and target not in files:
-                files.add(target)
-                if target.suffix.lower() == ".md":
-                    queue.append(target)
-    return files
+            relative = target.relative_to(ROOT.resolve())
+            if (stage / relative).exists():
+                return match.group(0)
+            path = quote(relative.as_posix(), safe="/")
+            if match.group(0).startswith("!"):
+                archive = f"{RAW_ARCHIVE_URL}/{path}"
+            else:
+                kind = "tree" if target.is_dir() else "blob"
+                archive = f"{REPOSITORY_URL}/{kind}/main/{path}"
+            updated = raw_target[: span[0]] + archive + suffix + raw_target[span[1] :]
+            offset = match.start(1) - match.start()
+            whole = match.group(0)
+            return whole[:offset] + updated + whole[offset + len(raw_target) :]
+
+        rewritten = MARKDOWN_LINK.sub(replace, text)
+        if rewritten != text:
+            destination.write_text(rewritten, encoding="utf-8")
+
+
+def verify_markdown_links(root: Path) -> None:
+    for source in root.rglob("*.md"):
+        for raw_target in MARKDOWN_LINK.findall(source.read_text(encoding="utf-8")):
+            local = _local_markdown_target(source, raw_target, root)
+            if local is not None and not local[0].exists():
+                raise RuntimeError(f"{source}: 本地链接不存在：{raw_target}")
 
 
 def source_files() -> set[Path]:
@@ -150,11 +234,12 @@ def source_files() -> set[Path]:
         ROOT / "LICENSE",
         ROOT / "THIRD_PARTY_NOTICES.md",
         ROOT / "SBOM.cdx.json",
+        ROOT / "DATA_USAGE.md",
         ROOT / "backend" / "requirements.txt",
         ROOT / "backend" / "requirements.lock",
         ROOT / "scripts" / "preflight.py",
         ROOT / "scripts" / "build_demo_video.py",
-        *(ROOT / "docs" / "media" / "v1.1.0").rglob("*"),
+        *(ROOT / path for path in SYNTHETIC_MEDIA),
         *(ROOT / "examples").rglob("*.py"),
         ROOT / "examples" / "README.md",
         *(ROOT / item for item in EXECUTABLES),
@@ -187,6 +272,8 @@ def copy_to_stage(stage: Path) -> None:
         shutil.copy2(source, destination)
         if relative in EXECUTABLES:
             destination.chmod(0o755)
+    rewrite_stage_markdown_links(stage)
+    verify_markdown_links(stage)
 
 
 def scan_secrets(root: Path) -> None:
@@ -239,6 +326,7 @@ def verify_tree(stage: Path, version: str) -> dict[str, object]:
         Path("THIRD_PARTY_NOTICES.md"),
         Path("SBOM.cdx.json"),
         Path("README.md"),
+        Path("DATA_USAGE.md"),
         Path("RELEASE_MANIFEST.json"),
         *EXECUTABLES,
     }
@@ -256,6 +344,7 @@ def verify_tree(stage: Path, version: str) -> dict[str, object]:
         if not os.access(stage / executable, os.X_OK):
             raise RuntimeError(f"{executable} 不可执行")
     scan_secrets(stage)
+    verify_markdown_links(stage)
     manifest = json.loads(
         (stage / "RELEASE_MANIFEST.json").read_text(encoding="utf-8")
     )

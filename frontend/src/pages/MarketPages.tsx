@@ -39,6 +39,7 @@ import {
 import type { EnrichedWatchlistItem } from "../types";
 import { canWatchItem } from "../marketSafety";
 import { buildMarketTodayTasks } from "../experienceGuide";
+import { buildMarketCsv } from "../marketCsv";
 import {
   DASHBOARD_MODULE_LABELS,
   DASHBOARD_PRESETS,
@@ -1154,10 +1155,7 @@ export function BondsPage({ refreshSeed, initialQuery = "" }: PageProps) {
   );
 
   function exportCsv() {
-    const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-    const rows = [
-      ["债券代码", "代码状态", "债券名称", "类型", "成交净价", "最新收益率", "变动BP", "交易量"],
-      ...filtered.map((item) => [
+    const rows = filtered.map((item) => [
         item.code,
         item.code_verified === false ? "标准简称规则推导·需核验" : item.code ? "源提供" : "不可用",
         item.name,
@@ -1166,10 +1164,9 @@ export function BondsPage({ refreshSeed, initialQuery = "" }: PageProps) {
         item.yield,
         item.change_bp,
         item.volume,
-      ]),
-    ];
+      ]);
     const blob = new Blob(
-      ["\uFEFF" + rows.map((row) => row.map(escape).join(",")).join("\n")],
+      [buildMarketCsv(["债券代码", "代码状态", "债券名称", "类型", "成交净价", "最新收益率", "变动BP", "交易量"], rows, bonds.dataset?.meta)],
       { type: "text/csv;charset=utf-8" },
     );
     const url = URL.createObjectURL(blob);
@@ -1416,16 +1413,12 @@ export function ConvertiblesPage({ refreshSeed, initialQuery = "" }: PageProps) 
   );
 
   function exportCsv() {
-    const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-    const rows = [
-      ["转债代码", "数据层级", "转债名称", "正股", "现价", "涨跌幅", "转股价值", "溢价率", "双低", "YTM", "强赎状态"],
-      ...filtered.map((item) => [
+    const rows = filtered.map((item) => [
         item.code, item.data_tier === "price_only" ? "仅价格" : item.data_tier === "partial_comparison" ? "部分比价" : "完整比价", item.name, item.stock_name, item.price, item.change_pct,
         item.convert_value, item.premium_pct, item.double_low, item.ytm_pct, item.redeem_status,
-      ]),
-    ];
+      ]);
     const blob = new Blob(
-      ["\uFEFF" + rows.map((row) => row.map(escape).join(",")).join("\n")],
+      [buildMarketCsv(["转债代码", "数据层级", "转债名称", "正股", "现价", "涨跌幅", "转股价值", "溢价率", "双低", "YTM", "强赎状态"], rows, convertibles.dataset?.meta)],
       { type: "text/csv;charset=utf-8" },
     );
     const url = URL.createObjectURL(blob);

@@ -1,8 +1,8 @@
 # AKDesk Fixed 第三方组件声明
 
-> 对应版本：v1.1.0
+> 对应版本：v1.1.1
 >
-> 生成时间：2026-10-21T18:05:31.944636+00:00
+> 生成时间：2026-11-02T16:51:21.597814+00:00
 >
 > 本文件用于帮助识别随产品交付或构建的第三方组件；实际授权以各组件许可证原文为准。
 
@@ -10,7 +10,7 @@ AKDesk Fixed 自身采用 MIT License。运行时依赖及前端生产依赖如�
 
 | 生态 | 组件 | 版本 | 声明许可证 |
 | --- | --- | --- | --- |
-| PyPI | `akshare` | `1.19.1` | MIT |
+| PyPI | `akshare` | `1.20.22` | MIT |
 | PyPI | `annotated-doc` | `0.0.4` | MIT |
 | PyPI | `annotated-types` | `0.7.0` | OSI Approved / MIT License |
 | PyPI | `anyio` | `4.14.2` | MIT |
@@ -76,6 +76,7 @@ AKDesk Fixed 自身采用 MIT License。运行时依赖及前端生产依赖如�
 ## 数据和外部服务
 
 本声明不授予第三方数据的再分发权。AKShare / AKTools 访问的公开页面、FRED、World Bank、GDELT、AIHubMix 以及用户自行配置的数据或模型服务，分别受其自身条款约束。
+数据规则核验日期为 2026-11-02。软件 MIT 许可与数据权利分开；AKShare 的学术研究声明、FRED 存储与 AI 边界、World Bank 指标许可例外及 GDELT 媒体版权区别详见 [数据使用规则](./DATA_USAGE.md)。
 
 ## 无担保声明
 

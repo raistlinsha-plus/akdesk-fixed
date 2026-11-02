@@ -55,6 +55,7 @@ describe("one-page fixed-income brief", () => {
     expect(text).toContain("抓取 2026-07-27 16:20:00+08:00");
     expect(text).toContain("## 人工备注");
     expect(text).toContain("核对利差计算。");
+    expect(text).toContain("导出不等于获得再分发或商用授权");
   });
 
   it("does not allow a live label to hide a sample source", () => {

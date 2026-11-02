@@ -22,7 +22,8 @@ FRED_NOTICE = (
 )
 FRED_TERMS_URL = "https://fred.stlouisfed.org/legal/terms/"
 FRED_STORAGE_NOTICE = (
-    "FRED 观测值仅在当前请求中处理，不写入本地数据库；研究项目只保存序列与变换引用。"
+    "FRED 内容（含 API 元数据）仅在当前请求中展示，不缓存或归档；"
+    "项目仅保存用户选择的查询引用，不导出数值、不送入 AI。自备 Key 不豁免条款。"
 )
 
 

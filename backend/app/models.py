@@ -4,6 +4,7 @@ import json
 import re
 from datetime import datetime
 from typing import Any, Generic, Literal, TypeVar
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, Field, computed_field, model_validator
 
@@ -104,8 +105,37 @@ ResearchProjectObjectType = Literal[
 ResearchStatus = Literal["draft", "tracking", "formed", "review", "archived"]
 
 
+_FRED_SOURCE_TYPES = {
+    "fred", "fred_macro", "fred_chart", "fred_reference", "fred_series",
+    "fred_release", "fred_release_review", "fred_api",
+}
+_FRED_MARKER = re.compile(r"(?<![A-Za-z0-9_])FRED(?![A-Za-z0-9_])", re.IGNORECASE)
+_SOURCE_URL_TEXT = re.compile(r"https?://[^\s<>]+", re.IGNORECASE)
+
+
+def _fred_source_url(value: str) -> bool:
+    try:
+        parsed = urlsplit(value)
+        host = (parsed.hostname or "").lower().rstrip(".")
+        return parsed.scheme.lower() in {"http", "https"} and (
+            host == "stlouisfed.org" or host.endswith(".stlouisfed.org")
+        )
+    except ValueError:
+        return False
+
+
+def _fred_source_marker(value: str) -> bool:
+    # A word in another site's URL query is not a provider identifier. Detect
+    # genuine source hosts, then inspect only non-URL source-label text.
+    urls = _SOURCE_URL_TEXT.findall(value)
+    if any(_fred_source_url(url) for url in urls):
+        return True
+    label = _SOURCE_URL_TEXT.sub("", value).strip()
+    return label.lower() in _FRED_SOURCE_TYPES or bool(_FRED_MARKER.search(label))
+
+
 def _is_fred_evidence(source_summary: str, payload: dict[str, Any]) -> bool:
-    if "FRED" in source_summary.upper():
+    if _fred_source_marker(source_summary):
         return True
     pending: list[Any] = [payload]
     while pending:
@@ -113,11 +143,14 @@ def _is_fred_evidence(source_summary: str, payload: dict[str, Any]) -> bool:
         if isinstance(current, dict):
             for key, value in current.items():
                 normalized_key = str(key).lower()
-                text = str(value or "").upper() if not isinstance(value, (dict, list)) else ""
-                if normalized_key in {"provider", "source", "adapter"} and "FRED" in text:
+                text = str(value or "") if not isinstance(value, (dict, list)) else ""
+                if normalized_key in {
+                    "provider", "source", "adapter", "source_type", "component_type",
+                    "source_summary",
+                } and _fred_source_marker(text):
                     return True
                 if normalized_key in {"source_url", "original_source_url", "terms_url"} and (
-                    "STLOUISFED.ORG" in text or "FRED" in text
+                    _fred_source_url(text)
                 ):
                     return True
                 pending.append(value)
@@ -126,29 +159,119 @@ def _is_fred_evidence(source_summary: str, payload: dict[str, Any]) -> bool:
     return False
 
 
-def _fred_payload_contains_values(payload: dict[str, Any]) -> bool:
-    forbidden = {
-        "actual",
-        "actual_value",
-        "chart",
-        "data",
-        "data_points",
-        "dates",
-        "observation",
-        "observations",
-        "value",
-        "values",
+FRED_REFERENCE_TERMS_URL = "https://fred.stlouisfed.org/legal/terms/"
+FRED_REFERENCE_NOTICE = (
+    "仅保存用户选择的查询参数与应用生成的链接，不保存 FRED 返回的数值、元数据或观测区间。"
+)
+_FRED_SERIES_ID = re.compile(r"^[A-Z0-9][A-Z0-9._-]{0,39}$")
+_FRED_REFERENCE_KEYS = {
+    "schema_version", "storage_mode", "provider", "frozen", "captured_at",
+    "series", "transform", "years", "terms_url", "notice",
+}
+_FRED_TRANSFORMS = {"level", "change", "yoy", "normalize", "zscore"}
+
+
+def fred_reference_payload(
+    payload: dict[str, Any],
+    *,
+    strict: bool = True,
+    captured_at: str | None = None,
+    source_summary: str = "",
+) -> dict[str, Any]:
+    """Only user-selected parameters and locally constructed links may persist.
+
+    Non-strict mode is solely for calibrating older structured FRED evidence.
+    It never copies API names, notes, units, timestamps or arbitrary extra keys.
+    User-authored project titles/notes live outside this machine-owned payload.
+    """
+    if strict:
+        if payload.get("storage_mode") != "reference_only":
+            raise ValueError("FRED 研究证据仅允许保存引用")
+        if set(payload) - _FRED_REFERENCE_KEYS:
+            raise ValueError("FRED 引用仅允许查询参数，不得包含观测值或 API 元数据")
+        if payload.get("schema_version", 3) not in (2, 3):
+            raise ValueError("FRED 引用版本不受支持")
+        if str(payload.get("provider", "FRED")).upper() != "FRED":
+            raise ValueError("FRED 引用来源无效")
+        if payload.get("frozen", False) is not False:
+            raise ValueError("FRED 引用不得保存冻结快照")
+        if payload.get("terms_url", FRED_REFERENCE_TERMS_URL) != FRED_REFERENCE_TERMS_URL:
+            raise ValueError("FRED 引用条款链接无效")
+        if payload.get("notice", FRED_REFERENCE_NOTICE) != FRED_REFERENCE_NOTICE:
+            raise ValueError("FRED 引用说明不得包含 API 内容")
+    chart = payload.get("chart")
+    chart = chart if isinstance(chart, dict) else {}
+    rows = payload.get("series", chart.get("series", []))
+    if strict and (not isinstance(rows, list) or len(rows) > 6):
+        raise ValueError("FRED 引用需使用最多 6 个序列标识")
+    references: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, dict):
+            if strict:
+                raise ValueError("FRED 引用序列格式无效")
+            continue
+        if strict and set(row) - {"series_id", "source_url"}:
+            raise ValueError("FRED 引用序列不得包含观测值或 API 元数据")
+        series_id = str(row.get("series_id") or row.get("key") or "").strip().upper()
+        if not _FRED_SERIES_ID.fullmatch(series_id):
+            if strict:
+                raise ValueError("FRED 引用序列标识无效")
+            continue
+        url = f"https://fred.stlouisfed.org/series/{series_id}"
+        if strict and row.get("source_url", url) != url:
+            raise ValueError("FRED 引用只允许应用生成的序列链接")
+        if series_id not in seen:
+            references.append({"series_id": series_id, "source_url": url})
+            seen.add(series_id)
+        if len(references) == 6:
+            break
+    if not strict and not references:
+        for candidate in source_summary.split("·", 1)[-1].split(","):
+            series_id = candidate.strip().upper()
+            if _FRED_SERIES_ID.fullmatch(series_id) and series_id not in seen:
+                references.append({
+                    "series_id": series_id,
+                    "source_url": f"https://fred.stlouisfed.org/series/{series_id}",
+                })
+                seen.add(series_id)
+            if len(references) == 6:
+                break
+    transform = payload.get("transform", chart.get("transform", "level"))
+    if not isinstance(transform, str) or transform not in _FRED_TRANSFORMS:
+        if strict:
+            raise ValueError("FRED 引用变换方法无效")
+        transform = "level"
+    years = payload.get("years", chart.get("years"))
+    if years is not None and (
+        isinstance(years, bool) or not isinstance(years, int) or not 1 <= years <= 50
+    ):
+        if strict:
+            raise ValueError("FRED 引用年份范围无效")
+        years = None
+    local_time = payload.get("captured_at") or captured_at
+    if local_time:
+        try:
+            local_time = datetime.fromisoformat(str(local_time)).isoformat()
+        except ValueError as exc:
+            if strict:
+                raise ValueError("FRED 引用本地保存时间无效") from exc
+            local_time = captured_at
+    result: dict[str, Any] = {
+        "schema_version": 3,
+        "storage_mode": "reference_only",
+        "provider": "FRED",
+        "frozen": False,
+        "series": references,
+        "transform": transform,
+        "terms_url": FRED_REFERENCE_TERMS_URL,
+        "notice": FRED_REFERENCE_NOTICE,
     }
-    pending: list[Any] = [payload]
-    while pending:
-        current = pending.pop()
-        if isinstance(current, dict):
-            if forbidden.intersection(str(key).lower() for key in current):
-                return True
-            pending.extend(current.values())
-        elif isinstance(current, list):
-            pending.extend(current)
-    return False
+    if years is not None:
+        result["years"] = years
+    if local_time:
+        result["captured_at"] = local_time
+    return result
 
 
 class WatchlistCreate(BaseModel):
@@ -196,10 +319,12 @@ class ResearchEvidenceCreate(BaseModel):
         if len(encoded) > 128 * 1024:
             raise ValueError("单条研究证据不得超过 128 KB")
         if _is_fred_evidence(self.source_summary, self.payload):
-            if self.payload.get("storage_mode") != "reference_only":
-                raise ValueError("FRED 研究证据仅允许保存引用，不保存观测值")
-            if _fred_payload_contains_values(self.payload):
-                raise ValueError("FRED 引用证据不得包含观测值")
+            self.payload = fred_reference_payload(self.payload)
+            # These fields otherwise silently persist API-derived date ranges.
+            self.observation_start = None
+            self.observation_end = None
+            ids = [item["series_id"] for item in self.payload["series"]]
+            self.source_summary = "FRED" + (" · " + ", ".join(ids) if ids else "")
         return self
 
 
@@ -706,10 +831,18 @@ class ReleaseReviewUpdate(BaseModel):
     reviewed_realtime_start: str | None = Field(default=None, max_length=40)
     reviewed_at: datetime | None = None
 
+    @model_validator(mode="after")
+    def reject_archived_fred_vintage(self):
+        if self.reviewed_realtime_start is not None:
+            if self.reviewed_realtime_start.strip():
+                raise ValueError("FRED 官方版本时点不得持久化；仅记录用户本地复盘时间")
+            self.reviewed_realtime_start = None
+        return self
+
 
 class ReleaseReviewItem(ReleaseReviewCreate):
     id: int
-    reviewed_realtime_start: str | None = None
+    reviewed_realtime_start: None = None
     reviewed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime

@@ -2,7 +2,9 @@
 
 Turn funding rates, yield curves and CGB futures changes into a concise fixed-income brief with sources and timestamps.
 
-[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#local-installation) [![v1.1.0](https://img.shields.io/badge/version-v1.1.0-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)
+[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#local-installation) [![v1.1.1](https://img.shields.io/badge/version-v1.1.1-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)
+
+**v1.1.1 data-usage update (2026-11-03):** adopts AKShare 1.20.22 and upstream rate-limit cooldowns. FRED numeric CSV export is replaced by query-reference Markdown; FRED-origin content is excluded from AI processing as a conservative product policy. A personal key or an MIT software license does not grant data rights. See [data-usage boundaries](./DATA_USAGE.md) and [upgrade notes](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md) (Chinese).
 
 **[Try the browser demo](https://raistlinsha-plus.github.io/akdesk-fixed/)** · **[Download the local app](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)** · [中文](./README.md) · [Feedback](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)
 
@@ -21,7 +23,7 @@ Targets Apple Silicon MacBook Air, **macOS 12+ and Python 3.11–3.13**. Initial
 macOS 12+ is a compatibility target. This release was physically tested on macOS 26.6.2 / Apple Silicon; other OS versions have not each been tested in this cycle.
 
 1. Install a supported Python; with Homebrew, use `brew install python@3.13`.
-2. Select the `AKDesk-Fixed-v1.1.0.zip` asset in [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest), verify its SHA-256 and unzip the whole package.
+2. Select the `AKDesk-Fixed-v1.1.1.zip` asset in [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest), verify its SHA-256 and unzip the whole package.
 3. Double-click `start-macos.command`. It runs local checks, installs locked dependencies and opens `http://127.0.0.1:8765`.
 
 GitHub's automatic **Source code** archive is for source inspection and development. It is different from the official ZIP checked for release manifest, built assets and executable permissions; source users may need to build the UI or restore script permissions. Available downloads and verification results are recorded in the Release page and [release/acceptance record](./docs/AKDesk-Fixed-v1.1.0-发布与验收记录.md).
@@ -43,7 +45,7 @@ The launcher checks Python, release files, directory permissions, disk space and
 - Credit Watch R2, FX, macro charts, sovereign comparisons and external event leads.
 - Explicit sample/mixed/unknown provenance, cache status and missing values. Missing inputs do not become zero or a market-direction conclusion.
 
-Temporary notes can accompany the brief's Markdown and print/PDF output but are not automatically saved as research notes. All earlier features remain; see the [v1.1 introduction](./docs/AKDesk-Fixed-v1.1.0-产品介绍.md) and [full feature manual](./docs/AKDesk-Fixed-v1.0.0-用户手册.md), currently in Chinese.
+Temporary notes can accompany the brief's Markdown and print/PDF output but are not automatically saved as research notes. Core market and research workflows remain; FRED export and review markers are restricted by the [v1.1.1 update](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md). See also the [v1.1 introduction](./docs/AKDesk-Fixed-v1.1.0-产品介绍.md) and [full feature manual](./docs/AKDesk-Fixed-v1.0.0-用户手册.md), currently in Chinese.
 
 ## Data sources and optional services
 

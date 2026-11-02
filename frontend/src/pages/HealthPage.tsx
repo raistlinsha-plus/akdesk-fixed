@@ -269,7 +269,7 @@ export function HealthPage() {
         <div>
           <strong>公开数据边界</strong>
           <p>
-            AKShare、FRED、World Bank 与 GDELT 数据仅供研究参考；FRED 观测值按请求获取且不落盘，World Bank 数据按 CC BY 4.0 署名持久缓存，GDELT 只缓存事件元数据且必须打开原文核验。本终端不会把缓存、降级、演示数据或媒体线索伪装成交易级实时行情与事实结论。
+            数据质量、连接状态和使用授权分开核验。FRED 内容按请求展示，不缓存、不做数值导出或 AI 处理；World Bank 默认开放许可存在指标例外；GDELT 只缓存事件元数据，不授予新闻正文版权。机构或商业使用须核验原始数据源条款。本终端不把缓存、演示数据或媒体线索伪装成实时行情与事实结论。
           </p>
         </div>
       </div>
@@ -338,6 +338,7 @@ function ConnectorCard({ connector }: { connector: ConnectorItem }) {
           <a href={connector.license_url} target="_blank" rel="noreferrer">
             {connector.license_name} <ExternalLink size={12} />
           </a>
+          <a href={connector.terms_url} target="_blank" rel="noreferrer">数据使用条款 <ExternalLink size={12} /></a>
         </div>
         <small>署名：{connector.attribution}</small>
       </details>
@@ -347,9 +348,9 @@ function ConnectorCard({ connector }: { connector: ConnectorItem }) {
 
 function storageLabel(mode: ConnectorItem["storage_mode"]): string {
   return {
-    persistent_cache: "许可署名缓存",
+    persistent_cache: "本地缓存·需核对许可",
     request_scoped: "请求级，不落盘",
-    mixed_upstream_cache: "质量门后缓存",
+    mixed_upstream_cache: "质量门后缓存·非授权认证",
     metadata_cache: "仅元数据缓存",
   }[mode];
 }

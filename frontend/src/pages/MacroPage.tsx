@@ -261,7 +261,7 @@ export function MacroPage({
       {statusMessage ? <p className="inline-status" role="status">{statusMessage}</p> : null}
       {settings ? (
         <p className="provider-notice">
-          {settings.notice} {settings.storage_notice} <a href={settings.terms_url} target="_blank" rel="noreferrer">查看完整使用条款 <ExternalLink size={11} /></a>
+          {settings.notice} {settings.storage_notice} 使用 FRED 功能即同意受 FRED API 使用条款约束；还须核验各序列版权。 <a href={settings.terms_url} target="_blank" rel="noreferrer">查看完整使用条款 <ExternalLink size={11} /></a>
         </p>
       ) : null}
       {error ? <ErrorState message={error} /> : null}

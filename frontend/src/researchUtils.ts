@@ -1,5 +1,4 @@
 import type {
-  Dataset,
   MacroChartData,
   MarketResearchSignal,
   ResearchStatus,
@@ -39,90 +38,70 @@ export function shanghaiDate(now = new Date()): string {
   return `${value.year}-${value.month}-${value.day}`;
 }
 
+export interface FredChartQuery {
+  seriesIds: string[];
+  years: number;
+  transform: MacroChartData["transform"];
+}
+
+const fredTermsUrl = "https://fred.stlouisfed.org/legal/terms/";
+const fredReferenceNotice = "仅保存用户选择的查询参数与应用生成的链接，不保存 FRED 返回的数值、元数据或观测区间。";
+
 export function buildChartEvidence(
-  chart: Dataset<MacroChartData>,
-  seriesIds: string[],
+  query: FredChartQuery,
   title: string,
   capturedAt = new Date().toISOString(),
 ) {
+  const seriesIds = [...new Set(query.seriesIds.map((id) => id.trim().toUpperCase()))];
+  if (!seriesIds.length || seriesIds.length > 6 || seriesIds.some((id) => !/^[A-Z0-9][A-Z0-9._-]{0,39}$/.test(id))) {
+    throw new Error("FRED 引用序列标识无效");
+  }
+  if (!Number.isInteger(query.years) || query.years < 1 || query.years > 50) {
+    throw new Error("FRED 引用年份范围无效");
+  }
   return {
     evidence_type: "chart" as const,
     title,
     payload: {
-      schema_version: 2,
+      schema_version: 3,
       storage_mode: "reference_only",
       provider: "FRED",
       frozen: false,
       captured_at: capturedAt,
-      series: chart.data.series.map((item) => ({
-        series_id: item.key,
-        name: item.name,
-        units: item.units,
-        frequency: item.frequency,
-        attribution: item.attribution,
-        source_url: item.source_url,
-        source_organization: item.source_organization,
-        original_source_url: item.original_source_url,
-        last_updated: item.last_updated,
+      series: seriesIds.map((id) => ({
+        series_id: id,
+        source_url: `https://fred.stlouisfed.org/series/${id}`,
       })),
-      transform: chart.data.transform,
-      transform_source: chart.data.transform_source,
-      years: chart.data.years,
-      terms_url: chart.data.terms_url,
-      notice: "FRED 证据只保存序列与变换引用；重新打开时会实时获取当前版本。",
+      transform: query.transform,
+      years: query.years,
+      terms_url: fredTermsUrl,
+      notice: fredReferenceNotice,
     },
     source_summary: "FRED · " + seriesIds.join(", "),
-    observation_start: chart.data.dates[0] || null,
-    observation_end: chart.data.dates[chart.data.dates.length - 1] || null,
+    observation_start: null,
+    observation_end: null,
   };
 }
 
-function csvCell(value: unknown): string {
-  return `"${String(value ?? "").replaceAll('"', '""')}"`;
-}
-
-export function buildMacroCsv(chart: Dataset<MacroChartData>): string {
-  const rows: unknown[][] = [
-    ["# AKDesk Fixed FRED personal research export"],
-    ["# generated_at", chart.meta.fetched_at],
-    ["# transform", chart.data.transform],
-    ["# transform_source", chart.data.transform_source],
-    ["# storage_mode", "user_requested_export"],
-    ["# notice", "Uses the FRED API; not endorsed or certified by the Federal Reserve Bank of St. Louis."],
-    ["# terms", chart.data.terms_url],
-  ];
-  chart.data.series.forEach((item) => {
-    rows.push([
-      "# series",
-      item.key,
-      item.name,
-      item.units || "",
-      item.frequency || "",
-      item.source_organization || "",
-      item.attribution || "",
-      item.source_url || "",
-      item.original_source_url || "",
-      item.last_updated || "",
-      item.fetched_at || "",
-    ]);
-  });
-  rows.push([
-    "date",
-    ...chart.data.series.flatMap((item) => [
-      item.key,
-      `${item.key}_realtime_start`,
-      `${item.key}_realtime_end`,
-    ]),
-  ]);
-  chart.data.dates.forEach((observed, index) => {
-    rows.push([
-      observed,
-      ...chart.data.series.flatMap((item) => [
-        item.values[index] ?? "",
-        item.realtime_start?.[index] ?? "",
-        item.realtime_end?.[index] ?? "",
-      ]),
-    ]);
-  });
-  return rows.map((row) => row.map(csvCell).join(",")).join("\n");
+export function buildMacroReferenceMarkdown(
+  query: FredChartQuery,
+  capturedAt = new Date().toISOString(),
+): string {
+  const reference = buildChartEvidence(query, "FRED 查询引用", capturedAt).payload;
+  return [
+    "# AKDesk Fixed · FRED 查询引用",
+    "",
+    `- 用户选择的时间范围：最近 ${reference.years} 年`,
+    `- 用户选择的变换：${reference.transform}`,
+    `- 本地记录时间：${reference.captured_at}`,
+    `- [FRED 使用条款](${fredTermsUrl})`,
+    "",
+    "## 序列链接",
+    ...reference.series.map((item) => `- [${item.series_id}](${item.source_url})`),
+    "",
+    fredReferenceNotice,
+    "这不是数据快照；重新查询可能得到修订后的版本。不得把 FRED 内容粘贴进 AI 请求。",
+    "This product uses the FRED® API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.",
+    "",
+  ].join("\n");
 }

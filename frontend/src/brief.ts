@@ -1,4 +1,5 @@
 import type { DailyReport } from "./types";
+import { DATA_USAGE_NOTICE } from "./dataUsage";
 
 export type BriefMode = "example" | "live" | "mixed" | "unknown";
 
@@ -225,7 +226,7 @@ export function briefMarkdown(document: BriefDocument, notes = ""): string {
     }) : ["- 未提供逐源出处，当前简报待核验。"]),
   ];
   if (notes.trim()) lines.push("", "## 人工备注", "", markdownText(notes.trim()));
-  lines.push("", "仅供个人研究参考，不构成投资建议。", "");
+  lines.push("", DATA_USAGE_NOTICE, "仅供个人研究参考，不构成投资建议。", "");
   return lines.join("\n");
 }
 

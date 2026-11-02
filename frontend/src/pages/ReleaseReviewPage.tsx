@@ -92,11 +92,11 @@ export function ReleaseReviewPage() {
   }
 
   async function markReviewed() {
-    const realtime = evaluation?.actual.realtime_start; if (!selected || !realtime) return;
+    if (!selected || !evaluation) return;
     try {
-      const saved = await apiPost<ReleaseReview>(`/release-reviews/${selected.id}/mark-reviewed`, { realtime_start: realtime });
+      const saved = await apiPost<ReleaseReview>(`/release-reviews/${selected.id}/mark-reviewed`, {});
       setReviews((current) => current.map((item) => item.id === saved.id ? saved : item));
-      setEvaluation((current) => current ? { ...current, revision_status: "unchanged", review: saved } : current);
+      setEvaluation((current) => current ? { ...current, revision_status: "not_compared", review: saved } : current);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "版本标记失败"); }
   }
 
@@ -135,10 +135,10 @@ export function ReleaseReviewPage() {
     {selected ? <Panel title={selected.title} eyebrow="ACTUAL VS EXPECTED" action={<div className="row-actions"><button className="icon-button" onClick={() => beginEdit(selected)} aria-label="编辑发布复盘"><Pencil size={14} /></button><button className="icon-button" onClick={() => copyReview(selected)} aria-label="复制发布复盘"><Copy size={14} /></button><button className="icon-button danger" onClick={remove} aria-label="删除发布复盘"><Trash2 size={14} /></button></div>}>
       <div className="release-evaluation-toolbar"><span>预期 {selected.expected_value} {selected.expected_unit} · 观测期 {selected.observation_period}</span><button className="primary-button" onClick={evaluate} disabled={evaluating}>{evaluating ? <LoaderCircle className="spin" size={14} /> : <RefreshCcw size={14} />} 请求官方实际值</button></div>
       {evaluation ? <div className="release-evaluation">
-        <div className="metrics-grid"><article className="metric-card"><span>预期</span><strong>{selected.expected_value}</strong></article><article className="metric-card"><span>实际</span><strong>{formatNumber(evaluation.actual.value, 4)}</strong></article><article className="metric-card"><span>偏差</span><strong>{formatNumber(evaluation.surprise, 4)}</strong></article><article className="metric-card"><span>版本</span><strong>{evaluation.revision_status === "official_version_changed" ? "官方版本变化" : evaluation.revision_status === "unchanged" ? "未变化" : "未标记"}</strong></article></div>
+        <div className="metrics-grid"><article className="metric-card"><span>预期</span><strong>{selected.expected_value}</strong></article><article className="metric-card"><span>实际</span><strong>{formatNumber(evaluation.actual.value, 4)}</strong></article><article className="metric-card"><span>偏差</span><strong>{formatNumber(evaluation.surprise, 4)}</strong></article><article className="metric-card"><span>复盘记录</span><strong>{evaluation.revision_status === "not_compared" ? "已记录时间" : "未标记"}</strong></article></div>
         <p className="warning-banner">{evaluation.storage_notice}</p>
         <div className="market-window-grid">{evaluation.market_window.series.map((item) => <article key={`${item.adapter}-${item.series_key}-${item.metric}`}><strong>{item.label}</strong><span>{String(item.before?.observation_time || "—")} → {String(item.after?.observation_time || "—")}</span><small>变化 {formatNumber(item.change, 4)}</small></article>)}</div>
-        <div className="panel-button-row"><small>vintage {evaluation.actual.realtime_start || "—"} · 请求 {formatDateTime(evaluation.actual.fetched_at)}</small><button className="secondary-button" onClick={markReviewed} disabled={!evaluation.actual.realtime_start}><CheckCircle2 size={14} /> 标记本次版本已复盘</button></div>
+        <div className="panel-button-row"><small>当前响应 vintage {evaluation.actual.realtime_start || "—"}（不保存） · 请求 {formatDateTime(evaluation.actual.fetched_at)}</small><button className="secondary-button" onClick={markReviewed}><CheckCircle2 size={14} /> 标记已复盘（仅本地时间）</button></div>
       </div> : null}
     </Panel> : null}
   </div>;

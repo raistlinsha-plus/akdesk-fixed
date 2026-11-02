@@ -148,8 +148,8 @@ def test_evidence_basket_commit_links_object_and_builds_cross_source_timeline(
                 "storage_mode": "reference_only",
                 "provider": "FRED",
                 "series": [
-                    {"series_id": "DGS10", "name": "美国国债 10Y"},
-                    {"series_id": "DFII10", "name": "美国实际利率 10Y"},
+                    {"series_id": "DGS10"},
+                    {"series_id": "DFII10"},
                 ],
                 "transform": "level",
             },

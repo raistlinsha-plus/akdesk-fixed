@@ -65,6 +65,85 @@ class SourceCircuitOpenError(RuntimeError):
     pass
 
 
+PUSH2_SOURCE = "eastmoney_push2"
+PUSH2_COOLDOWN_SECONDS = 300.0
+PUSH2_COOLDOWN_ENV = "AKDESK_PUSH2_COOLDOWN_UNTIL"
+LiveResult = (
+    tuple[Any, str | None]
+    | tuple[Any, str | None, list[str]]
+    | tuple[Any, str | None, list[str], dict[str, Any]]
+)
+
+
+class SourceRateLimitError(RuntimeError):
+    """A structured upstream limit, preserved across worker boundaries."""
+
+    def __init__(
+        self,
+        *,
+        upstream_source: str | None = None,
+        cooldowns: dict[str, float] | None = None,
+    ) -> None:
+        super().__init__("上游限流，请等待冷却结束后再试。")
+        self.upstream_source = upstream_source
+        self.cooldowns = cooldowns or {}
+
+
+def is_rate_limit_error(exc: Exception) -> bool:
+    """Do not mistake an arbitrary message containing '429' for a limit."""
+    if isinstance(exc, SourceRateLimitError):
+        return True
+    return any(
+        cls.__name__ in {"RateLimitError", "Push2RateLimitError"}
+        and cls.__module__.startswith("akshare.")
+        for cls in type(exc).__mro__
+    )
+
+
+def _rate_limit_source(exc: Exception) -> str | None:
+    if isinstance(exc, SourceRateLimitError):
+        return exc.upstream_source or (
+            PUSH2_SOURCE if _validated_cooldowns(exc.cooldowns) else None
+        )
+    if any(
+        cls.__name__ == "Push2RateLimitError"
+        and cls.__module__.startswith("akshare.")
+        for cls in type(exc).__mro__
+    ):
+        return PUSH2_SOURCE
+    return None
+
+
+def _validated_cooldowns(value: Any) -> dict[str, float]:
+    if not isinstance(value, dict):
+        return {}
+    until = value.get(PUSH2_SOURCE)
+    if isinstance(until, bool) or not isinstance(until, (int, float)):
+        return {}
+    if not math.isfinite(until) or until <= time.time():
+        return {}
+    return {PUSH2_SOURCE: float(until)}
+
+
+def source_error_payload(
+    exc: Exception, *, upstream_source: str | None = None
+) -> dict[str, Any]:
+    limited = is_rate_limit_error(exc)
+    payload: dict[str, Any] = {
+        "error": (
+            "上游限流，请等待冷却结束后再试。"
+            if limited
+            else DataService._safe_message(exc)
+        ),
+        "error_type": "rate_limit" if limited else "source_error",
+        "rate_limited": limited,
+    }
+    source = upstream_source or _rate_limit_source(exc)
+    if limited and source == PUSH2_SOURCE:
+        payload["upstream_source"] = source
+    return payload
+
+
 SOURCE_RESULT_MARKER = "__AKDESK_SOURCE_RESULT__="
 AUX_RESULT_MARKER = "__AKDESK_AUX_RESULT__="
 
@@ -95,7 +174,8 @@ class _IsolatedSourceRunner:
         *,
         execution_timeout: float,
         queue_timeout: float,
-    ) -> tuple[Any, str | None] | tuple[Any, str | None, list[str]]:
+        upstream_cooldowns: dict[str, float] | None = None,
+    ) -> LiveResult:
         with self._state_lock:
             self._waiting += 1
         acquired = self._slots.acquire(timeout=queue_timeout)
@@ -109,6 +189,12 @@ class _IsolatedSourceRunner:
             )
         try:
             env = _trusted_subprocess_env()
+            # A fallback success must not forget a limit detected in an earlier
+            # isolated process. Only the convertible primary uses push2 here.
+            cooldowns = _validated_cooldowns(upstream_cooldowns)
+            env.pop(PUSH2_COOLDOWN_ENV, None)
+            if adapter == "convertibles" and cooldowns:
+                env[PUSH2_COOLDOWN_ENV] = str(cooldowns[PUSH2_SOURCE])
             env.update(
                 {
                     "AKDESK_DEMO": "0",
@@ -153,9 +239,33 @@ class _IsolatedSourceRunner:
                 )
             payload = json.loads(marker_line.removeprefix(SOURCE_RESULT_MARKER))
             if not payload.get("ok"):
+                if (
+                    payload.get("rate_limited") is True
+                    or payload.get("error_type") == "rate_limit"
+                ):
+                    raise SourceRateLimitError(
+                        upstream_source=(
+                            PUSH2_SOURCE
+                            if payload.get("upstream_source") == PUSH2_SOURCE
+                            else None
+                        ),
+                        cooldowns=_validated_cooldowns(
+                            payload.get("upstream_cooldowns")
+                        ),
+                    )
                 raise RuntimeError(payload.get("error") or "隔离数据进程调用失败")
             warnings = payload.get("warnings") or []
             result = (payload["data"], payload.get("observation_time"))
+            metadata = {
+                key: payload[key]
+                for key in ("source", "source_url")
+                if isinstance(payload.get(key), str) and payload[key]
+            }
+            cooldowns = _validated_cooldowns(payload.get("upstream_cooldowns"))
+            if cooldowns:
+                metadata["upstream_cooldowns"] = cooldowns
+            if metadata:
+                return (*result, warnings, metadata)
             return (*result, warnings) if warnings else result
         finally:
             with self._state_lock:
@@ -245,6 +355,8 @@ class DataService:
         self._circuit_failures: dict[str, int] = {}
         self._circuit_open_until: dict[str, float] = {}
         self._circuit_half_open: set[str] = set()
+        self._upstream_cooldown_until: dict[str, float] = {}
+        self._rate_limited_adapters: set[str] = set()
         self.circuit_threshold = max(
             1, int(os.getenv("AKDESK_CIRCUIT_THRESHOLD", "3"))
         )
@@ -265,6 +377,12 @@ class DataService:
         self._emitted_cache_versions: set[tuple[str, str]] = set()
         self._event_errors: dict[str, str] = {}
         self.is_source_worker = os.getenv("AKDESK_SOURCE_WORKER", "0") == "1"
+        if self.is_source_worker:
+            try:
+                until = float(os.getenv(PUSH2_COOLDOWN_ENV, "0"))
+            except ValueError:
+                until = 0.0
+            self._merge_upstream_cooldowns({PUSH2_SOURCE: until})
         self._source_runner = _IsolatedSourceRunner(
             int(os.getenv("AKDESK_SOURCE_CONCURRENCY", "2"))
         )
@@ -285,6 +403,44 @@ class DataService:
 
             self._ak = ak
         return self._ak
+
+    def upstream_cooldowns(self) -> dict[str, float]:
+        """Safe, process-local cooldown metadata; not an upstream quota promise."""
+        with self._circuit_lock:
+            self._upstream_cooldown_until = _validated_cooldowns(
+                self._upstream_cooldown_until
+            )
+            return dict(self._upstream_cooldown_until)
+
+    def _merge_upstream_cooldowns(self, cooldowns: Any) -> None:
+        with self._circuit_lock:
+            for source, until in _validated_cooldowns(cooldowns).items():
+                self._upstream_cooldown_until[source] = max(
+                    until, self._upstream_cooldown_until.get(source, 0.0)
+                )
+
+    def _remember_rate_limit(
+        self, exc: Exception, *, upstream_source: str | None = None
+    ) -> None:
+        source = upstream_source or _rate_limit_source(exc)
+        with self._circuit_lock:
+            already_cooling = source in self.upstream_cooldowns()
+            if isinstance(exc, SourceRateLimitError):
+                self._merge_upstream_cooldowns(exc.cooldowns)
+            if source == PUSH2_SOURCE and not already_cooling:
+                # A first failure establishes a full local window even if a
+                # worker supplied an older/shorter deadline. Replayed failures
+                # while using the fallback must not keep extending the window.
+                self._merge_upstream_cooldowns(
+                    {source: time.time() + PUSH2_COOLDOWN_SECONDS}
+                )
+
+    def source_error_type(self, adapter: str) -> str:
+        with self._circuit_lock:
+            limited = adapter in self._rate_limited_adapters
+        if adapter == "convertibles" and self.upstream_cooldowns():
+            limited = True
+        return "rate_limit" if limited else "source_error"
 
     def _update_health(
         self,
@@ -989,17 +1145,25 @@ class DataService:
     def _call_with_timeout(
         self,
         adapter: str,
-        loader: Callable[
-            [], tuple[Any, str | None] | tuple[Any, str | None, list[str]]
-        ],
-    ) -> tuple[Any, str | None] | tuple[Any, str | None, list[str]]:
+        loader: Callable[[], LiveResult],
+    ) -> LiveResult:
         if self.is_source_worker:
             return loader()
-        return self._source_runner.call(
-            adapter,
-            execution_timeout=self.timeout_seconds,
-            queue_timeout=self.queue_timeout_seconds,
-        )
+        try:
+            result = self._source_runner.call(
+                adapter,
+                execution_timeout=self.timeout_seconds,
+                queue_timeout=self.queue_timeout_seconds,
+                upstream_cooldowns=self.upstream_cooldowns(),
+            )
+        except SourceRateLimitError as exc:
+            self._remember_rate_limit(exc)
+            raise
+        if len(result) > 3:
+            cooldowns = _validated_cooldowns(result[3].get("upstream_cooldowns"))
+            if cooldowns:
+                self._remember_rate_limit(SourceRateLimitError(cooldowns=cooldowns))
+        return result
 
     def _call_aux_worker(
         self, task: str, *, timeout: float = 10
@@ -1027,6 +1191,17 @@ class DataService:
             raise RuntimeError(detail or f"扩展数据进程异常退出（{completed.returncode}）")
         payload = json.loads(marker_line.removeprefix(AUX_RESULT_MARKER))
         if not payload.get("ok"):
+            if (
+                payload.get("rate_limited") is True
+                or payload.get("error_type") == "rate_limit"
+            ):
+                raise SourceRateLimitError(
+                    upstream_source=(
+                        PUSH2_SOURCE
+                        if task == "convertibles_comparison"
+                        else None
+                    )
+                )
             raise RuntimeError(payload.get("error") or "扩展数据进程调用失败")
         result = payload.get("result")
         if not isinstance(result, dict):
@@ -1036,10 +1211,8 @@ class DataService:
     def _load_live(
         self,
         adapter: str,
-        loader: Callable[
-            [], tuple[Any, str | None] | tuple[Any, str | None, list[str]]
-        ],
-    ) -> tuple[Any, str | None] | tuple[Any, str | None, list[str]]:
+        loader: Callable[[], LiveResult],
+    ) -> LiveResult:
         last_error: Exception | None = None
         for attempt in range(self.retry_attempts):
             try:
@@ -1047,6 +1220,9 @@ class DataService:
             except SourceTimeoutError:
                 raise
             except Exception as exc:
+                if is_rate_limit_error(exc):
+                    self._remember_rate_limit(exc)
+                    raise
                 last_error = exc
                 if attempt + 1 < self.retry_attempts:
                     time.sleep(0.25 * (2**attempt))
@@ -1181,9 +1357,7 @@ class DataService:
         adapter: str,
         label: str,
         ttl_seconds: int,
-        live_loader: Callable[
-            [], tuple[Any, str | None] | tuple[Any, str | None, list[str]]
-        ],
+        live_loader: Callable[[], LiveResult],
         demo_loader: Callable[[], Any],
         source: str,
         source_url: str,
@@ -1262,15 +1436,19 @@ class DataService:
                 loaded = self._load_live(adapter, live_loader)
                 data, observation = loaded[0], loaded[1]
                 self._reject_future_observation(adapter, observation)
-                source_warnings = loaded[2] if len(loaded) == 3 else []
+                source_warnings = loaded[2] if len(loaded) > 2 else []
+                source_metadata = loaded[3] if len(loaded) > 3 else {}
+                self._merge_upstream_cooldowns(
+                    source_metadata.get("upstream_cooldowns")
+                )
                 rows = len(data) if isinstance(data, list) else 1
                 if rows == 0:
                     raise ValueError("数据源返回空结果")
                 dataset = Dataset(
                     data=data,
                     meta=SourceMeta(
-                        source=source,
-                        source_url=source_url,
+                        source=source_metadata.get("source") or source,
+                        source_url=source_metadata.get("source_url") or source_url,
                         observation_time=observation,
                         fetched_at=datetime.now(),
                         warnings=source_warnings,
@@ -1281,6 +1459,8 @@ class DataService:
                     adapter, dataset, cache_age_seconds=0
                 )
                 self._record_source_success(adapter)
+                with self._circuit_lock:
+                    self._rate_limited_adapters.discard(adapter)
                 self.cache.set(adapter, dataset, ttl_seconds, persist=True)
                 self._update_health(
                     adapter,
@@ -1294,6 +1474,11 @@ class DataService:
                 self._emit_dataset(adapter, dataset)
                 return dataset
             except Exception as exc:
+                with self._circuit_lock:
+                    if is_rate_limit_error(exc):
+                        self._rate_limited_adapters.add(adapter)
+                    elif not isinstance(exc, SourceCircuitOpenError):
+                        self._rate_limited_adapters.discard(adapter)
                 if not isinstance(exc, SourceCircuitOpenError):
                     self._record_source_failure(adapter)
                 cached = self._cached_dataset(adapter, allow_stale=True)
@@ -1435,8 +1620,8 @@ class DataService:
             ttl_seconds=1_800,
             live_loader=live,
             demo_loader=demo_data.money_rates,
-            source="AKShare / Shibor",
-            source_url="https://akshare.akfamily.xyz/data/interest_rate/interest_rate.html",
+            source="AKShare / 金十数据（Shibor 指标）",
+            source_url="https://datacenter.jin10.com/reportType/dc_shibor",
             force=force,
         )
         if self.is_source_worker or core.meta.demo:
@@ -2032,16 +2217,31 @@ class DataService:
         )
 
     def convertibles(self, force: bool = False) -> Dataset:
-        def live() -> tuple[list[dict], str | None, list[str]]:
+        def live() -> tuple[list[dict], str | None, list[str], dict[str, Any]]:
             warnings: list[str] = []
+            fallback = False
             try:
+                cooldowns = self.upstream_cooldowns()
+                if PUSH2_SOURCE in cooldowns:
+                    raise SourceRateLimitError(
+                        upstream_source=PUSH2_SOURCE, cooldowns=cooldowns
+                    )
                 result = self._call_aux_worker(
                     "convertibles_comparison", timeout=8
                 )
-            except (OSError, subprocess.SubprocessError, ValueError, RuntimeError):
+            except Exception as exc:
+                limited = is_rate_limit_error(exc)
+                if limited:
+                    self._remember_rate_limit(exc, upstream_source=PUSH2_SOURCE)
                 result = self._call_aux_worker("convertibles_spot", timeout=20)
+                fallback = True
                 warnings.append(
-                    "比价主源不可用，已切换新浪备用行情；溢价率、双低与 YTM 暂缺。"
+                    (
+                        "东方财富比价主源限流冷却中，暂停重复请求，已切换新浪备用行情；"
+                        if limited
+                        else "比价主源不可用，已切换新浪备用行情；"
+                    )
+                    + "溢价率、双低与 YTM 暂缺。"
                 )
                 rejected = _integer(result.get("rejected_rows"))
                 if rejected:
@@ -2054,6 +2254,14 @@ class DataService:
                 [item for item in rows if isinstance(item, dict)],
                 str(observation) if observation else None,
                 warnings,
+                {
+                    "source": (
+                        "AKShare / Sina (备用行情)"
+                        if fallback
+                        else "AKShare / Eastmoney"
+                    ),
+                    "upstream_cooldowns": self.upstream_cooldowns(),
+                },
             )
 
         return self._load(

@@ -153,6 +153,90 @@ def test_topic_context_excludes_note_bodies_news_and_component_values() -> None:
     assert context["timeline"][0]["source"] == "GDELT"
 
 
+def test_topic_context_excludes_fred_components_evidence_and_release_timeline() -> None:
+    context = topic_context({
+        "topic": {"title": "混合研究", "components": [
+            {"component_type": "fred_chart", "title": "DGS10 987.654", "config": {"series": ["DGS10"]}},
+            {"component_type": "event_radar", "title": "新闻线索", "config": {"query": "债券"}},
+        ]},
+        "project_summaries": [{
+            "title": "项目", "supporting_evidence": [
+                {"id": 1, "title": "隐藏标题 987.654", "source": "美国数据", "ai_processing_allowed": False},
+                {"id": 2, "title": "隐藏标题 765.432", "source": "美国数据", "provider": "FRED"},
+                {"id": 3, "title": "国内曲线", "source": "AKShare", "ai_processing_allowed": True},
+            ],
+        }],
+        "timeline": [
+            {"event_type": "fred_reference", "title": "隐藏值 987.654"},
+            {"event_type": "release_review", "title": "隐藏值 765.432", "metadata": {"series_id": "DGS10"}},
+            {"event_type": "note", "title": "正常人工核验", "metadata": {"status": "open"}},
+        ],
+        "timeline_total": 3,
+    })
+    assert context["topic"]["components"][0]["title"] == "新闻线索"
+    assert [item["title"] for item in context["project_summaries"][0]["supporting_evidence"]] == ["国内曲线"]
+    assert [item["title"] for item in context["timeline"]] == ["正常人工核验"]
+    assert "987.654" not in str(context)
+    assert "765.432" not in str(context)
+    assert "DGS10" not in str(context)
+    assert "timeline_total" not in context
+
+
+def test_legacy_insights_are_hidden_without_deleting_stored_notes(tmp_path) -> None:
+    database = Database(tmp_path / "legacy-insights.db")
+    runtime = AiRuntimeManager(database)
+    service = AiInsightService(database, FakeAssistant(), runtime)  # type: ignore[arg-type]
+    database.save_ai_insight(
+        context_type="project", context_key="1", context_fingerprint="sha256:old-policy",
+        status="ready", summary="旧摘要 DGS10 987.654", context_summary=["旧 FRED 标题"],
+    )
+    status = service.status(
+        context_type="project", context_key="1", fingerprint=context_fingerprint({}),
+        context_summary=["项目证据"],
+    )
+    assert status["status"] == "stale"
+    assert status["summary"] == ""
+    assert status["cached_context_summary"] == []
+    assert status["generated_at"] is None
+    assert "987.654" not in str(status)
+    assert any("保守隔离" in item for item in status["context_summary"])
+    assert database.get_ai_insight("project", "1")["summary"] == "旧摘要 DGS10 987.654"
+
+
+def test_insight_queue_applies_outbound_boundary_before_persisting_metadata(tmp_path) -> None:
+    class InspectAssistant(FakeAssistant):
+        async def ask(self, **kwargs):
+            assert "DGS10" not in str(kwargs)
+            assert "987.654" not in str(kwargs)
+            assert kwargs["context"]["signals"][0]["title"] == "国内曲线"
+            return await super().ask(**kwargs)
+
+    async def run():
+        database = Database(tmp_path / "queue-boundary.db")
+        runtime = AiRuntimeManager(database)
+        runtime.update_settings(enabled_settings())
+        service = AiInsightService(database, InspectAssistant(), runtime)  # type: ignore[arg-type]
+        await service.start()
+        try:
+            service.enqueue(
+                context_type="market", context_key="today",
+                context={"signals": [
+                    {"source": "FRED", "title": "DGS10 987.654"},
+                    {"source": "AKShare", "title": "国内曲线"},
+                ]},
+                context_summary=["FRED DGS10 987.654"],
+            )
+            await service._queue.join()
+            record = database.get_ai_insight("market", "today")
+            assert record["status"] == "ready"
+            assert "987.654" not in str(record)
+            assert "DGS10" not in str(record)
+        finally:
+            await service.stop()
+
+    asyncio.run(run())
+
+
 def test_insight_queue_persists_only_final_summary_and_metadata(tmp_path) -> None:
     async def run() -> None:
         database = Database(tmp_path / "insights.db")

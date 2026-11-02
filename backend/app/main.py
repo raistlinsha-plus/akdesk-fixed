@@ -152,6 +152,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def no_store_fred_responses(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith(("/api/v1/macro/", "/api/v1/release-reviews/")):
+        response.headers["Cache-Control"] = "no-store, private, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 database = Database(DATA_DIR / "akdesk-fixed.db")
 backup_scheduler = ResearchBackupScheduler.from_environment(
     database, DATA_DIR / "backups"
@@ -1640,13 +1650,12 @@ async def evaluate_saved_release_review(review_id: int):
 
 @app.post("/api/v1/release-reviews/{review_id}/mark-reviewed")
 def mark_release_reviewed(review_id: int, payload: dict[str, str]):
-    realtime_start = str(payload.get("realtime_start") or "").strip()
-    if not realtime_start:
-        raise HTTPException(status_code=422, detail="缺少 FRED vintage 引用")
+    if payload:
+        raise HTTPException(status_code=422, detail="只保存本地复盘时间，不接收 FRED 返回的 vintage 或其他 API 元数据；请升级客户端")
     saved = database.update_release_review(
         review_id,
         ReleaseReviewUpdate(
-            reviewed_realtime_start=realtime_start,
+            reviewed_realtime_start=None,
             reviewed_at=datetime.now(),
         ),
     )

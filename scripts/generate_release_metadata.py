@@ -171,6 +171,9 @@ def generate_metadata(version: str) -> tuple[Path, Path]:
             "本声明不授予第三方数据的再分发权。AKShare / AKTools 访问的公开页面、"
             "FRED、World Bank、GDELT、AIHubMix 以及用户自行配置的数据或模型服务，"
             "分别受其自身条款约束。",
+            "数据规则核验日期为 2026-11-02。软件 MIT 许可与数据权利分开；"
+            "AKShare 的学术研究声明、FRED 存储与 AI 边界、World Bank 指标许可例外"
+            "及 GDELT 媒体版权区别详见 [数据使用规则](./DATA_USAGE.md)。",
             "",
             "## 无担保声明",
             "",

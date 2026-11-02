@@ -17,7 +17,7 @@ from .models import Dataset, HealthItem, SourceMeta
 WORLD_BANK_API = "https://api.worldbank.org/v2"
 WORLD_BANK_SOURCE_URL = "https://data.worldbank.org/"
 WORLD_BANK_LICENSE_URL = "https://datacatalog.worldbank.org/public-licenses"
-WORLD_BANK_LICENSE = "Creative Commons Attribution 4.0 (CC BY 4.0)"
+WORLD_BANK_LICENSE = "CC BY 4.0 (default; indicator-specific terms take precedence)"
 WORLD_BANK_ATTRIBUTION = "World Bank, World Development Indicators"
 WORLD_BANK_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60
 

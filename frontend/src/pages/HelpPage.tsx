@@ -5,6 +5,7 @@ import { diagnosticMarkdown, feedbackUrl, type DiagnosticReport } from "../feedb
 import { APP_VERSION, DEMO_URL, DOWNLOAD_URL, REPOSITORY_URL } from "../release";
 import { PageHeading } from "./MarketPages";
 import "./help.css";
+import { DATA_RULES_REVIEWED_AT, DATA_USAGE_NOTICE, FRED_USAGE_NOTICE } from "../dataUsage";
 
 export function HelpPage({ navigate }: { navigate: (page: string) => void }) {
   const [report, setReport] = useState<DiagnosticReport | null>(null);
@@ -51,6 +52,14 @@ export function HelpPage({ navigate }: { navigate: (page: string) => void }) {
         <button onClick={() => navigate("curves")}><span>02</span>核验收益率曲线<ArrowRight size={16} /></button>
         <button onClick={() => navigate("report")}><span>03</span>导出一页简报<ArrowRight size={16} /></button>
       </div>
+    </section>
+    <section className="help-diagnostics panel" aria-labelledby="data-usage-title">
+      <span className="eyebrow">DATA USAGE · {DATA_RULES_REVIEWED_AT}</span>
+      <h2 id="data-usage-title">连接成功，不代表已经获得使用授权</h2>
+      <p>软件代码的 MIT 许可不包含第三方行情数据授权。AKShare 官方声明用于学术研究，机构或商业场景应先核验原始数据源条款。</p>
+      <p>{FRED_USAGE_NOTICE} 不要向 AI 粘贴 FRED 数值、API 元数据或受限原文；未标来源的手工内容无法自动识别。</p>
+      <p>{DATA_USAGE_NOTICE} World Bank 默认开放许可存在数据集/指标例外；GDELT 开放数据也不包含新闻正文和图片的版权。</p>
+      <a href={`${REPOSITORY_URL}/blob/main/DATA_USAGE.md`} target="_blank" rel="noreferrer">查看数据使用规则与版本核验记录 <ExternalLink size={14} /></a>
     </section>
     <section className="help-feedback-grid" aria-label="选择反馈类型">
       <a href={feedbackUrl("bug", "help", report?.app.mode ?? "unknown")} target="_blank" rel="noreferrer"><strong>功能或界面问题</strong><span>描述操作步骤、预期与实际结果。</span><ExternalLink size={16} /></a>

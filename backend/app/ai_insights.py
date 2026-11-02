@@ -8,12 +8,19 @@ from datetime import datetime
 from typing import Any
 
 from .ai_assistant import (
+    AI_CONTEXT_FINGERPRINT_PREFIX,
+    AI_FRED_BOUNDARY_NOTICE,
+    AI_USER_CONTENT_NOTICE,
     AIHUBMIX_MODEL,
     AIHUBMIX_MODEL_LABEL,
     AiAssistantService,
     AiBusyError,
     AiNotConfiguredError,
     AiProviderError,
+    ai_context_notices,
+    ai_record_allowed,
+    current_ai_insight_policy,
+    isolate_fred_ai_context,
 )
 from .ai_runtime import AI_TIMEZONE, AiRuntimeManager, AiUsageLimitError
 from .database import Database
@@ -28,7 +35,7 @@ class AiInsightQueueFullError(RuntimeError):
 
 
 def context_fingerprint(context: dict[str, Any]) -> str:
-    stable_context = dict(context)
+    stable_context = isolate_fred_ai_context(context)
     # Request construction time is useful to the model but must not make an
     # otherwise unchanged page look stale on every status poll.
     stable_context.pop("generated_at", None)
@@ -40,13 +47,13 @@ def context_fingerprint(context: dict[str, Any]) -> str:
         separators=(",", ":"),
     )
     digest = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-    return f"sha256:{digest}"
+    return f"{AI_CONTEXT_FINGERPRINT_PREFIX}{digest}"
 
 
 def credit_context(workspace: dict[str, Any]) -> dict[str, Any]:
     coverage = workspace.get("field_coverage")
     coverage = coverage if isinstance(coverage, dict) else {}
-    return {
+    return isolate_fred_ai_context({
         "as_of": workspace.get("as_of"),
         "coverage": {
             "total": workspace.get("total"),
@@ -79,19 +86,19 @@ def credit_context(workspace: dict[str, Any]) -> dict[str, Any]:
                     "requires_manual_confirmation",
                 )
             }
-            for signal in workspace.get("signals", [])[:12]
-            if isinstance(signal, dict)
-        ],
+            for signal in workspace.get("signals", [])
+            if isinstance(signal, dict) and ai_record_allowed(signal)
+        ][:12],
         "calendar": [
             {
                 key: event.get(key)
                 for key in ("date", "kind", "title", "bond_code", "issuer", "overdue")
             }
-            for event in workspace.get("calendar", [])[:12]
-            if isinstance(event, dict)
-        ],
+            for event in workspace.get("calendar", [])
+            if isinstance(event, dict) and ai_record_allowed(event)
+        ][:12],
         "policy": workspace.get("r2_policy"),
-    }
+    })
 
 
 def topic_context(workspace: dict[str, Any]) -> dict[str, Any]:
@@ -108,7 +115,7 @@ def topic_context(workspace: dict[str, Any]) -> dict[str, Any]:
     )
     timeline = workspace.get("timeline")
     timeline = timeline if isinstance(timeline, list) else []
-    return {
+    return isolate_fred_ai_context({
         "topic": {
             "title": topic.get("title"),
             "question": topic.get("question"),
@@ -133,9 +140,9 @@ def topic_context(workspace: dict[str, Any]) -> dict[str, Any]:
                         else []
                     ),
                 }
-                for item in components[:12]
-                if isinstance(item, dict)
-            ],
+                for item in components
+                if isinstance(item, dict) and ai_record_allowed(item)
+            ][:12],
         },
         "project_summaries": [
             {
@@ -151,25 +158,25 @@ def topic_context(workspace: dict[str, Any]) -> dict[str, Any]:
                         "source": evidence.get("source"),
                         "observation_end": evidence.get("observation_end"),
                     }
-                    for evidence in item.get("supporting_evidence", [])[:5]
-                    if isinstance(evidence, dict)
-                ],
+                    for evidence in item.get("supporting_evidence", [])
+                    if isinstance(evidence, dict) and ai_record_allowed(evidence)
+                ][:5],
                 "counter_evidence": [
                     {
                         "title": evidence.get("title"),
                         "status": evidence.get("status"),
                     }
-                    for evidence in item.get("counter_evidence", [])[:5]
-                    if isinstance(evidence, dict)
-                ],
+                    for evidence in item.get("counter_evidence", [])
+                    if isinstance(evidence, dict) and ai_record_allowed(evidence)
+                ][:5],
                 "open_tasks": [
                     {
                         "title": task.get("title"),
                         "due_date": task.get("due_date"),
                     }
-                    for task in item.get("open_tasks", [])[:8]
-                    if isinstance(task, dict)
-                ],
+                    for task in item.get("open_tasks", [])
+                    if isinstance(task, dict) and ai_record_allowed(task)
+                ][:8],
             }
             for item in project_summaries[:8]
             if isinstance(item, dict)
@@ -187,11 +194,11 @@ def topic_context(workspace: dict[str, Any]) -> dict[str, Any]:
                     else None
                 ),
             }
-            for item in timeline[:20]
+            for item in timeline
             if isinstance(item, dict)
-        ],
-        "timeline_total": workspace.get("timeline_total"),
-    }
+            and ai_record_allowed(item)
+        ][:20],
+    })
 
 
 INSIGHT_QUESTIONS = {
@@ -288,6 +295,11 @@ class AiInsightService:
         policy = settings["page_insights"][context_type]
         usage = self.runtime.usage()
         record = self.database.get_ai_insight(context_type, context_key)
+        legacy_record = record is not None and not current_ai_insight_policy(record)
+        if legacy_record:
+            # Old cache entries may predate the outbound boundary. Do not echo
+            # or reuse them; regeneration replaces this derived cache only.
+            record = None
         job_key = (context_type, context_key)
         job_state = (
             "running"
@@ -296,7 +308,7 @@ class AiInsightService:
             if job_key in self._pending_keys
             else "idle"
         )
-        status = "never_generated"
+        status = "stale" if legacy_record else "never_generated"
         if record is not None:
             status = record["status"]
             if status == "ready" and record["context_fingerprint"] != fingerprint:
@@ -332,7 +344,7 @@ class AiInsightService:
             "status": status,
             "job_state": job_state,
             "summary": record["summary"] if record else "",
-            "context_summary": context_summary,
+            "context_summary": ai_context_notices(context_summary),
             "cached_context_summary": record["context_summary"] if record else [],
             "provider": record["provider"] if record else "AIHubMix",
             "model": record["model"] if record else AIHUBMIX_MODEL,
@@ -353,6 +365,8 @@ class AiInsightService:
             "persistence_notice": (
                 "本机只缓存最终摘要、上下文指纹、模型与生成时间；"
                 "不保存完整提示词、思维过程或上下文副本。"
+                "数据规则更新前的旧摘要不再展示或复用，请重新生成。"
+                + AI_FRED_BOUNDARY_NOTICE + AI_USER_CONTENT_NOTICE
             ),
         }
 
@@ -376,8 +390,12 @@ class AiInsightService:
         if self._queue is None or self._worker_task is None:
             raise RuntimeError("AI 洞察任务服务尚未启动")
 
+        context = isolate_fred_ai_context(context)
+        context_summary = ai_context_notices(context_summary)
         fingerprint = context_fingerprint(context)
         current = self.database.get_ai_insight(context_type, context_key)
+        if not current_ai_insight_policy(current):
+            current = None
         job_key = (context_type, context_key)
         if job_key in self._pending_keys:
             return self.status(

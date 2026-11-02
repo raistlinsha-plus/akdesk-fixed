@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
+from .ai_assistant import current_ai_insight_policy
 from .database import Database
 
 
@@ -74,7 +75,12 @@ def build_research_action_drafts(
         )
 
     insight = database.get_ai_insight("project", str(project_id))
-    if insight and insight.get("status") == "ready" and insight.get("summary"):
+    if (
+        current_ai_insight_policy(insight)
+        and insight
+        and insight.get("status") == "ready"
+        and insight.get("summary")
+    ):
         append(
             "task",
             "核对已缓存 AI 洞察中的关键缺口",

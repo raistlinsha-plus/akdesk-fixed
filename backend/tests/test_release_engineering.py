@@ -2,10 +2,47 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.parse import quote
 
 import pytest
 
 from scripts import release
+
+
+@pytest.fixture
+def release_document_fixture(tmp_path, monkeypatch):
+    root = tmp_path / "project"
+    root.mkdir()
+    text = (
+        '[历史评审](<./docs/audits/old/旧 复核.md#证据> "历史")\n'
+        "![历史行情](./docs/audits/old/live.png)\n"
+        "![未审媒体](./docs/media/v1.1.0/unreviewed-live.png)\n"
+        "![合成演示](./docs/media/v1.1.0/05-brief.png)\n"
+        "[使用规则](./DATA_USAGE.md)\n"
+    )
+    files = {
+        "README.md": text,
+        "DATA_USAGE.md": "数据使用边界\n",
+        "SUPPORT.md": "用户支持\n",
+        "docs/AKDesk-Fixed-v1.1.1-数据规则适配说明.md": "本版说明\n",
+        "docs/AKDesk-Fixed-v1.1.0-用户手册.md": "当前手册\n",
+        "docs/audits/old/旧 复核.md": "历史评审原文\n",
+        "docs/AKDesk-Fixed-v0.18.0-产品介绍.md": "历史产品文档\n",
+    }
+    for name, content in files.items():
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+    for name in (
+        "docs/audits/old/live.png",
+        "docs/media/v1.1.0/unreviewed-live.png",
+        "docs/media/v1.1.0/05-brief.png",
+    ):
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"test image fixture")
+    monkeypatch.setattr(release, "ROOT", root)
+    return root, text
 
 
 def test_release_version_sources_are_consistent() -> None:
@@ -42,3 +79,77 @@ def test_generated_sbom_is_machine_readable() -> None:
     assert payload["bomFormat"] == "CycloneDX"
     assert payload["specVersion"] == "1.5"
     assert payload["components"]
+
+
+def test_release_whitelist_excludes_historical_and_unreviewed_media(
+    release_document_fixture,
+) -> None:
+    root, _text = release_document_fixture
+    files = {path.relative_to(root).as_posix() for path in release.source_files()}
+
+    assert "DATA_USAGE.md" in files
+    assert "SUPPORT.md" in files
+    assert "docs/AKDesk-Fixed-v1.1.1-数据规则适配说明.md" in files
+    assert "docs/AKDesk-Fixed-v1.1.0-用户手册.md" in files
+    assert "docs/media/v1.1.0/05-brief.png" in files
+    assert "docs/audits/old/旧 复核.md" not in files
+    assert "docs/audits/old/live.png" not in files
+    assert "docs/media/v1.1.0/unreviewed-live.png" not in files
+    assert "docs/AKDesk-Fixed-v0.18.0-产品介绍.md" not in files
+
+
+def test_stage_links_use_online_archives_without_rewriting_sources(
+    release_document_fixture, tmp_path
+) -> None:
+    root, original = release_document_fixture
+    stage = tmp_path / "stage"
+    stage.mkdir()
+
+    release.copy_to_stage(stage)
+
+    staged = (stage / "README.md").read_text(encoding="utf-8")
+    historical_path = quote("docs/audits/old/旧 复核.md", safe="/")
+    assert (
+        f'[历史评审](<{release.REPOSITORY_URL}/blob/main/{historical_path}#证据> "历史")'
+        in staged
+    )
+    assert f"{release.RAW_ARCHIVE_URL}/docs/audits/old/live.png" in staged
+    assert f"{release.RAW_ARCHIVE_URL}/docs/media/v1.1.0/unreviewed-live.png" in staged
+    assert "![合成演示](./docs/media/v1.1.0/05-brief.png)" in staged
+    assert (stage / "docs/media/v1.1.0/05-brief.png").is_file()
+    assert not (stage / "docs/audits").exists()
+    assert (root / "README.md").read_text(encoding="utf-8") == original
+    assert (root / "docs/audits/old/旧 复核.md").read_text(encoding="utf-8") == "历史评审原文\n"
+    release.verify_markdown_links(stage)
+
+
+def test_release_tree_requires_data_usage_document(tmp_path) -> None:
+    stage = tmp_path / "stage"
+    version = "1.1.1"
+    files = {
+        Path("backend/app/main.py"),
+        Path("backend/requirements.lock"),
+        Path("scripts/preflight.py"),
+        Path("frontend/dist/index.html"),
+        Path("LICENSE"),
+        Path("THIRD_PARTY_NOTICES.md"),
+        Path("README.md"),
+        *release.EXECUTABLES,
+    }
+    for relative in files:
+        path = stage / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("release fixture\n", encoding="utf-8")
+        if relative in release.EXECUTABLES:
+            path.chmod(0o755)
+    (stage / "SBOM.cdx.json").write_text(
+        json.dumps({"metadata": {"component": {"version": version}}}), encoding="utf-8"
+    )
+    release.build_manifest(stage, version)
+
+    with pytest.raises(RuntimeError, match="DATA_USAGE.md"):
+        release.verify_tree(stage, version)
+
+    (stage / "DATA_USAGE.md").write_text("数据使用边界\n", encoding="utf-8")
+    release.build_manifest(stage, version)
+    assert release.verify_tree(stage, version)["manifest"] == "ok"

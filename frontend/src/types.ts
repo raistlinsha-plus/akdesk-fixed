@@ -616,7 +616,7 @@ export interface ReleaseEvaluation {
     persisted: false;
   };
   surprise?: number | null;
-  revision_status: "not_reviewed" | "unchanged" | "official_version_changed";
+  revision_status: "not_reviewed" | "not_compared" | "unchanged" | "official_version_changed";
   market_window: {
     event_date: string;
     start: string;

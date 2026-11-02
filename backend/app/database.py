@@ -5,6 +5,7 @@ import json
 import math
 import re
 import sqlite3
+import tempfile
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -45,6 +46,8 @@ from .models import (
     WatchlistCreate,
     WatchlistItem,
     WatchlistUpdate,
+    _is_fred_evidence,
+    fred_reference_payload,
 )
 
 RESEARCH_OBJECT_TYPES = {
@@ -1853,6 +1856,14 @@ class Database:
                 "id": item.id,
                 "title": item.title,
                 "source": item.source_summary,
+                "provider": (
+                    "FRED"
+                    if _is_fred_evidence(item.source_summary, item.payload)
+                    else str(item.payload.get("provider") or "")[:80]
+                ),
+                "ai_processing_allowed": not _is_fred_evidence(
+                    item.source_summary, item.payload
+                ),
                 "observation_end": item.observation_end,
                 "created_at": item.created_at.isoformat(),
             }
@@ -3038,17 +3049,30 @@ class Database:
 
     def restore_from(self, source_path: Path) -> None:
         self.validate_backup(source_path)
-        source = sqlite3.connect(source_path)
-        try:
-            with self._connect() as target:
+        # Never put uncalibrated legacy content into the live database, even
+        # briefly: an automatic backup can run on another thread at any time.
+        # Upgrade and scrub an isolated copy first; the source stays read-only.
+        with tempfile.TemporaryDirectory(prefix=".akdesk-restore-", dir=self.path.parent) as directory:
+            staged_path = Path(directory) / "working.db"
+            source = sqlite3.connect(source_path.resolve().as_uri() + "?mode=ro", uri=True)
+            target = sqlite3.connect(staged_path)
+            try:
                 source.backup(target)
-        finally:
-            source.close()
-        self._init_schema()
+            finally:
+                target.close()
+                source.close()
+            staged = Database(staged_path)
+            staged.calibrate_fred_storage()
+            with staged._connect() as cleaned:
+                with self._connect() as live:
+                    cleaned.backup(live)
 
     @staticmethod
     def validate_backup(path: Path) -> None:
-        connection = sqlite3.connect(path)
+        try:
+            connection = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
+        except sqlite3.Error as exc:
+            raise ValueError("无法只读检查备份文件") from exc
         try:
             integrity = connection.execute("PRAGMA integrity_check").fetchone()
             if integrity is None or integrity[0] != "ok":
@@ -3125,6 +3149,11 @@ class Database:
         self, review_id: int, update: ReleaseReviewUpdate
     ) -> ReleaseReviewItem | None:
         values = update.model_dump(exclude_unset=True, mode="json")
+        # Defend the storage boundary even against an internally copied model
+        # whose update bypassed normal Pydantic validation.
+        if values.get("reviewed_realtime_start") is not None:
+            raise ValueError("FRED 官方版本时点不得持久化")
+        values["reviewed_realtime_start"] = None
         if (
             "project_id" in values
             and values["project_id"] is not None
@@ -3763,6 +3792,12 @@ class Database:
         with self._connect() as connection:
             connection.execute("DELETE FROM macro_observations")
             connection.execute("DELETE FROM macro_series")
+            # API-provided vintage dates are content, not a user-authored
+            # review timestamp. Keep reviewed_at and all personal notes.
+            connection.execute(
+                "UPDATE release_reviews SET reviewed_realtime_start = NULL "
+                "WHERE reviewed_realtime_start IS NOT NULL"
+            )
 
     def upsert_world_bank_countries(self, countries: list[dict[str, Any]]) -> int:
         rows: list[tuple[Any, ...]] = []
@@ -4114,87 +4149,55 @@ class Database:
             connection.execute("DELETE FROM gdelt_query_cache")
 
     def calibrate_fred_storage(self) -> dict[str, int]:
-        """Remove legacy FRED values and reduce old evidence to references.
+        """Reduce all structured FRED evidence to user-selected parameters.
 
-        v0.6.0 persisted FRED observations and complete chart payloads.  The
-        current FRED terms prohibit that storage model, so the calibration is
-        deliberately idempotent and runs before the application serves data.
+        This includes old reference_only rows: their names, units, notes and
+        other API metadata are content too. Independent user research entries,
+        project notes and user-authored titles are deliberately left intact.
         """
         migrated = 0
         with self._connect() as connection:
-            rows = connection.execute(
-                """
-                SELECT id, payload, source_summary, observation_start,
-                       observation_end, created_at
-                FROM research_evidence
-                """
-            ).fetchall()
-            for row in rows:
-                source_summary = str(row["source_summary"] or "")
-                try:
-                    payload = json.loads(row["payload"] or "{}")
-                except (TypeError, json.JSONDecodeError):
-                    payload = {}
-                if not isinstance(payload, dict):
-                    payload = {}
-                source_name = str(
-                    ((payload.get("source_meta") or {}).get("source") or "")
-                    if isinstance(payload.get("source_meta"), dict)
-                    else ""
-                )
-                is_fred = source_summary.strip().upper().startswith("FRED") or (
-                    source_name.strip().upper().startswith("FRED")
-                )
-                if not is_fred or payload.get("storage_mode") == "reference_only":
-                    continue
-
-                chart = payload.get("chart") if isinstance(payload.get("chart"), dict) else {}
-                series_rows = chart.get("series") if isinstance(chart, dict) else []
-                references: list[dict[str, Any]] = []
-                if isinstance(series_rows, list):
-                    for item in series_rows:
-                        if not isinstance(item, dict):
-                            continue
-                        series_id = str(item.get("key") or "").strip().upper()
-                        if not series_id:
-                            continue
-                        references.append(
-                            {
-                                "series_id": series_id,
-                                "name": str(item.get("name") or series_id),
-                                "units": item.get("units"),
-                                "frequency": item.get("frequency"),
-                                "attribution": item.get("attribution"),
-                                "source_url": item.get("source_url"),
-                            }
-                        )
-                if not references:
-                    suffix = source_summary.split("·", 1)[-1]
-                    for series_id in suffix.split(","):
-                        normalized = series_id.strip().upper()
-                        if normalized:
-                            references.append(
-                                {"series_id": normalized, "name": normalized}
-                            )
-                replacement = {
-                    "schema_version": 2,
-                    "storage_mode": "reference_only",
-                    "provider": "FRED",
-                    "captured_at": payload.get("captured_at") or row["created_at"],
-                    "series": references,
-                    "transform": chart.get("transform") if isinstance(chart, dict) else None,
-                    "years": chart.get("years") if isinstance(chart, dict) else None,
-                    "observation_start": row["observation_start"],
-                    "observation_end": row["observation_end"],
-                    "terms_url": "https://fred.stlouisfed.org/legal/terms/",
-                    "notice": "FRED 证据已校准为引用；观测值不在本地持久化。",
-                    "migrated_from": "v0.6.0_frozen_payload",
-                }
-                connection.execute(
-                    "UPDATE research_evidence SET payload = ? WHERE id = ?",
-                    (json.dumps(replacement, ensure_ascii=False), row["id"]),
-                )
-                migrated += 1
+            for table in ("research_evidence", "research_evidence_basket"):
+                rows = connection.execute(
+                    f"""
+                    SELECT id, payload, source_summary, observation_start,
+                           observation_end, created_at
+                    FROM {table}
+                    """
+                ).fetchall()
+                for row in rows:
+                    source_summary = str(row["source_summary"] or "")
+                    try:
+                        payload = json.loads(row["payload"] or "{}")
+                    except (TypeError, json.JSONDecodeError):
+                        payload = {}
+                    if not isinstance(payload, dict):
+                        payload = {}
+                    if not _is_fred_evidence(source_summary, payload):
+                        continue
+                    replacement = fred_reference_payload(
+                        payload,
+                        strict=False,
+                        captured_at=row["created_at"],
+                        source_summary=source_summary,
+                    )
+                    ids = [item["series_id"] for item in replacement["series"]]
+                    summary = "FRED" + (" · " + ", ".join(ids) if ids else "")
+                    if (
+                        payload == replacement
+                        and source_summary == summary
+                        and row["observation_start"] is None
+                        and row["observation_end"] is None
+                    ):
+                        continue
+                    connection.execute(
+                        f"""UPDATE {table}
+                            SET payload = ?, source_summary = ?,
+                                observation_start = NULL, observation_end = NULL
+                            WHERE id = ?""",
+                        (json.dumps(replacement, ensure_ascii=False), summary, row["id"]),
+                    )
+                    migrated += 1
             observation_rows = connection.execute(
                 "SELECT COUNT(*) AS count FROM macro_observations"
             ).fetchone()["count"]
@@ -4203,6 +4206,10 @@ class Database:
             ).fetchone()["count"]
             connection.execute("DELETE FROM macro_observations")
             connection.execute("DELETE FROM macro_series")
+            connection.execute(
+                "UPDATE release_reviews SET reviewed_realtime_start = NULL "
+                "WHERE reviewed_realtime_start IS NOT NULL"
+            )
         return {
             "evidence_migrated": migrated,
             "observations_deleted": int(observation_rows),
@@ -4746,6 +4753,8 @@ class Database:
     @staticmethod
     def _release_review_from_row(row: sqlite3.Row) -> ReleaseReviewItem:
         payload = dict(row)
+        # Never expose a legacy stored API vintage before calibration runs.
+        payload["reviewed_realtime_start"] = None
         payload["created_at"] = datetime.fromisoformat(payload["created_at"])
         payload["updated_at"] = datetime.fromisoformat(payload["updated_at"])
         if payload.get("reviewed_at"):

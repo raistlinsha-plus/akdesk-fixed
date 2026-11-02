@@ -978,7 +978,7 @@ export default function App() {
             aria-labelledby="workspace-onboarding-title"
           >
             <div className="workspace-onboarding-copy">
-              <span className="eyebrow">AKDESK FIXED · V1.1.0</span>
+              <span className="eyebrow">AKDESK FIXED · V1.1.1</span>
               <h1 id="workspace-onboarding-title">你通常先做哪件事？</h1>
               <p>选择一个使用场景即可开始。它只设置默认落地页和导航顺序；全部行情、投研、信用与全球模块仍可随时访问。</p>
             </div>

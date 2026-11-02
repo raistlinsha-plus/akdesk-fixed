@@ -2,7 +2,9 @@
 
 把资金、曲线与国债期货的变化，整理成一页带出处的固收简报。
 
-[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#本地安装三步) [![v1.1.0](https://img.shields.io/badge/version-v1.1.0-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)
+[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#本地安装三步) [![v1.1.1](https://img.shields.io/badge/version-v1.1.1-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)
+
+**v1.1.1 数据边界更新（2026-11-03）**：适配 AKShare 1.20.22 的上游限流停试；FRED 内容不做数值导出或 AI 处理，研究只保存查询引用；市场导出保留使用边界。自备 Key、软件 MIT 或连接成功均不等于数据授权。参见[数据使用规则](./DATA_USAGE.md)与[升级说明](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md)。
 
 **[先在线体验](https://raistlinsha-plus.github.io/akdesk-fixed/)** · **[下载本地版](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)** · [English](./README_EN.md) · [反馈](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)
 
@@ -21,7 +23,7 @@
 macOS 12+ 为兼容目标；本轮实际验证环境为 macOS 26.6.2 / Apple Silicon，其他系统小版本未逐一实机验收。
 
 1. 准备受支持的 Python。使用 Homebrew 时可执行 `brew install python@3.13`。
-2. 在 [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) 选择 `AKDesk-Fixed-v1.1.0.zip` 正式资源，核对对应 SHA-256，完整解压。
+2. 在 [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) 选择 `AKDesk-Fixed-v1.1.1.zip` 正式资源，核对对应 SHA-256，完整解压。
 3. 双击 `start-macos.command`。启动器执行本地预检、安装锁定依赖，并打开 `http://127.0.0.1:8765`。
 
 GitHub 自动生成的 **Source code** 压缩包用于源码查看和开发，与经过发布清单、构建资源和执行权限检查的正式 ZIP 不同；源码用户可能需要自行构建界面或恢复脚本权限。实际可下载版本与验收结果以 Release 页面和 [发布与验收记录](./docs/AKDesk-Fixed-v1.1.0-发布与验收记录.md) 为准。
@@ -43,15 +45,15 @@ chmod +x start-macos.command start-macos-demo.command stop-macos.command
 - **信用与跨市场观察**：信用观察 R2、外汇、宏观图表、主权比较与事件线索。
 - **解释数据状态**：区分真实、缓存、过期、演示和混合来源；缺失保持为空，关键数值不足时方向待核验。
 
-临时备注可以随简报复制、下载 Markdown 或打印/PDF，不会自动保存为研究笔记。旧归档没有逐源出处时会显示待核验。全部原有功能继续保留，详见 [产品介绍](./docs/AKDesk-Fixed-v1.1.0-产品介绍.md) 与 [完整功能手册](./docs/AKDesk-Fixed-v1.0.0-用户手册.md)。
+临时备注可以随简报复制、下载 Markdown 或打印/PDF，不会自动保存为研究笔记。旧归档没有逐源出处时会显示待核验。市场与研究主体功能保留；FRED 数值导出和版本标记已按 v1.1.1 收紧，详见[升级说明](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md)、[产品介绍](./docs/AKDesk-Fixed-v1.1.0-产品介绍.md) 与 [完整功能手册](./docs/AKDesk-Fixed-v1.0.0-用户手册.md)。
 
 ## 四类数据源
 
 | 数据源 | 主要用途 | 配置与边界 |
 | --- | --- | --- |
 | AKShare / AKTools 生态 | 中国资金、曲线、现券、国债期货、转债、发行与部分外汇 | 当前本地版使用 Python AKShare；它是公开数据访问层，不是交易所授权实时行情 |
-| FRED 官方 API | 美国利率、通胀、就业、增长与发布复盘 | 用户自备 Key；观测值按请求处理，不持久化到本地数据库，研究中保存引用 |
-| World Bank API v2 | 跨经济体主权结构比较 | 无需 Key；明确署名与缺失，同年度对齐，支持带状态的本地缓存 |
+| FRED 官方 API | 美国利率、通胀、就业、增长与发布复盘 | 用户自备 Key；内容仅按请求展示，研究只保存用户查询引用；无数值导出、不送入 AI |
+| World Bank API v2 | 跨经济体主权结构比较 | 无需 Key；署名与变换说明，本地缓存；默认开放许可有指标/数据集例外 |
 | GDELT DOC 2.0 | 外部事件检索与待核验线索 | 无需 Key；按需查询和缓存元数据，不抓取新闻正文，不自动判断信用风险 |
 
 中国市场路径不需要 FRED 或 AI Key。FRED 与 AI 都是独立可选功能：用户按需提供自己的凭据；macOS 使用 Keychain 管理凭据。AI 经用户授权发送裁剪上下文，提供摘要与待核验任务，使用额度由用户自己的服务账户承担。
@@ -99,5 +101,7 @@ npm run preview:demo
 ## 许可与贡献
 
 自有代码采用 [MIT License](./LICENSE)。第三方组件与数据分别受其原始许可、使用条款和署名要求约束；**MIT 不授予第三方行情或内容的再分发权**。参见 [第三方声明](./THIRD_PARTY_NOTICES.md)。
+
+AKShare 官方将接口和相关数据定位为学术研究；机构/商业场景应自行核验原始提供方授权。本产品不是合规认证。FRED 使用还须遵守完整服务与 API 条款，自备 Key 不豁免限制；具体实现与官方链接见[数据使用规则](./DATA_USAGE.md)。
 
 欢迎可复现 Bug、文档修正、适配器测试和研究案例。参与前请阅读 [贡献指南](./CONTRIBUTING.md)、[行为准则](./CODE_OF_CONDUCT.md)；敏感漏洞按 [安全政策](./SECURITY.md) 报告。

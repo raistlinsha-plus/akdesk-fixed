@@ -14,6 +14,7 @@ import {
   type BriefDocument,
 } from "../brief";
 import "../brief.css";
+import { DATA_USAGE_NOTICE } from "../dataUsage";
 
 export function OnePageBrief({
   document,
@@ -112,7 +113,7 @@ export function OnePageBrief({
           })}</div> : <p className="ak-brief-empty">未提供逐源出处，当前简报待核验。</p>}
         </section>
         {notes.trim() ? <section className="ak-brief-user-notes"><h3>人工备注</h3><p>{notes.trim()}</p></section> : null}
-        <footer className="ak-brief-footer"><span>AKDesk Fixed · {briefModeLabel(mode)}</span><span>仅供个人研究参考，不构成投资建议。</span></footer>
+        <footer className="ak-brief-footer"><span>AKDesk Fixed · {briefModeLabel(mode)}</span><span>{DATA_USAGE_NOTICE}仅供个人研究参考，不构成投资建议。</span></footer>
       </article>
       {showActions ? <div className="ak-brief-note-editor"><label htmlFor={noteId}>人工备注 <span>仅用于当前页面与导出，不自动保存</span></label><textarea id={noteId} value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={8000} rows={3} placeholder="补充自己的观察、分歧或下一步核验事项……" /></div> : null}
     </section>

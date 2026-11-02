@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import re
 import threading
 from datetime import datetime
 from typing import Any, Awaitable, Callable
@@ -21,6 +22,136 @@ AIHUBMIX_MODEL_LABEL = "DeepSeek V4 Flash Thinking"
 MAX_CONTEXT_CHARACTERS = 14_000
 MAX_RESPONSE_BYTES = 96 * 1024
 AI_TOTAL_TIMEOUT_SECONDS = 75.0
+AI_CONTEXT_POLICY = "fred-isolated-v1"
+AI_CONTEXT_FINGERPRINT_PREFIX = f"sha256:{AI_CONTEXT_POLICY}:"
+AI_FRED_BOUNDARY_NOTICE = (
+    "产品采用保守隔离策略：已识别的 FRED 来源证据、序列和元数据不发送给 AI；"
+    "混合项目仅使用其余内容。这不是对所有 AI 推理作出的法律结论。"
+)
+AI_USER_CONTENT_NOTICE = (
+    "请勿在问题、笔记或标题中粘贴 FRED 来源数据；系统无法全面识别未标来源的手工内容，"
+    "发送前请自行检查。"
+)
+_FRED_MARKER = re.compile(
+    r"(?<![A-Za-z0-9])fred(?![A-Za-z0-9])|stlouisfed\.org", re.IGNORECASE
+)
+_AI_RECORD_SOURCE_FIELDS = {
+    "adapter", "provider", "source", "source_summary", "source_url",
+    "original_source_url", "terms_url", "component_type", "event_type",
+    "snapshot_type", "payload", "source_meta", "metadata",
+}
+_OMIT = object()
+
+
+def is_fred_ai_content(value: Any) -> bool:
+    """Recognize explicit provenance, not the meaning of arbitrary user prose."""
+    if hasattr(value, "model_dump"):
+        value = value.model_dump(mode="json")
+    elif hasattr(value, "__dict__") and not isinstance(value, type):
+        value = vars(value)
+    if isinstance(value, str):
+        return bool(_FRED_MARKER.search(value))
+    if isinstance(value, dict):
+        return any(
+            is_fred_ai_content(str(key)) or is_fred_ai_content(item)
+            for key, item in value.items()
+        )
+    if isinstance(value, (list, tuple)):
+        return any(is_fred_ai_content(item) for item in value)
+    return False
+
+
+def ai_record_allowed(value: Any) -> bool:
+    explicit_permission = (
+        value.get("ai_processing_allowed")
+        if isinstance(value, dict)
+        else getattr(value, "ai_processing_allowed", None)
+    )
+    event_type = (
+        value.get("event_type")
+        if isinstance(value, dict)
+        else getattr(value, "event_type", None)
+    )
+    return (
+        explicit_permission is not False
+        and event_type != "release_review"  # FRED release-review metadata.
+        and not is_fred_ai_content(value)
+    )
+
+
+def isolate_fred_ai_context(context: dict[str, Any]) -> dict[str, Any]:
+    """A final outbound boundary; never change the stored project or its notes."""
+    def clean(value: Any) -> Any:
+        if isinstance(value, dict):
+            # Drop provenance-bearing records as a unit: a value may also have
+            # been copied into its title or source summary, not only payload.
+            if value.get("ai_processing_allowed") is False or value.get("event_type") == "release_review" or any(
+                str(key).lower() in _AI_RECORD_SOURCE_FIELDS
+                and not ai_record_allowed(item)
+                for key, item in value.items()
+            ):
+                return _OMIT
+            result: dict[str, Any] = {}
+            for key, item in value.items():
+                if is_fred_ai_content(str(key)):
+                    continue
+                filtered = clean(item)
+                if filtered is not _OMIT:
+                    result[key] = filtered
+            return result
+        if isinstance(value, (list, tuple)):
+            return [filtered for item in value if (filtered := clean(item)) is not _OMIT]
+        if isinstance(value, str) and is_fred_ai_content(value):
+            return _OMIT
+        return value
+
+    filtered = clean(context)
+    return filtered if isinstance(filtered, dict) else {}
+
+
+def ai_context_notices(summary: list[str]) -> list[str]:
+    # The preview can describe the policy, but must not repeat excluded titles
+    # or series identifiers supplied as context-summary text.
+    safe = [item for item in summary if not is_fred_ai_content(item)]
+    return [*safe, AI_FRED_BOUNDARY_NOTICE, AI_USER_CONTENT_NOTICE]
+
+
+def current_ai_insight_policy(record: dict[str, Any] | None) -> bool:
+    return bool(record and str(record.get("context_fingerprint") or "").startswith(
+        AI_CONTEXT_FINGERPRINT_PREFIX
+    ))
+
+
+def _question_contains_explicit_fred_data(question: str) -> bool:
+    # Ordinary product/terms questions may mention FRED. Only reject explicit
+    # source-labelled input or a structured FRED record, not the word alone.
+    try:
+        structured = json.loads(question)
+    except (TypeError, ValueError):
+        structured = None
+    def has_provenance(value: Any) -> bool:
+        if isinstance(value, dict):
+            if value.get("event_type") == "release_review" or any(
+                (str(key).lower() in _AI_RECORD_SOURCE_FIELDS
+                 and str(key).lower() not in {"payload", "metadata"}
+                 and is_fred_ai_content(item))
+                or is_fred_ai_content(str(key))
+                for key, item in value.items()
+            ):
+                return True
+            return any(has_provenance(item) for item in value.values())
+        if isinstance(value, list):
+            return any(has_provenance(item) for item in value)
+        return False
+
+    if has_provenance(structured):
+        return True
+    return bool(re.search(
+        r"(?:数据源|来源|provider|source|adapter)\s*[:：=]\s*[\"']?FRED(?![A-Za-z0-9])"
+        r"|https?://(?:fred|api)\.stlouisfed\.org/(?:series|fred/series|graph)(?:[/?.]|$)",
+        question,
+        re.IGNORECASE,
+    ))
 
 
 class AiNotConfiguredError(RuntimeError):
@@ -75,7 +206,7 @@ def help_context(current_page: str) -> dict[str, Any]:
 
 
 def market_context(brief: dict[str, Any]) -> dict[str, Any]:
-    return {
+    return isolate_fred_ai_context({
         "generated_at": brief.get("generated_at"),
         "market_status": brief.get("market_status"),
         "headline": brief.get("headline"),
@@ -97,9 +228,9 @@ def market_context(brief: dict[str, Any]) -> dict[str, Any]:
                     "trigger_reason",
                 )
             }
-            for item in brief.get("signals", [])[:8]
-            if isinstance(item, dict)
-        ],
+            for item in brief.get("signals", [])
+            if isinstance(item, dict) and ai_record_allowed(item)
+        ][:8],
         "sources": [
             {
                 key: item.get(key)
@@ -113,16 +244,16 @@ def market_context(brief: dict[str, Any]) -> dict[str, Any]:
                     "demo",
                 )
             }
-            for item in brief.get("sources", [])[:12]
-            if isinstance(item, dict)
-        ],
+            for item in brief.get("sources", [])
+            if isinstance(item, dict) and ai_record_allowed(item)
+        ][:12],
         "notice": brief.get("notice"),
-    }
+    })
 
 
 def research_context(project: Any | None, projects: list[Any]) -> dict[str, Any]:
     if project is None:
-        return {
+        return isolate_fred_ai_context({
             "selected_project": None,
             "project_overview": {
                 "total": len(projects),
@@ -139,8 +270,8 @@ def research_context(project: Any | None, projects: list[Any]) -> dict[str, Any]
                     for item in projects[:8]
                 ],
             },
-        }
-    return {
+        })
+    return isolate_fred_ai_context({
         "selected_project": {
             "id": project.id,
             "title": project.title,
@@ -160,8 +291,9 @@ def research_context(project: Any | None, projects: list[Any]) -> dict[str, Any]
                     "observation_start": item.observation_start,
                     "observation_end": item.observation_end,
                 }
-                for item in project.evidence[:8]
-            ],
+                for item in project.evidence
+                if ai_record_allowed(item)
+            ][:8],
             "research_records": [
                 {
                     "entry_type": item.entry_type,
@@ -169,10 +301,11 @@ def research_context(project: Any | None, projects: list[Any]) -> dict[str, Any]
                     "status": item.status,
                     "due_date": item.due_date,
                 }
-                for item in project.entries[:12]
-            ],
+                for item in project.entries
+                if ai_record_allowed(item)
+            ][:12],
         }
-    }
+    })
 
 
 def _system_prompt(scenario: str) -> str:
@@ -305,6 +438,7 @@ class AiAssistantService:
             "data_notice": (
                 "只有发送前预览列出的用户问题与裁剪上下文会提交给 AIHubMix；"
                 "不发送 API Key、数据库文件、附件正文或新闻正文。"
+                + AI_FRED_BOUNDARY_NOTICE + AI_USER_CONTENT_NOTICE
             ),
             "persistence_notice": (
                 "对话问答不落库；只有用户单独开启的页面洞察会缓存最终摘要和上下文指纹，"
@@ -447,6 +581,13 @@ class AiAssistantService:
         context: dict[str, Any],
         context_summary: list[str],
     ) -> dict[str, Any]:
+        if _question_contains_explicit_fred_data(question):
+            raise AiProviderError(
+                "本产品的 AI 保守隔离策略不接收明确标记的 FRED 来源提问或内容；"
+                "请移除相关内容后，仅就其余研究材料提问。"
+            )
+        context = isolate_fred_ai_context(context)
+        context_summary = ai_context_notices(context_summary)
         encoded_context = json.dumps(
             context, ensure_ascii=False, default=str, separators=(",", ":")
         )

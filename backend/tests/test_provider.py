@@ -119,6 +119,8 @@ def test_money_rates_keeps_core_data_when_optional_sources_fail(monkeypatch) -> 
     result = service.money_rates()
 
     assert result.meta.demo is False
+    assert result.meta.source == "AKShare / 金十数据（Shibor 指标）"
+    assert result.meta.source_url == "https://datacenter.jin10.com/reportType/dc_shibor"
     assert [item["name"] for item in result.data] == ["Shibor O/N", "Shibor 1W"]
     assert result.meta.warnings == []
 

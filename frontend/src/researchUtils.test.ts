@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   actionableMarketSignalIds,
   buildChartEvidence,
-  buildMacroCsv,
+  buildMacroReferenceMarkdown,
   isReviewDue,
   parseResearchTags,
   shanghaiDate,
 } from "./researchUtils";
-import type { Dataset, MacroChartData, MarketResearchSignal } from "./types";
+import type { MarketResearchSignal } from "./types";
 
 describe("research workflow helpers", () => {
   it("normalizes and deduplicates research tags", () => {
@@ -57,65 +57,39 @@ describe("research workflow helpers", () => {
     ])).toEqual(["trusted"]);
   });
 
-  it("stores FRED chart evidence as a value-free reference", () => {
-    const chart = {
-      data: {
-        dates: ["2026-07-13", "2026-07-14"],
-        series: [{
-          key: "DGS10",
-          name: "美国国债 10Y",
-          values: [4.1, 4.2],
-          frequency: "Daily",
-          units: "Percent",
-          source_organization: "Board of Governors",
-          attribution: "Board of Governors; retrieved via FRED (DGS10)",
-          source_url: "https://fred.stlouisfed.org/series/DGS10",
-          realtime_start: ["2026-07-14", "2026-07-14"],
-          realtime_end: ["9999-12-31", "9999-12-31"],
-        }],
-        transform: "level",
-        years: 1,
-        transform_source: "AKDesk local",
-        storage_mode: "request_scoped",
-        terms_url: "https://fred.stlouisfed.org/legal/terms/",
-      },
-      meta: {
-        source: "FRED",
-        fetched_at: "2026-07-14T12:00:00",
-        stale: false,
-        demo: false,
-        warnings: [],
-        market_status: "daily",
-        market_status_label: "按发布更新",
-        data_state: "live",
-        quality_score: 100,
-        quality_issues: [],
-        trust_level: "trusted",
-        suspicious_rows: 0,
-      },
-    } satisfies Dataset<MacroChartData>;
-
+  it("stores only selected query parameters, never FRED metadata or observed ranges", () => {
+    const query = {
+      seriesIds: ["DGS10"], years: 1, transform: "level" as const,
+      // Extra response material cannot enter the explicitly selected output.
+      apiResponse: { values: [4.1], notes: "API_NOTES", name: "API_TITLE", dates: ["2026-07-13"] },
+    };
     const evidence = buildChartEvidence(
-      chart,
-      ["DGS10"],
+      query,
       "美债研究",
-      "2026-07-14T12:30:00",
+      "2026-07-14T12:30:00Z",
     );
-    expect(evidence.observation_start).toBe("2026-07-13");
-    expect(evidence.observation_end).toBe("2026-07-14");
+    expect(evidence.observation_start).toBeNull();
+    expect(evidence.observation_end).toBeNull();
     expect(evidence.payload).toMatchObject({
+      schema_version: 3,
       storage_mode: "reference_only",
       frozen: false,
-      series: [{ series_id: "DGS10" }],
+      series: [{ series_id: "DGS10", source_url: "https://fred.stlouisfed.org/series/DGS10" }],
       transform: "level",
     });
-    expect(JSON.stringify(evidence.payload)).not.toContain('"values"');
-    expect(JSON.stringify(evidence.payload)).not.toContain('"dates"');
+    const serialized = JSON.stringify(evidence);
+    for (const absent of ["API_NOTES", "API_TITLE", '"values"', '"dates"', "2026-07-13", "4.1"]) {
+      expect(serialized).not.toContain(absent);
+    }
+    const markdown = buildMacroReferenceMarkdown(query, "2026-07-14T12:30:00Z");
+    expect(markdown).toContain("[DGS10](https://fred.stlouisfed.org/series/DGS10)");
+    expect(markdown).toContain("最近 1 年");
+    expect(markdown).toContain("不保存 FRED 返回的数值、元数据或观测区间");
+    expect(markdown).not.toMatch(/API_NOTES|API_TITLE|2026-07-13|4\.1|realtime_start/);
+  });
 
-    const csv = buildMacroCsv(chart);
-    expect(csv).toContain("Board of Governors");
-    expect(csv).toContain("DGS10_realtime_start");
-    expect(csv).toContain("2026-07-14");
-    expect(csv).toContain("not endorsed or certified");
+  it("rejects malformed FRED query references before persistence or export", () => {
+    expect(() => buildChartEvidence({ seriesIds: ["DGS10?notes=secret"], years: 1, transform: "level" }, "引用")).toThrow("序列标识");
+    expect(() => buildMacroReferenceMarkdown({ seriesIds: ["DGS10"], years: 0, transform: "level" })).toThrow("年份范围");
   });
 });

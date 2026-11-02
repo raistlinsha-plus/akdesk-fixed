@@ -8,6 +8,8 @@ from typing import Any
 
 import pandas as pd
 
+from .provider import PUSH2_SOURCE, source_error_payload
+
 
 AUX_RESULT_MARKER = "__AKDESK_AUX_RESULT__="
 
@@ -210,7 +212,17 @@ def main() -> None:
     try:
         payload = {"ok": True, "result": TASKS[sys.argv[1]]()}
     except Exception as exc:
-        payload = {"ok": False, "error": f"{type(exc).__name__}: {exc}"[:500]}
+        payload = {
+            "ok": False,
+            **source_error_payload(
+                exc,
+                upstream_source=(
+                    PUSH2_SOURCE
+                    if sys.argv[1] == "convertibles_comparison"
+                    else None
+                ),
+            ),
+        }
     print(AUX_RESULT_MARKER + json.dumps(payload, ensure_ascii=False, default=str))
 
 

@@ -71,7 +71,7 @@ def connector_catalog(
     connectors = [
         ConnectorItem(
             id="akshare",
-            name="AKShare / AKTools",
+            name="Python AKShare",
             category="market",
             state=market["state"],
             research_status=market["research_status"],
@@ -82,15 +82,15 @@ def connector_catalog(
             storage_mode="mixed_upstream_cache",
             cache_ttl_seconds=None,
             persistence_notice=(
-                "仅持久化经过质量门的市场快照与本地历史；上游网页口径和许可随适配器而异。"
+                "质量门通过后保存市场快照与本地历史；质量校验不是授权校验，保存与分享仍须遵守原始数据源条款。"
             ),
-            license_name="按各上游公开页面条款",
-            license_url="https://akshare.akfamily.xyz/",
-            attribution="AKShare / AKTools 及各原始公开数据页面",
-            terms_url="https://akshare.akfamily.xyz/",
+            license_name="AKShare 代码 MIT；数据另受上游条款约束",
+            license_url="https://github.com/akfamily/akshare/blob/main/LICENSE",
+            attribution="Python AKShare 及各原始数据提供方/取数中介；本产品未运行 AKTools 服务",
+            terms_url="https://akshare.akfamily.xyz/introduction.html",
             docs_url="https://akshare.akfamily.xyz/",
-            quota_notice="无统一配额；采用隔离进程、超时、熔断与错峰刷新。",
-            boundary_notice="非交易所直连，不承诺逐笔、交易级实时性或全市场覆盖。",
+            quota_notice="无统一配额；push2 明确限流后停止重试并在本进程冷却至少 5 分钟，不保证届时恢复；备用源成功不会解除主源冷却。",
+            boundary_notice="官方声明用于学术研究；机构/商业使用、缓存和再分发需另核验原始数据源授权。非交易所直连，不承诺交易级实时性。",
             last_success_at=market["last_success_at"],
             cache_rows=0,
             adapter_count=market["adapter_count"],
@@ -109,7 +109,7 @@ def connector_catalog(
             storage_mode="request_scoped",
             cache_ttl_seconds=None,
             persistence_notice=(
-                "观测值只在当前请求中处理，不写入 SQLite；项目只保存序列、变换与来源引用。"
+                "FRED 内容（含 API 元数据）仅用于当前请求展示，不写入 SQLite；项目只保存用户选择的查询参数与应用生成的引用，不导出数值。"
             ),
             license_name="FRED API Terms of Use",
             license_url=str(fred_status.get("terms_url") or ""),
@@ -120,7 +120,7 @@ def connector_catalog(
             terms_url=str(fred_status.get("terms_url") or ""),
             docs_url="https://fred.stlouisfed.org/docs/api/fred/",
             quota_notice="使用用户自己的 API Key；请求按需发起，不进行后台观测值抓取。",
-            boundary_notice="FRED 数据可能修订；版本复盘需记录 realtime_start。",
+            boundary_notice="自备 Key 不豁免条款；序列版权需分别核验。本产品保守排除 FRED 内容的 AI 处理，条款中的 AI 开发/训练限制不等于对所有推理情形的法律认定。",
             last_success_at=fred_health.last_success_at,
             cache_rows=0,
             available_adapters=1 if fred_health.research_status in {"ready", "limited"} else 0,
@@ -138,13 +138,13 @@ def connector_catalog(
             storage_mode="persistent_cache",
             cache_ttl_seconds=7 * 24 * 60 * 60,
             persistence_notice="指标元数据和低频观测值在本地缓存 7 天并保留来源署名。",
-            license_name="Creative Commons Attribution 4.0 (CC BY 4.0)",
+            license_name="CC BY 4.0 为默认；数据集/指标另有标注优先",
             license_url="https://datacatalog.worldbank.org/public-licenses",
             attribution="World Bank, World Development Indicators",
-            terms_url="https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets",
+            terms_url="https://datacatalog.worldbank.org/public-licenses",
             docs_url="https://datahelpdesk.worldbank.org/knowledgebase/articles/889392",
             quota_notice="公开 API；仅在用户打开比较或主动刷新时请求。",
-            boundary_notice="低频结构数据不能替代实时主权风险、市场价格或评级判断。",
+            boundary_notice="保留署名和处理说明；第三方数据/指标可能有不同许可，以对应元数据为准。低频数据不替代实时主权风险或评级判断。",
             last_success_at=world_bank_health.last_success_at,
             cache_rows=int(world_bank_stats.get("points") or 0),
             available_adapters=(
@@ -175,7 +175,7 @@ def connector_catalog(
             docs_url="https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/",
             quota_notice="按需查询、同查询 12 小时缓存；远端请求至少间隔 5 秒。",
             boundary_notice=(
-                "媒体匹配仅是待核验线索；覆盖量、语言和来源均存在偏差，不生成风险评分。"
+                "GDELT 开放数据须署名并链接项目；这不授予新闻正文或图片的版权。媒体匹配仅为待核验线索，不生成风险评分。"
             ),
             last_success_at=gdelt_health.last_success_at,
             cache_rows=int(gdelt_stats.get("articles") or 0),
@@ -189,6 +189,6 @@ def connector_catalog(
         "connectors": connectors,
         "policy": (
             "连接状态、缓存状态与研究可用性分开表达；所有凭据只返回配置状态，"
-            "不通过 API 暴露明文。"
+            "不通过 API 暴露明文。规则核验日期：2026-11-02；连接成功、数据质量与使用授权互不等同。"
         ),
     }

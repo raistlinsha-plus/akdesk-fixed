@@ -1,7 +1,7 @@
 # AKDesk Fixed production dependency lock.
 # Generated and verified on macOS arm64 with Python 3.11, 3.12 and 3.13.
 # Keep backend/requirements.txt as the human-readable constraint source.
-akshare==1.19.1
+akshare==1.20.22
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.14.2

@@ -611,7 +611,13 @@ def test_api_lifespan_report_archive_and_health(tmp_path, monkeypatch) -> None:
             f"/api/v1/release-reviews/{review.json()['id']}/mark-reviewed",
             json={"realtime_start": "2026-07-15"},
         )
+        assert marked.status_code == 422
+        marked = client.post(
+            f"/api/v1/release-reviews/{review.json()['id']}/mark-reviewed", json={}
+        )
         assert marked.status_code == 200
+        assert marked.json()["reviewed_realtime_start"] is None
+        assert marked.json()["reviewed_at"]
 
         weekly = client.get("/api/v1/research/weekly-report?end=2026-07-15")
         assert weekly.status_code == 200

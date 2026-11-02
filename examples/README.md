@@ -17,7 +17,7 @@ python3 examples/fixed_income_brief.py --output brief-example.md
 .venv/bin/python examples/fixed_income_brief.py --live --timeout 15 --output brief-live.md
 ```
 
-如尚未安装，先按项目 [快速开始](../README.md#macbook-air-快速开始) 准备 Python；开发者也可创建独立环境：
+如尚未安装，先按项目 [快速开始](../README.md#本地安装三步) 准备 Python；开发者也可创建独立环境：
 
 ```bash
 python3 -m venv .venv

@@ -19,7 +19,7 @@ import type {
   ResearchEvidence,
   ResearchProject,
 } from "../types";
-import { buildChartEvidence, buildMacroCsv } from "../researchUtils";
+import { buildChartEvidence, buildMacroReferenceMarkdown } from "../researchUtils";
 import { PageHeading } from "./MarketPages";
 
 const LineChart = lazy(() =>
@@ -119,8 +119,7 @@ export function ChartLabPage({ initialQuery }: { initialQuery?: string }) {
       await apiPost<ResearchEvidence>(
         `/research/projects/${projectId}/evidence`,
         buildChartEvidence(
-          chart,
-          selected,
+          { seriesIds: selected, years, transform },
           `${selected.join(" / ")} · ${transformLabels[transform]}`,
         ),
       );
@@ -139,8 +138,7 @@ export function ChartLabPage({ initialQuery }: { initialQuery?: string }) {
     try {
       await apiPost<ResearchEvidence>("/research/evidence-basket", {
         ...buildChartEvidence(
-          chart,
-          selected,
+          { seriesIds: selected, years, transform },
           `${selected.join(" / ")} · ${transformLabels[transform]}`,
         ),
         origin_page: "chart-lab",
@@ -153,14 +151,14 @@ export function ChartLabPage({ initialQuery }: { initialQuery?: string }) {
     }
   }
 
-  function exportCsv() {
+  function exportReference() {
     if (!chart) return;
-    const csv = buildMacroCsv(chart);
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const reference = buildMacroReferenceMarkdown({ seriesIds: selected, years, transform });
+    const blob = new Blob([reference], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `AKDesk-宏观研究-${selected.join("-")}.csv`;
+    link.download = `AKDesk-FRED查询引用-${selected.join("-")}.md`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -213,7 +211,7 @@ export function ChartLabPage({ initialQuery }: { initialQuery?: string }) {
             </select>
           </label>
         </div>
-        <p className="method-note">缺失日期保持为空；同比使用 FRED 官方 pc1 口径。FRED 观测值只在当前请求中处理，不写入本地数据库。</p>
+        <p className="method-note">缺失日期保持为空；同比使用 FRED 官方 pc1 口径。返回的数值和元数据仅供当前请求查看，不缓存或归档；保存与导出仅保留你选择的查询参数和序列链接，不提供数值 CSV。请勿把 FRED 内容粘贴至 AI 请求。</p>
       </Panel>
 
       {loading ? <LoadingState /> : null}
@@ -224,8 +222,8 @@ export function ChartLabPage({ initialQuery }: { initialQuery?: string }) {
           eyebrow="RESEARCH CHART"
           action={
             <div className="chart-export-actions">
-              <button className="secondary-button" onClick={exportCsv}><Download size={14} /> CSV</button>
-              <button className="secondary-button" onClick={addToBasket} disabled={saving}>
+              <button className="secondary-button" onClick={exportReference} disabled={loading}><Download size={14} /> 导出查询引用</button>
+              <button className="secondary-button" onClick={addToBasket} disabled={saving || loading}>
                 {basketSaved ? <Check size={14} /> : <Inbox size={14} />}
                 {basketSaved ? "已加入证据篮" : "加入证据篮"}
               </button>
@@ -234,7 +232,7 @@ export function ChartLabPage({ initialQuery }: { initialQuery?: string }) {
                   <select value={projectId} onChange={(event) => setProjectId(event.target.value)} aria-label="保存到研究项目">
                     {projects.map((project) => <option value={project.id} key={project.id}>{project.title}</option>)}
                   </select>
-                  <button className="primary-button" onClick={saveEvidence} disabled={saving || !projectId}>
+                  <button className="primary-button" onClick={saveEvidence} disabled={saving || loading || !projectId}>
                     {saving ? <LoaderCircle className="spin" size={14} /> : saved ? <Check size={14} /> : <Save size={14} />}
                     {saved ? "已保存引用" : "保存引用证据"}
                   </button>

@@ -32,13 +32,7 @@ def evaluate_release_review(
         if actual_value is not None
         else None
     )
-    revision_status = (
-        "not_reviewed"
-        if not review.reviewed_realtime_start
-        else "unchanged"
-        if realtime_start == review.reviewed_realtime_start
-        else "official_version_changed"
-    )
+    revision_status = "not_compared" if review.reviewed_at else "not_reviewed"
     return {
         "review": review.model_dump(mode="json"),
         "actual": {
@@ -58,6 +52,6 @@ def evaluate_release_review(
             pre_days=review.pre_window_days,
             post_days=review.post_window_days,
         ),
-        "storage_notice": "FRED 实际值仅在本次请求中处理，不写入 SQLite；本地只保存用户预期和 vintage 引用。",
+        "storage_notice": "FRED 实际值和 API 元数据仅在本次请求中展示；只保存用户预期与本地复盘时间，不留存官方 vintage，不能据此判断官方版本是否改变。",
     }
 
