@@ -13,6 +13,7 @@ import type { DailyReport, DailyReportArchiveItem, HealthItem } from "../types";
 import { PageHeading } from "./MarketPages";
 import { briefMarkdown, briefMode, briefModeLabel, reportToBrief } from "../brief";
 import { OnePageBrief } from "../components/OnePageBrief";
+import { WorkflowCapture } from "../components/WorkflowCapture";
 
 function reportMarkdown(report: DailyReport) {
   const lines = [
@@ -40,7 +41,7 @@ function reportMarkdown(report: DailyReport) {
   return lines.join("\n");
 }
 
-export function ResearchPage({ refreshSeed }: { refreshSeed: number }) {
+export function ResearchPage({ refreshSeed, navigate }: { refreshSeed: number; navigate?: (page: string, query?: string) => void }) {
   const [report, setReport] = useState<DailyReport | null>(null);
   const [archives, setArchives] = useState<DailyReportArchiveItem[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -132,12 +133,12 @@ export function ResearchPage({ refreshSeed }: { refreshSeed: number }) {
             <button type="button" aria-pressed={view === "brief"} onClick={() => setView("brief")}>一页简报</button>
             <button type="button" aria-pressed={view === "full"} onClick={() => setView("full")}>完整复盘</button>
           </div>
-          {view === "brief" ? <OnePageBrief
+          {view === "brief" ? <><OnePageBrief
             key={report.report_date}
             document={reportToBrief(report)}
             notes={notesByDate[report.report_date] ?? ""}
             onNotesChange={(notes) => setNotesByDate((current) => ({ ...current, [report.report_date]: notes }))}
-          /> : <>
+          /><div className="brief-workflow-capture"><WorkflowCapture source={{ kind: "brief_note", reportDate: report.report_date, note: notesByDate[report.report_date] ?? "" }} navigate={navigate} /><span>仅转存自己的备注与日期引用，不复制报告行情；确认后原备注仍保留。</span></div></> : <>
           <section className="report-hero">
             <div>
               <span className="eyebrow">{reportModeLabel(report.report_mode).toUpperCase()} BRIEF</span>

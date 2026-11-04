@@ -49,6 +49,10 @@ describe("health presentation", () => {
     expect(marketSessionLabel([health("closed")], "sovereign")).toBe("宏观数据按发布更新");
   });
 
+  it("never presents the synthetic casebook as a live market session", () => {
+    expect(marketSessionLabel([health("trading")], "scenarios")).toBe("独立合成样例 · 非实时");
+  });
+
   it("keeps the global FX session separate from the domestic market clock", () => {
     expect(
       marketSessionLabel(

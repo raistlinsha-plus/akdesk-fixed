@@ -21,6 +21,7 @@ import {
 import { apiDelete, apiDownload, apiGet, apiPatch, apiPost, apiPostFile } from "../api";
 import { AiInsightCard } from "../components/AiInsightCard";
 import { ResearchActionPanel } from "../components/ResearchActionPanel";
+import { ProjectReviewDelta } from "../components/ProjectReviewDelta";
 import { ErrorState, LoadingState, Panel, formatDateTime } from "../components/UI";
 import type {
   ResearchEntryType,
@@ -127,6 +128,9 @@ export function ProjectsPage({
   const [backupStatus, setBackupStatus] = useState<BackupStatus | null>(null);
   const projectImportRef = useRef<HTMLInputElement>(null);
   const backupRestoreRef = useRef<HTMLInputElement>(null);
+  const selectedProjectIdRef = useRef(selectedId);
+
+  useEffect(() => { selectedProjectIdRef.current = selectedId; }, [selectedId]);
 
   function loadProjects(preferredId?: number) {
     setLoading(true);
@@ -165,6 +169,8 @@ export function ProjectsPage({
     }
     let active = true;
     setError(null);
+    setSelected(null);
+    setDraft(null);
     apiGet<ResearchProject>(`/research/projects/${selectedId}`)
       .then((project) => {
         if (active) {
@@ -179,6 +185,20 @@ export function ProjectsPage({
       active = false;
     };
   }, [selectedId]);
+
+  function refreshReviewedProject(projectId: number) {
+    apiGet<ResearchProject>(`/research/projects/${projectId}`)
+      .then(project => {
+        if (selectedProjectIdRef.current !== projectId) return;
+        setSelected(project);
+        // A review checkpoint only changes saved review records. Keep any
+        // unsaved edits in the project form instead of silently replacing them.
+        setProjects(current => current.map(item => item.id === project.id ? project : item));
+      })
+      .catch((reason: unknown) => {
+        if (selectedProjectIdRef.current === projectId) setError(reason instanceof Error ? reason.message : "复盘已记录，但项目资料刷新失败，请重新打开项目。");
+      });
+  }
 
   const grouped = useMemo(
     () => ({
@@ -450,6 +470,13 @@ export function ProjectsPage({
         <div className="project-detail-stack">
           {selected && draft ? (
             <>
+              {selected.id === selectedId ? <ProjectReviewDelta
+                key={selected.id}
+                projectId={selected.id}
+                projectTitle={selected.title}
+                revision={`${selected.updated_at}:${selected.entries.map(entry => `${entry.id}:${entry.updated_at}:${entry.status}`).join("|")}:${selected.evidence.map(evidence => `${evidence.id}:${evidence.created_at}`).join("|")}`}
+                onReviewed={() => refreshReviewedProject(selected.id)}
+              /> : null}
               {(() => {
                 const progress = projectProgress(selected);
                 return (

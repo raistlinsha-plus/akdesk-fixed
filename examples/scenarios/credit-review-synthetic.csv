@@ -1,0 +1,4 @@
+bond_code,bond_name,issuer,maturity_date,rating,rating_date,yield_pct,yield_observation_date,benchmark_tenor,benchmark_yield_pct,benchmark_observation_date,source_note
+DEMO-CREDIT-A,合成样例甲券,合成主体甲（非真实企业）,2029-08-03,AA+,2026-07-01,2.6,2026-08-03,3Y,1.6,2026-08-03,AKDesk 手工合成样例；非真实行情，仅用于学习导入与覆盖门禁
+DEMO-CREDIT-B,合成样例乙券,合成主体乙（非真实企业）,2029-08-03,,2026-07-01,3.1,2026-08-03,3Y,1.6,2026-08-03,AKDesk 手工合成样例；故意缺少评级，不得补零或推断评级
+DEMO-CREDIT-C,合成样例丙券,合成主体丙（非真实企业）,2029-08-03,AA,2026-07-01,2.9,2026-08-03,3Y,1.6,2026-07-31,AKDesk 手工合成样例；故意设置异日基准，不得计算严格利差

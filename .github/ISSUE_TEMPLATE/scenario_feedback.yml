@@ -1,0 +1,49 @@
+name: 五分钟案例体验反馈
+description: 主动分享样例任务是否完成、卡点和再次尝试的意愿；不等于实际业务留存
+title: "[Scenario] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: AKDesk 版本
+      placeholder: v1.2.0
+  - type: input
+    id: scenario
+    attributes:
+      label: 体验案例
+      description: 每日固收观察 / 跟踪一个利率观点 / 信用观察与人工复核；由应用固定字段预填。
+  - type: input
+    id: surface
+    attributes:
+      label: 体验入口
+      description: 静态在线演示或本地案例样例区
+  - type: input
+    id: mode
+    attributes:
+      label: 资料模式
+      description: 本模板用于合成样例，不据此统计真实业务任务完成。
+  - type: input
+    id: result
+    attributes:
+      label: 这次实际体验结果
+      description: 已完成样例任务 / 中途遇到阻碍 / 只浏览了案例；请核对实际情况。
+    validations:
+      required: true
+  - type: input
+    id: reuse
+    attributes:
+      label: 下周是否愿意再试
+      description: 不确定 / 愿意尝试 / 暂时不会；这是意愿，不是已经再次使用。
+  - type: textarea
+    id: obstacle
+    attributes:
+      label: 哪一步有帮助，或卡在哪里？
+      description: 请自行补充操作与预期，不上传 Key、数据库、FRED 响应、私人研究或业务资料。
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 提交前核对
+      options:
+        - label: 我已检查内容，不包含凭据、私人材料或无权公开的数据。
+          required: true

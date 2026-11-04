@@ -19,16 +19,19 @@ import { feedbackUrl } from "../feedback";
 import { DOWNLOAD_URL, REPOSITORY_URL } from "../release";
 import { DEMO_BRIEF, DEMO_CURVE, DEMO_DATE, DEMO_SIGNALS } from "./demoData";
 import { demoTourUrl, demoTourPosterUrl, demoTourCaptionsUrl } from "./demoMedia";
+import { ScenarioCards, ScenariosPage } from "../pages/ScenariosPage";
+import { ScenarioFeedback } from "../components/ScenarioFeedback";
 
 const LineChart = lazy(() => import("../components/Charts").then((module) => ({ default: module.LineChart })));
 const BarChart = lazy(() => import("../components/Charts").then((module) => ({ default: module.BarChart })));
 const FEEDBACK = feedbackUrl("feature", "demo", "demo");
-type DemoPage = "overview" | "changes" | "curves" | "brief";
+type DemoPage = "overview" | "changes" | "curves" | "brief" | "scenarios";
 const PAGES: Array<{ id: DemoPage; label: string; step?: string }> = [
   { id: "overview", label: "产品概览" },
   { id: "changes", label: "市场变化", step: "01" },
   { id: "curves", label: "曲线核验", step: "02" },
   { id: "brief", label: "一页简报", step: "03" },
+  { id: "scenarios", label: "场景案例" },
 ];
 
 function pageFromHash(): DemoPage {
@@ -36,9 +39,11 @@ function pageFromHash(): DemoPage {
   return PAGES.some((page) => page.id === id) ? id as DemoPage : "overview";
 }
 
-function navigate(page: DemoPage) {
-  window.location.hash = `/${page}`;
+function navigate(page: DemoPage, query = "") {
+  window.location.hash = `/${page}${query ? `?q=${encodeURIComponent(query)}` : ""}`;
 }
+
+function scenarioFromHash() { return new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("q") ?? ""; }
 
 function ChartPlaceholder() {
   return <div className="demo-chart-loading" role="status">正在载入示例图表…</div>;
@@ -55,6 +60,7 @@ function SourceNote() {
 
 export function DemoApp() {
   const [page, setPage] = useState<DemoPage>(pageFromHash);
+  const [scenarioId, setScenarioId] = useState(scenarioFromHash);
   const [category, setCategory] = useState("all");
   const [comparePrevious, setComparePrevious] = useState(true);
   const [curveKind, setCurveKind] = useState("government");
@@ -64,6 +70,7 @@ export function DemoApp() {
   useEffect(() => {
     const onRoute = () => {
       setPage(pageFromHash());
+      setScenarioId(scenarioFromHash());
       window.scrollTo({ top: 0 });
     };
     window.addEventListener("hashchange", onRoute);
@@ -161,6 +168,7 @@ export function DemoApp() {
               </div>
             </section>
 
+            <section className="demo-casebook"><h2>从市场观察，再往研究与信用走一步</h2><p>三个约五分钟的合成案例：有步骤、有成品，也有数据边界。不连接后端，不写入个人研究库。</p><ScenarioCards onSelect={id => navigate("scenarios", id)} /></section>
             <section className="demo-full-version"><div><h2>继续使用真实数据和本地研究工作流</h2><p>本地版还包括现券、信用观察、统一自选、研究项目、专题和周期复盘。普通使用需 macOS 与 Python 3.11–3.13。</p></div><a className="demo-button demo-button-outline" href={DOWNLOAD_URL} target="_blank" rel="noreferrer">查看安装说明 <ArrowUpRight size={15} /></a></section>
             <section className="demo-video" aria-labelledby="demo-video-heading">
               <div className="demo-section-title"><div><h2 id="demo-video-heading">60 秒看完这条研究路径</h2><p>真实界面截图导览，固定合成示例。可直接播放，也可下载分享。</p></div><a className="demo-button demo-button-outline" href={demoTourUrl} download="AKDesk-60秒导览.mp4"><Download size={15} /> 下载视频</a></div>
@@ -210,9 +218,11 @@ export function DemoApp() {
           <>
             <div className="demo-page-heading"><div><p className="demo-eyebrow">03 / TAKE AWAY</p><h1>一页固收简报</h1><p>在下方添加临时备注，复制或下载 Markdown，也可以打印为 PDF。</p></div><SourceNote /></div>
             <OnePageBrief key={resetSeed} document={DEMO_BRIEF} />
-            <section className="demo-completion"><div className="demo-completion-icon"><Check size={22} /></div><div><h2>你已经完成一条从变化到产出的路径</h2><p>喜欢这个工作方式？下载本地版连接真实数据，或告诉我们哪一步最需要改善。</p></div><div><a className="demo-button demo-button-primary" href={DOWNLOAD_URL} target="_blank" rel="noreferrer"><Download size={15} /> 下载本地版</a><a className="demo-button demo-button-outline" href={FEEDBACK} target="_blank" rel="noreferrer"><MessageSquare size={15} /> 提交反馈</a></div></section>
+            <div className="scenario-page"><ScenarioFeedback key={resetSeed} scenario="daily" surface="online" /></div>
+            <section className="demo-completion"><div className="demo-completion-icon"><Check size={22} /></div><div><h2>你已到达简报成品页</h2><p>是否完成任务由你判断，不自动统计。可下载本地版继续核验真实数据，或主动分享体验。</p></div><div><a className="demo-button demo-button-primary" href={DOWNLOAD_URL} target="_blank" rel="noreferrer"><Download size={15} /> 下载本地版</a><a className="demo-button demo-button-outline" href={FEEDBACK} target="_blank" rel="noreferrer"><MessageSquare size={15} /> 提交反馈</a></div></section>
           </>
         ) : null}
+        {page === "scenarios" ? <ScenariosPage key={resetSeed} selectedId={scenarioId} surface="online" onSelect={id => navigate("scenarios", id)} /> : null}
       </main>
 
       <footer className="demo-footer"><div><strong>AKDesk Fixed</strong><span>MIT 开源 · 本地优先 · 个人研究</span></div><p>当前为固定合成样例，不代表真实行情。本地版使用公开数据，适合个人学习与研究。</p><a href={FEEDBACK} target="_blank" rel="noreferrer">反馈体验 <ArrowUpRight size={13} /></a></footer>

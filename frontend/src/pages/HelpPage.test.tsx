@@ -11,6 +11,13 @@ vi.mock("./MarketPages", () => ({ PageHeading: ({ title }: { title: string }) =>
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 
 describe("HelpPage voluntary diagnostics", () => {
+  it("opens a selected case without creating a project or requesting diagnostics", async () => {
+    const navigate = vi.fn();
+    render(<HelpPage navigate={navigate} />);
+    await userEvent.click(screen.getByRole("button", { name: "体验信用观察与人工复核" }));
+    expect(navigate).toHaveBeenCalledExactlyOnceWith("scenarios", "credit");
+    expect(apiGet).not.toHaveBeenCalled();
+  });
   it("does not request diagnostics until asked, and routes the first task locally", async () => {
     const navigate = vi.fn();
     const user = userEvent.setup();

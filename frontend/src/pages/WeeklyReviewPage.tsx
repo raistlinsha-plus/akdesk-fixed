@@ -6,30 +6,38 @@ import type { WeeklyReport } from "../types";
 import { shanghaiDate } from "../researchUtils";
 import { PageHeading } from "./MarketPages";
 
-export function WeeklyReviewPage({ refreshSeed }: { refreshSeed: number }) {
+export function WeeklyReviewPage({ refreshSeed, navigate }: { refreshSeed: number; navigate?: (page: string, query?: string) => void }) {
   const [report, setReport] = useState<WeeklyReport | null>(null);
   const [endDate, setEndDate] = useState(shanghaiDate);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadSeed, setReloadSeed] = useState(0);
 
-  function load() {
+  useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
-    apiGet<WeeklyReport>(`/research/weekly-report${endDate ? `?end=${endDate}` : ""}`)
-      .then(setReport)
-      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "周报加载失败"))
-      .finally(() => setLoading(false));
-  }
+    setReport(null);
+    if (!endDate) { setError("请选择周结束日"); setLoading(false); return () => { active = false; }; }
+    apiGet<WeeklyReport>(`/research/weekly-report?end=${endDate}`, { signal: controller.signal })
+      .then(value => { if (active) setReport(value); })
+      .catch((reason: unknown) => { if (active && !controller.signal.aborted) setError(reason instanceof Error ? reason.message : "周报加载失败"); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; controller.abort(); };
+  }, [refreshSeed, endDate, reloadSeed]);
 
-  useEffect(load, [refreshSeed, endDate]);
+  function projectLink(item: Record<string, unknown>, titleField = "title") {
+    return navigate ? <button type="button" className="text-button" onClick={() => navigate("projects", String(item.project_id ?? item.id))}>{String(item[titleField])} → 项目复盘</button> : <strong>{String(item[titleField])}</strong>;
+  }
 
   return (
     <div className="page-stack weekly-review-page">
       <PageHeading eyebrow="WEEKLY REVIEW" title="每周研究复盘" description="汇总项目更新、反证、任务、发布复盘和待复盘事项" />
       <div className="filter-bar">
         <label><span>周结束日</span><input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label>
-        <button className="secondary-button" onClick={load}><RefreshCcw size={14} /> 刷新</button>
-        <button className="secondary-button" onClick={() => apiDownload(`/research/weekly-report?format=markdown${endDate ? `&end=${endDate}` : ""}`, "akdesk-weekly.md")}><Download size={14} /> Markdown</button>
+        <button className="secondary-button" onClick={() => setReloadSeed(value => value + 1)} disabled={loading}><RefreshCcw size={14} /> 刷新</button>
+        <button className="secondary-button" disabled={loading || !report} onClick={() => report && apiDownload(`/research/weekly-report?format=markdown&end=${report.end_date}`, "akdesk-weekly.md")}><Download size={14} /> Markdown</button>
       </div>
       <p className="filter-context-note">当前报告按 {endDate} 作为周结束日；修改日期后会立即重新生成。</p>
       {loading ? <LoadingState /> : null}
@@ -46,7 +54,7 @@ export function WeeklyReviewPage({ refreshSeed }: { refreshSeed: number }) {
           </div>
           <Panel title={`复盘区间 · ${report.start_date} 至 ${report.end_date}`} eyebrow="RESEARCH CADENCE">
             <div className="weekly-review-grid">
-              <section><h3>待复盘项目</h3>{report.due_projects.length ? report.due_projects.map((item) => <article key={String(item.id)}><strong>{String(item.title)}</strong><span>置信度 {String(item.confidence)} · {String(item.next_review_date)}</span></article>) : <p>本周没有到期项目。</p>}</section>
+              <section><h3>待复盘项目</h3>{report.due_projects.length ? report.due_projects.map((item) => <article key={String(item.id)}>{projectLink(item)}<span>置信度 {String(item.confidence)} · {String(item.next_review_date)}</span></article>) : <p>本周没有到期项目。</p>}</section>
               <section><h3>研究活动</h3>{report.activity.length ? report.activity.slice(0, 20).map((item) => <article key={String(item.id)}><strong>{String(item.project_title)}</strong><span>{String(item.summary)}</span><small>{formatDateTime(String(item.created_at))}</small></article>) : <p>本周尚无项目活动。</p>}</section>
               <section><h3>发布复盘</h3>{report.release_reviews.length ? report.release_reviews.map((item) => <article key={String(item.id)}><strong>{String(item.title)}</strong><span>{String(item.series_id)} · {String(item.release_date)}</span></article>) : <p>本周没有发布复盘。</p>}</section>
             </div>
@@ -62,13 +70,13 @@ export function WeeklyReviewPage({ refreshSeed }: { refreshSeed: number }) {
               <section>
                 <h3>下周待验证</h3>
                 {report.open_tasks.length ? report.open_tasks.map((item) => (
-                  <article key={String(item.id)}><strong>{String(item.project_title)}</strong><span>{String(item.title)}</span><small>{item.due_date ? `到期 ${String(item.due_date)}` : "尚未设置到期日"}</small></article>
+                  <article key={String(item.id)}>{projectLink(item, "project_title")}<span>{String(item.title)}</span><small>{item.due_date ? `到期 ${String(item.due_date)}` : "尚未设置到期日"}</small></article>
                 )) : <p>当前没有未完成研究任务。</p>}
               </section>
               <section>
                 <h3>下次复盘</h3>
                 {report.next_reviews.length ? report.next_reviews.map((item) => (
-                  <article key={String(item.id)}><strong>{String(item.title)}</strong><span>{String(item.next_review_date)}</span></article>
+                  <article key={String(item.id)}>{projectLink(item)}<span>{String(item.next_review_date)}</span></article>
                 )) : <p>尚未设置项目复盘日期。</p>}
               </section>
             </div>

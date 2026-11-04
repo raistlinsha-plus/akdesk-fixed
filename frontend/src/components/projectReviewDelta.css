@@ -1,0 +1,35 @@
+.project-review-delta {min-width:0}
+.project-review-delta p {font-size:13px;line-height:1.8;color:var(--text-soft);overflow-wrap:anywhere}
+.project-review-delta .panel-header {gap:14px;flex-wrap:wrap}
+.project-review-delta .panel-header h2 {font-size:18px;line-height:1.5}
+.project-review-target {margin:0 0 14px}
+.project-review-target strong,.project-review-confirmation strong {color:var(--text)}
+.project-review-baseline {padding:12px 14px;border-left:2px solid var(--accent);background:var(--panel-raised);border-radius:5px}
+.project-review-counts {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.project-review-counts>div {display:grid;gap:5px;padding:13px 14px;border:1px solid var(--border);border-radius:8px;background:var(--panel-raised);min-width:0}
+.project-review-counts span {font-size:12px;color:var(--text-soft)}
+.project-review-counts strong {font-size:24px;line-height:1.4;font-variant-numeric:tabular-nums}
+.project-review-sections {display:grid;gap:12px;margin:18px 0}
+.project-review-sections details {border:1px solid var(--border);border-radius:8px;padding:12px 14px;min-width:0}
+.project-review-sections summary {font-size:14px;line-height:1.7;font-weight:600;cursor:pointer}
+.project-review-scroll {max-height:330px;overflow:auto;margin-top:10px}
+.project-review-scroll ul {list-style:none;padding:0;margin:0;display:grid;gap:0}
+.project-review-scroll li {display:grid;gap:5px;padding:11px 0;border-top:1px solid var(--border);overflow-wrap:anywhere}
+.project-review-scroll li:first-child {border-top:0}
+.project-review-scroll li strong {font-size:13px;line-height:1.7;color:var(--text);font-weight:600}
+.project-review-scroll li>span,.project-review-scroll li>small {color:var(--text-soft);font-size:12px;line-height:1.7}
+.project-review-scroll li>p {font-size:12px;margin:0}
+.project-review-delta .project-review-small {font-size:12px;line-height:1.8}
+.project-review-delta .project-review-warning {padding:12px 14px;border:1px solid var(--amber);border-radius:7px;color:var(--amber)}
+.project-evidence-status.reference_only .project-evidence-status-label {color:var(--accent)}
+.project-evidence-status.expired .project-evidence-status-label,.project-evidence-status.missing_time .project-evidence-status-label,.project-evidence-status.needs_verification .project-evidence-status-label {color:var(--amber)}
+.project-review-explicit-write {margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.project-review-confirmation {padding:16px;margin-top:12px;border:1px solid var(--border);border-radius:8px;background:var(--panel-raised)}
+.project-review-confirmation>label:not(.project-review-checkbox) {display:block;font-size:12px;line-height:1.7;color:var(--text-soft);margin:12px 0 7px}
+.project-review-confirmation textarea {display:block;width:100%;resize:vertical;min-height:90px;padding:11px;border:1px solid var(--border);border-radius:6px;background:var(--panel);color:var(--text);font:inherit;font-size:13px;line-height:1.8}
+.project-review-checkbox {display:flex;align-items:flex-start;gap:10px;margin:14px 0;cursor:pointer;color:var(--text-soft);font-size:13px;line-height:1.8}
+.project-review-checkbox input {width:16px;height:16px;flex:none;margin-top:4px;accent-color:var(--accent)}
+.project-review-delta .project-review-message {color:var(--accent)}
+.project-review-delta button {min-height:40px}
+.project-review-delta button:disabled {cursor:not-allowed;opacity:.5}
+@media(max-width:560px){.project-review-counts {grid-template-columns:repeat(2,minmax(0,1fr))}.project-review-sections details,.project-review-confirmation {padding:12px}.project-review-counts>div {padding:10px}.project-review-delta .panel-header h2 {font-size:17px}}

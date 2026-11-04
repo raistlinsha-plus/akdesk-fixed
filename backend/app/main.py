@@ -90,6 +90,8 @@ from .models import (
     ResearchTopicUpdate,
     WatchlistCreate,
     WatchlistUpdate,
+    WorkflowCaptureCreate,
+    ReviewCheckpointCreate,
 )
 from .paths import default_data_dir
 from .provider import DataService
@@ -113,6 +115,10 @@ from .topics import (
 )
 from .watchlist import enrich_watchlist
 from .world_bank import WorldBankProviderError, WorldBankService
+from .workflow import (
+    WorkflowConflict, WorkflowNotFound, review_checkpoint,
+    review_delta, workflow_capture,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = default_data_dir(PROJECT_ROOT)
@@ -699,6 +705,36 @@ def get_research_project_summary(project_id: int):
     if summary is None:
         raise HTTPException(status_code=404, detail="研究项目不存在")
     return summary
+
+
+@app.get("/api/v1/research/projects/{project_id}/review-delta")
+def project_review_delta(project_id: int):
+    try:
+        return review_delta(database, project_id)
+    except WorkflowNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except WorkflowConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/v1/research/projects/{project_id}/review-checkpoint")
+def confirm_project_review(project_id: int, request: ReviewCheckpointCreate):
+    try:
+        return review_checkpoint(database, project_id, request)
+    except WorkflowNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except WorkflowConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/v1/research/projects/{project_id}/workflow-capture")
+def capture_project_workflow(project_id: int, request: WorkflowCaptureCreate):
+    try:
+        return workflow_capture(database, service, project_id, request, research_signal_settings())
+    except WorkflowNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except WorkflowConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @app.patch("/api/v1/research/projects/{project_id}")

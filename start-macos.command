@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 VENV="$ROOT/.venv"
 URL="http://127.0.0.1:8765"
-EXPECTED_VERSION="1.1.1"
+EXPECTED_VERSION="1.2.0"
 REQUIREMENTS_LOCK="$ROOT/backend/requirements.lock"
 REQUIREMENTS_STAMP="$VENV/.akdesk-requirements.sha256"
 
@@ -85,7 +85,7 @@ REQUIREMENTS_HASH="$(shasum -a 256 "$REQUIREMENTS_LOCK" | awk '{print $1}')"
 INSTALLED_HASH="$(cat "$REQUIREMENTS_STAMP" 2>/dev/null || true)"
 
 if [[ "$INSTALLED_HASH" != "$REQUIREMENTS_HASH" ]] || \
-  ! "$VENV/bin/python" -c 'import importlib.metadata as m; assert m.version("akshare") == "1.19.1"; import fastapi, h2, httpx, openpyxl, pandas, uvicorn' 2>/dev/null; then
+  ! "$VENV/bin/python" -c 'from pathlib import Path; import importlib.metadata as m, sys; expected = next(line.partition("==")[2].strip() for line in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines() if line.startswith("akshare==")); assert m.version("akshare") == expected; import fastapi, h2, httpx, openpyxl, pandas, uvicorn' "$REQUIREMENTS_LOCK" 2>/dev/null; then
   echo "首次运行：正在安装行情与本地服务依赖（通常需要 2–5 分钟）……"
   PYTHON_CERT="$("$PYTHON" -c 'import certifi; print(certifi.where())' 2>/dev/null || true)"
   if [[ -n "$PYTHON_CERT" && -f "$PYTHON_CERT" ]]; then

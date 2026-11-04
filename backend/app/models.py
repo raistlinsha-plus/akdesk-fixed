@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Generic, Literal, TypeVar
+from uuid import UUID
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel, Field, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 T = TypeVar("T")
 
@@ -407,6 +408,52 @@ class ResearchEntryItem(ResearchEntryCreate):
     project_id: int
     created_at: datetime
     updated_at: datetime
+
+
+class WorkflowCaptureCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["market_signal", "brief_note"]
+    request_id: UUID
+    confirmed: Literal[True]
+    note: str = Field(default="", max_length=8_000)
+    signal_id: str | None = Field(default=None, min_length=1, max_length=200)
+    expected_fetched_at: str | None = Field(default=None, min_length=1, max_length=50)
+    report_date: date | None = None
+
+    @field_validator("confirmed", mode="before")
+    @classmethod
+    def explicit_confirmation(cls, value):
+        if value is not True:
+            raise ValueError("请明确确认后再写入研究记录")
+        return value
+
+    @model_validator(mode="after")
+    def validate_capture_kind(self):
+        self.note = self.note.strip()
+        if self.kind == "market_signal":
+            if not self.signal_id or not self.expected_fetched_at or self.report_date is not None:
+                raise ValueError("市场变化须提供信号标识和已预览抓取时点，不接受报告日期")
+            try:
+                datetime.fromisoformat(self.expected_fetched_at)
+            except ValueError as exc:
+                raise ValueError("抓取时点格式无效") from exc
+        elif not self.note or self.report_date is None or self.signal_id is not None or self.expected_fetched_at is not None:
+            raise ValueError("简报备注须提供报告日期与人工文字，不接受行情字段")
+        return self
+
+
+class ReviewCheckpointCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
+    confirmed: Literal[True]
+    note: str = Field(default="", max_length=2_000)
+
+    @field_validator("confirmed", mode="before")
+    @classmethod
+    def explicit_confirmation(cls, value):
+        if value is not True:
+            raise ValueError("请明确确认已核对本次项目更新")
+        return value
 
 
 ResearchActionType = Literal["task", "counter_evidence", "review"]

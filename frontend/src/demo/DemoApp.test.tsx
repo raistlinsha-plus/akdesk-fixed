@@ -43,6 +43,21 @@ afterEach(async () => {
 afterAll(() => vi.restoreAllMocks());
 
 describe("static GitHub demo", () => {
+  it("opens shared case deep links and handles history without requesting data", async () => {
+    window.history.replaceState(null, "", "/akdesk-fixed/#/scenarios?q=credit");
+    const user = userEvent.setup();
+    render(<DemoApp />);
+    expect(screen.getByRole("heading", { level: 1, name: "信用观察与人工复核" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "选择复核任务" }));
+    expect(screen.getByRole("button", { name: "下载样例 Markdown" })).toBeTruthy();
+    window.history.replaceState(null, "", "/akdesk-fixed/#/scenarios?q=rates");
+    fireEvent(window, new PopStateEvent("popstate"));
+    await screen.findByRole("heading", { level: 1, name: "跟踪一个利率观点" });
+    expect(screen.getByLabelText("样例研究问题")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "重置体验" }));
+    await screen.findByRole("heading", { level: 1, name: "看懂一组市场变化，带走一页研究底稿。" });
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it("completes the sample workflow without calling any backend", async () => {
     const user = userEvent.setup();
     render(<DemoApp />);

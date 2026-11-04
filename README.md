@@ -2,7 +2,9 @@
 
 把资金、曲线与国债期货的变化，整理成一页带出处的固收简报。
 
-[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#本地安装三步) [![v1.1.1](https://img.shields.io/badge/version-v1.1.1-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)
+**v1.2.0「每日研究工作流版」**：从一条合格市场变化关联已有项目，把简报人工备注主动转存为笔记，再按上次明确复盘基线核对新增证据、时点和待验证任务。包含此前本地 v1.1.2 的三条合成案例，不增加源、模型或默认遥测。[产品与使用指南](./docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md) · [验收及发布记录](./docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md)。实际下载/部署以 Release 与 Actions 为准。
+
+[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#本地安装三步) [![v1.2.0](https://img.shields.io/badge/version-v1.2.0-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)
 
 **v1.1.1 数据边界更新（2026-11-03）**：适配 AKShare 1.20.22 的上游限流停试；FRED 内容不做数值导出或 AI 处理，研究只保存查询引用；市场导出保留使用边界。自备 Key、软件 MIT 或连接成功均不等于数据授权。参见[数据使用规则](./DATA_USAGE.md)与[升级说明](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md)。
 
@@ -23,7 +25,7 @@
 macOS 12+ 为兼容目标；本轮实际验证环境为 macOS 26.6.2 / Apple Silicon，其他系统小版本未逐一实机验收。
 
 1. 准备受支持的 Python。使用 Homebrew 时可执行 `brew install python@3.13`。
-2. 在 [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) 选择 `AKDesk-Fixed-v1.1.1.zip` 正式资源，核对对应 SHA-256，完整解压。
+2. 在 [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) 选择 `AKDesk-Fixed-v1.2.0.zip` 正式资源，核对对应 SHA-256，完整解压；以页面实际可用资源为准。
 3. 双击 `start-macos.command`。启动器执行本地预检、安装锁定依赖，并打开 `http://127.0.0.1:8765`。
 
 GitHub 自动生成的 **Source code** 压缩包用于源码查看和开发，与经过发布清单、构建资源和执行权限检查的正式 ZIP 不同；源码用户可能需要自行构建界面或恢复脚本权限。实际可下载版本与验收结果以 Release 页面和 [发布与验收记录](./docs/AKDesk-Fixed-v1.1.0-发布与验收记录.md) 为准。
@@ -69,6 +71,9 @@ This product uses the FRED® API but is not endorsed or certified by the Federal
 不适合作为机构生产交易、正式估值、会计核算、监管报送或风控限额的唯一依据。公开数据的时效和连续性受上游影响；产品不承诺实时行情或机构级 SLA，不构成投资建议。
 
 ## 文档与反馈
+
+- [v1.2 产品与使用指南](./docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md) · [发布与验收](./docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md)
+- [三条场景指南](./docs/AKDesk-Fixed-v1.1.2-场景案例与使用指南.md) · [English casebook](./docs/examples/AKDesk-v1.1.2-casebook-EN.md) · [利率研究成品](./docs/examples/AKDesk-v1.1.2-利率研究样例.md) · [信用复核成品](./docs/examples/AKDesk-v1.1.2-信用复核样例.md)
 
 - [v1.1 产品介绍](./docs/AKDesk-Fixed-v1.1.0-产品介绍.md) · [用户手册](./docs/AKDesk-Fixed-v1.1.0-用户手册.md) · [测试用例清单](./docs/AKDesk-Fixed-v1.1.0-测试用例清单.md)
 - [发布与验收记录](./docs/AKDesk-Fixed-v1.1.0-发布与验收记录.md) · [更新记录](./CHANGELOG.md) · [公开路线图](./ROADMAP.md)

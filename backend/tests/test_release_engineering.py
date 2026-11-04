@@ -25,6 +25,11 @@ def release_document_fixture(tmp_path, monkeypatch):
         "DATA_USAGE.md": "数据使用边界\n",
         "SUPPORT.md": "用户支持\n",
         "docs/AKDesk-Fixed-v1.1.1-数据规则适配说明.md": "本版说明\n",
+        "docs/AKDesk-Fixed-v1.1.2-场景案例与使用指南.md": "本版合成案例指南\n",
+        "docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md": "本版工作流指南\n",
+        "docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md": "本版验收范围\n",
+        "docs/examples/AKDesk-v1.1.2-casebook-EN.md": "English synthetic casebook\n",
+        "examples/scenarios/credit-review-synthetic.csv": "bond_code\nDEMO-CREDIT-A\n",
         "docs/AKDesk-Fixed-v1.1.0-用户手册.md": "当前手册\n",
         "docs/audits/old/旧 复核.md": "历史评审原文\n",
         "docs/AKDesk-Fixed-v0.18.0-产品介绍.md": "历史产品文档\n",
@@ -90,6 +95,11 @@ def test_release_whitelist_excludes_historical_and_unreviewed_media(
     assert "DATA_USAGE.md" in files
     assert "SUPPORT.md" in files
     assert "docs/AKDesk-Fixed-v1.1.1-数据规则适配说明.md" in files
+    assert "docs/AKDesk-Fixed-v1.1.2-场景案例与使用指南.md" in files
+    assert "docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md" in files
+    assert "docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md" in files
+    assert "docs/examples/AKDesk-v1.1.2-casebook-EN.md" in files
+    assert "examples/scenarios/credit-review-synthetic.csv" in files
     assert "docs/AKDesk-Fixed-v1.1.0-用户手册.md" in files
     assert "docs/media/v1.1.0/05-brief.png" in files
     assert "docs/audits/old/旧 复核.md" not in files

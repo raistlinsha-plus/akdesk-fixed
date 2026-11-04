@@ -34,6 +34,7 @@ import {
   LoadingState,
 } from "../components/UI";
 import { PageHeading } from "./MarketPages";
+import { WorkflowCapture } from "../components/WorkflowCapture";
 
 const categoryCopy: Record<MarketResearchSignal["category"], string> = {
   funding: "资金",
@@ -308,6 +309,7 @@ export function MarketChangesPage({
                       >
                         去{routeCopy[signal.category]}核验 <ArrowRight size={13} />
                       </button>
+                      <WorkflowCapture source={{ kind: "market_signal", signal }} navigate={navigate} />
                     </aside>
                   </article>
                 </li>
@@ -322,7 +324,7 @@ export function MarketChangesPage({
             ) : null}
             <footer className="market-change-notice">
               <ShieldCheck size={13} />
-              <span>{brief.notice}</span>
+              <span>{brief.notice} 本页单条快捷关联采用更严格门禁：只接受可信、可行动、非演示、近期且来源缓存未过期的信号；最终以保存前服务器核验为准。</span>
             </footer>
           </section>
         </>

@@ -1,7 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { diagnosticMarkdown, feedbackUrl } from "./feedback";
+import { diagnosticMarkdown, feedbackUrl, scenarioFeedback } from "./feedback";
 
 describe("voluntary feedback", () => {
+  it("only allows fixed scenario metadata, including against inherited object keys", () => {
+    const result = scenarioFeedback("/Users/private?key=secret", "toString", "constructor", "private-host");
+    expect(result.preview).toContain("未指定案例");
+    expect(result.preview).toContain("未选择");
+    expect(result.url).not.toContain("private");
+    expect(result.url).not.toContain("secret");
+    expect(new URL(result.url).searchParams.has("body")).toBe(false);
+    const url = new URL(scenarioFeedback("credit", "completed", "no", "local").url);
+    expect(url.searchParams.get("template")).toBe("scenario_feedback.yml");
+    expect(url.searchParams.get("scenario")).toBe("信用观察与人工复核");
+    expect(url.searchParams.get("result")).toBe("已完成样例任务");
+    expect(url.searchParams.get("reuse")).toBe("暂时不会");
+  });
   it("prefills only version, mode and sanitized page, without browser context", () => {
     const url = new URL(feedbackUrl("data", "/Users/private?key=hello", "demo"));
     expect(url.origin).toBe("https://github.com");

@@ -6,8 +6,9 @@ import { APP_VERSION, DEMO_URL, DOWNLOAD_URL, REPOSITORY_URL } from "../release"
 import { PageHeading } from "./MarketPages";
 import "./help.css";
 import { DATA_RULES_REVIEWED_AT, DATA_USAGE_NOTICE, FRED_USAGE_NOTICE } from "../dataUsage";
+import { ScenarioCards } from "./ScenariosPage";
 
-export function HelpPage({ navigate }: { navigate: (page: string) => void }) {
+export function HelpPage({ navigate }: { navigate: (page: string, query?: string) => void }) {
   const [report, setReport] = useState<DiagnosticReport | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -45,6 +46,7 @@ export function HelpPage({ navigate }: { navigate: (page: string) => void }) {
 
   return <div className="page-stack help-page">
     <PageHeading eyebrow="GET STARTED & FEEDBACK" title="使用与反馈" description={`AKDesk Fixed v${APP_VERSION} · 从一份简报开始，遇到问题也能找到下一步。`} />
+    <section className="help-casebook panel"><span className="eyebrow">FIVE-MINUTE CASEBOOK</span><h2>选一个任务，先用合成资料练习</h2><p>独立样例不会写入研究库。先看方法与成品，再进入正式模块；不需要 FRED 或 AI Key。</p><ScenarioCards onSelect={id => navigate("scenarios", id)} /></section>
     <section className="help-start panel">
       <div><LifeBuoy size={24} /><h2>先完成一次市场复盘</h2><p>查看变化，回到曲线核验，再把资金、曲线与期货整理成带出处的简报。</p></div>
       <div className="help-steps">

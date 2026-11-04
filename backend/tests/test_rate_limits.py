@@ -5,7 +5,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import redirect_stdout
-from datetime import date
+from datetime import date, datetime
 from types import SimpleNamespace
 
 import pandas as pd
@@ -33,13 +33,20 @@ Push2RateLimitError = type(
 
 
 @pytest.fixture
-def worker_protocol(monkeypatch):
+def worker_protocol(monkeypatch, request):
     """Run both worker entry points in memory; no child, network, key or DB."""
     monkeypatch.setenv("AKDESK_DEMO", "0")
     monkeypatch.delenv("AKDESK_SOURCE_WORKER", raising=False)
     monkeypatch.delenv(PUSH2_COOLDOWN_ENV, raising=False)
     monkeypatch.setenv("AKDESK_SOURCE_ATTEMPTS", "3")
-    clock = [time.time()]
+    # Source observation dates are independent of the cooldown's artificial
+    # clock. Advancing time.time() can otherwise make date.today() cross
+    # midnight while provider datetime.now() remains on the preceding day.
+    observation_date = date.today()
+    started = time.time()
+    if getattr(request, "param", None) == "near_midnight":
+        started = datetime.now().replace(hour=23, minute=58, second=0, microsecond=0).timestamp()
+    clock = [started]
     monkeypatch.setattr("app.provider.time.time", lambda: clock[0])
     state = {
         "primary": 0,
@@ -69,7 +76,7 @@ def worker_protocol(monkeypatch):
         state["lpr"] += 1
         if state["limit_lpr"]:
             raise RateLimitError("another upstream is limited")
-        return pd.DataFrame([{"TRADE_DATE": date.today(), "LPR1Y": 3.0, "LPR5Y": 3.5}])
+        return pd.DataFrame([{"TRADE_DATE": observation_date, "LPR1Y": 3.0, "LPR5Y": 3.5}])
 
     monkeypatch.setitem(
         sys.modules,
@@ -130,6 +137,7 @@ def test_limit_detection_uses_exception_identity_not_error_text() -> None:
     assert not is_rate_limit_error(unrelated("429"))
 
 
+@pytest.mark.parametrize("worker_protocol", ["default", "near_midnight"], indirect=True)
 def test_push2_cooldown_survives_successful_fallback_and_force(worker_protocol) -> None:
     service, state, clock = worker_protocol
     started = clock[0]

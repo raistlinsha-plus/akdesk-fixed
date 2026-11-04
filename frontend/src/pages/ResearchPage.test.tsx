@@ -2,11 +2,11 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiGet } from "../api";
+import { ApiError, apiGet, apiPost } from "../api";
 import type { DailyReport } from "../types";
 import { ResearchPage } from "./ResearchPage";
 
-vi.mock("../api", () => ({ apiGet: vi.fn() }));
+vi.mock("../api", () => ({ apiGet: vi.fn(), apiPost: vi.fn(), ApiError: class extends Error { status: number; constructor(status: number, message: string) { super(message); this.status = status; } } }));
 vi.mock("./MarketPages", () => ({ PageHeading: ({ title }: { title: string }) => <h1>{title}</h1> }));
 
 function report(date: string): DailyReport {
@@ -30,6 +30,31 @@ afterEach(() => {
 });
 
 describe("ResearchPage temporary notes", () => {
+  it("explicitly transfers only manual notes to a project and retains them on failure and success", async () => {
+    vi.mocked(apiGet).mockImplementation(async path => {
+      if (path === "/research/daily-reports") return [];
+      if (path === "/research/projects") return [{ id: 9, title: "我的研究", status: "tracking" }];
+      return report("2026-07-27");
+    });
+    vi.mocked(apiPost).mockRejectedValueOnce(new ApiError(0, "响应未知"));
+    vi.mocked(apiPost).mockResolvedValueOnce({ project_id: 9, entry_id: 7, evidence_id: null, deduplicated: true });
+    const user = userEvent.setup();
+    render(<ResearchPage refreshSeed={0} navigate={vi.fn()} />);
+    await user.type(await screen.findByRole("textbox"), "只记录自己对期限分化的疑问");
+    await user.click(screen.getByRole("button", { name: "将人工备注保存为研究笔记" }));
+    await screen.findByRole("option", { name: "我的研究" });
+    await user.selectOptions(screen.getByLabelText("目标研究项目"), "9");
+    await user.click(screen.getByRole("button", { name: "预览保存内容" }));
+    expect(apiPost).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "确认保存到该项目" }));
+    await screen.findByRole("alert");
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("只记录自己对期限分化的疑问");
+    await user.click(screen.getByRole("button", { name: "确认保存到该项目" }));
+    await screen.findByText(/已保存到「我的研究」/);
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("只记录自己对期限分化的疑问");
+    expect(vi.mocked(apiPost).mock.calls[0][1]).toEqual({ kind: "brief_note", request_id: expect.any(String), confirmed: true, note: "只记录自己对期限分化的疑问", report_date: "2026-07-27" });
+    expect(vi.mocked(apiPost).mock.calls[1][1]).toEqual(vi.mocked(apiPost).mock.calls[0][1]);
+  });
   it("preserves the current date's notes through full-view checks and keeps other dates separate", async () => {
     vi.mocked(apiGet).mockImplementation(async (path) => {
       if (path === "/research/daily-reports") return [{ report_date: "2026-07-28", report_mode: "close", confidence_level: "low", updated_at: "2026-07-28" }];

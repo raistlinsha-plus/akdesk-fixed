@@ -24,6 +24,7 @@ frontend/dist-demo/
 .tmp/
 tmp/
 release/
+.release/
 docs/*.pptx
 docs/~$*
 

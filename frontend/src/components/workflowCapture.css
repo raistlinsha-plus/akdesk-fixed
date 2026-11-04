@@ -1,0 +1,32 @@
+.workflow-capture-trigger{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:9px 12px;border:1px solid var(--border-strong);border-radius:7px;background:var(--panel-raised);color:var(--accent);font:inherit;font-size:12px;cursor:pointer;text-align:left}
+.workflow-capture-trigger:disabled{opacity:.5;cursor:not-allowed;color:var(--text-soft)}
+.workflow-capture-overlay{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;background:rgb(0 5 13 / 78%);padding:24px}
+.workflow-capture-dialog{width:min(680px,100%);max-height:calc(100vh - 48px);overflow-y:auto;padding:24px;border:1px solid var(--border-strong);border-radius:13px;background:var(--panel);color:var(--text);box-shadow:0 24px 80px rgb(0 0 0 / 40%);font-size:14px;line-height:1.75}
+.workflow-capture-dialog>header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.workflow-capture-dialog h2{font-size:21px;line-height:1.5;margin:6px 0 14px;letter-spacing:-.025em}
+.workflow-capture-dialog h3{font-size:16px;line-height:1.6;margin:0 0 14px;overflow-wrap:anywhere}
+.workflow-capture-dialog h4{font-size:13px;margin:18px 0 8px}
+.workflow-capture-dialog p{font-size:13px;line-height:1.85;color:var(--text-soft);overflow-wrap:anywhere}
+.workflow-capture-boundary{padding:12px 14px;border-left:2px solid var(--accent);background:var(--panel-raised);border-radius:5px}
+.workflow-capture-dialog fieldset{display:grid;gap:16px;border:0;padding:8px 0;margin:0;min-width:0}
+.workflow-capture-dialog label{display:grid;gap:7px;font-size:13px;color:var(--text)}
+.workflow-capture-dialog select,.workflow-capture-dialog textarea{width:100%;min-width:0;min-height:42px;background:var(--bg-soft);border:1px solid var(--border-strong);border-radius:6px;padding:9px 11px;color:var(--text);font:inherit;font-size:13px;line-height:1.7}
+.workflow-capture-dialog textarea{resize:vertical;max-height:240px}
+.workflow-capture-preview{padding:18px;border:1px solid var(--border-strong);border-radius:9px;background:var(--bg-soft);margin-top:16px}
+.workflow-capture-preview dl{display:grid;gap:10px;margin:0}
+.workflow-capture-preview dl>div{display:grid;grid-template-columns:135px minmax(0,1fr);gap:10px}
+.workflow-capture-preview dt{font-size:12px;color:var(--muted)}
+.workflow-capture-preview dd{font-size:13px;margin:0;overflow-wrap:anywhere}
+.workflow-capture-preview pre,.workflow-capture-source-fields pre{max-height:260px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--panel-raised);border:1px solid var(--border);border-radius:6px;padding:13px;font-family:inherit;font-size:13px;line-height:1.8;color:var(--text-soft)}
+.workflow-capture-source-fields{margin-top:16px;font-size:12px;color:var(--text-soft)}
+.workflow-capture-source-fields summary{cursor:pointer;color:var(--accent)}
+.workflow-capture-success{display:flex;align-items:flex-start;gap:9px;color:var(--accent);font-size:13px;line-height:1.8}
+.workflow-capture-success svg{flex:none;margin-top:3px}
+.workflow-capture-error{color:var(--danger)!important;padding:10px 12px;border:1px solid var(--danger);border-radius:6px}
+.workflow-capture-dialog [role=status]{display:flex;align-items:center;gap:8px}
+.workflow-capture-empty{padding:12px;background:var(--bg-soft);border-radius:7px;font-size:13px}
+.workflow-capture-empty .text-button+.text-button{margin-left:15px}
+.workflow-capture-dialog :focus-visible,.workflow-capture-trigger:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.brief-workflow-capture{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0}
+.brief-workflow-capture>span{font-size:12px;line-height:1.7;color:var(--muted)}
+@media(max-width:640px){.workflow-capture-overlay{padding:12px}.workflow-capture-dialog{padding:17px;max-height:calc(100vh - 24px)}.workflow-capture-dialog h2{font-size:19px}.workflow-capture-preview{padding:13px}.workflow-capture-preview dl>div{grid-template-columns:1fr;gap:2px}}

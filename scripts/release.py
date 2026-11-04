@@ -40,6 +40,13 @@ ROOT_DOCUMENTS = {
     "DATA_USAGE.md",
 }
 BASELINE_DOCUMENTS = {
+    "docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md",
+    "docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md",
+    "docs/AKDesk-Fixed-v1.1.2-场景案例与使用指南.md",
+    "docs/AKDesk-Fixed-v1.1.2-开发与验收记录.md",
+    "docs/examples/AKDesk-v1.1.2-casebook-EN.md",
+    "docs/examples/AKDesk-v1.1.2-利率研究样例.md",
+    "docs/examples/AKDesk-v1.1.2-信用复核样例.md",
     "docs/AKDesk-Fixed-v1.1.0-用户手册.md",
     "docs/AKDesk-Fixed-v1.1.0-产品介绍.md",
     "docs/AKDesk-Fixed-v1.1.0-测试用例清单.md",
@@ -241,6 +248,7 @@ def source_files() -> set[Path]:
         ROOT / "scripts" / "build_demo_video.py",
         *(ROOT / path for path in SYNTHETIC_MEDIA),
         *(ROOT / "examples").rglob("*.py"),
+        ROOT / "examples" / "scenarios" / "credit-review-synthetic.csv",
         ROOT / "examples" / "README.md",
         *(ROOT / item for item in EXECUTABLES),
         *(ROOT / "backend" / "app").rglob("*.py"),

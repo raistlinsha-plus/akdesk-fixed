@@ -84,6 +84,7 @@ import {
 
 const HelpPage = lazy(() => import("./pages/HelpPage").then((module) => ({ default: module.HelpPage })));
 const ResearchPage = lazy(() => import("./pages/ResearchPage").then((module) => ({ default: module.ResearchPage })));
+const ScenariosPage = lazy(() => import("./pages/ScenariosPage").then((module) => ({ default: module.ScenariosPage })));
 
 type PageId =
   | "research-desk"
@@ -108,6 +109,7 @@ type PageId =
   | "weekly-review"
   | "watchlist"
   | "health"
+  | "scenarios"
   | "help";
 
 interface NavItem {
@@ -151,6 +153,7 @@ const NAV_ITEMS: Record<PageId, NavItem> = {
   watchlist: { id: "watchlist", label: "我的自选", hint: "", icon: Star },
   health: { id: "health", label: "数据健康", hint: "", icon: Database, keywords: "检查数据 为什么不可用 连接 缓存" },
   help: { id: "help", label: "使用与反馈", hint: "", icon: LifeBuoy, keywords: "帮助 关于 诊断 反馈 Bug 版本" },
+  scenarios: { id: "scenarios", label: "场景案例", hint: "", icon: BookOpenCheck, keywords: "五分钟 案例 合成样例 每日固收 利率观点 信用复核" },
 };
 
 const ALL_NAVIGATION = Object.values(NAV_ITEMS);
@@ -160,6 +163,7 @@ const INTENT_SHORTCUTS: Array<{
   page: PageId;
   icon: LucideIcon;
 }> = [
+  { label: "五分钟认识 AKDesk", description: "先用独立合成案例走完一项任务", page: "scenarios", icon: BookOpenCheck },
   { label: "今天市场怎么样", description: "查看资金、曲线、期货与外汇", page: "dashboard", icon: Gauge },
   { label: "开始一个研究", description: "从模板或空白问题立项", page: "projects", icon: FileText },
   { label: "整理一个专题", description: "建立跨源长期观察视图", page: "topics", icon: Layers3 },
@@ -220,6 +224,7 @@ function navigationForMode(
           item("weekly-review"),
           item("calculator"),
           item("health"),
+          item("scenarios"),
           item("help"),
         ],
       },
@@ -266,6 +271,7 @@ function navigationForMode(
         item("events"),
         item("calculator"),
         item("health"),
+        item("scenarios"),
         item("help"),
       ],
     },
@@ -309,7 +315,7 @@ export default function App() {
   );
   const [experienceProfileId, setExperienceProfileId] =
     useState<ExperienceProfileId | null>(savedProfileId);
-  const [onboardingOpen, setOnboardingOpen] = useState(savedProfileId === null);
+  const [onboardingOpen, setOnboardingOpen] = useState(savedProfileId === null && initialRoute.page !== "scenarios");
   const [entrySettingsOpen, setEntrySettingsOpen] = useState(false);
   const [page, setPage] = useState<PageId>(initialRoute.page);
   const [pageQuery, setPageQuery] = useState(initialRoute.query);
@@ -775,11 +781,12 @@ export default function App() {
           {page === "credit" ? <CreditPage /> : null}
           {page === "convertibles" ? <ConvertiblesPage refreshSeed={refreshSeed} initialQuery={pageQuery} /> : null}
           {page === "events" ? <EventsPage refreshSeed={refreshSeed} /> : null}
-          {page === "report" ? <Suspense fallback={<p role="status">正在打开每日复盘…</p>}><ResearchPage refreshSeed={refreshSeed} /></Suspense> : null}
-          {page === "weekly-review" ? <WeeklyReviewPage refreshSeed={refreshSeed} /> : null}
+          {page === "report" ? <Suspense fallback={<p role="status">正在打开每日复盘…</p>}><ResearchPage refreshSeed={refreshSeed} navigate={navigate} /></Suspense> : null}
+          {page === "weekly-review" ? <WeeklyReviewPage refreshSeed={refreshSeed} navigate={navigate} /> : null}
           {page === "calculator" ? <CalculatorPage /> : null}
           {page === "watchlist" ? <WatchlistPage navigate={navigate} /> : null}
           {page === "health" ? <HealthPage /> : null}
+          {page === "scenarios" ? <Suspense fallback={<p role="status">正在打开场景案例…</p>}><ScenariosPage selectedId={pageQuery} onSelect={id => navigate("scenarios", id)} navigate={navigate} /></Suspense> : null}
           {page === "help" ? <Suspense fallback={<p role="status">正在打开帮助与反馈…</p>}><HelpPage navigate={navigate} /></Suspense> : null}
         </main>
       </div>
@@ -978,9 +985,10 @@ export default function App() {
             aria-labelledby="workspace-onboarding-title"
           >
             <div className="workspace-onboarding-copy">
-              <span className="eyebrow">AKDESK FIXED · V1.1.1</span>
+              <span className="eyebrow">AKDESK FIXED · V1.2.0</span>
               <h1 id="workspace-onboarding-title">你通常先做哪件事？</h1>
               <p>选择一个使用场景即可开始。它只设置默认落地页和导航顺序；全部行情、投研、信用与全球模块仍可随时访问。</p>
+              <button className="secondary-button" onClick={() => { setOnboardingOpen(false); navigate("scenarios"); }}>先用五分钟合成案例体验，不设置默认入口 <ChevronRight size={15} /></button>
             </div>
             <div className="workspace-choice-grid">
               {EXPERIENCE_PROFILES.map((profile, index) => {

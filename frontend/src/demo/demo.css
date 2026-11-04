@@ -43,7 +43,7 @@ button:disabled { cursor: default; opacity: .45; }
 .demo-sample-tag { border-radius: 4px; background: #e4bd62; color: #302710; padding: 3px 6px; font-size: 12px; font-weight: 750; white-space: nowrap; }
 .demo-reset { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: #d1ccb6; white-space: nowrap; font-size: 12px; padding: 3px; }
 .demo-reset:hover { color: white; }
-.demo-nav { display: flex; align-items: center; gap: 22px; margin: 20px 0 0; border-bottom: 1px solid var(--demo-line); }
+.demo-nav { display: flex; align-items: center; gap: 22px; margin: 20px 0 0; border-bottom: 1px solid var(--demo-line); overflow-x: auto; scrollbar-width: thin; }
 .demo-nav a { display: flex; align-items: center; gap: 7px; padding: 15px 2px; border-bottom: 2px solid transparent; margin-bottom: -1px; color: #9bb0c3; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .demo-nav a.is-active { color: var(--demo-mint); border-color: var(--demo-mint); }
 .demo-nav a:hover { color: #e9f7f4; }

@@ -1,0 +1,57 @@
+{
+  "sampleDate": "2026-08-03",
+  "source": "AKDesk 手工合成信用样例，非真实证券、主体、评级或行情",
+  "items": [
+    {
+      "observation": {
+        "bond_code": "DEMO-CREDIT-A",
+        "bond_name": "合成样例甲券",
+        "issuer": "合成主体甲（非真实企业）",
+        "maturity_date": "2029-08-03",
+        "rating": "AA+",
+        "rating_date": "2026-07-01",
+        "yield_pct": 2.6,
+        "yield_observation_date": "2026-08-03",
+        "benchmark_tenor": "3Y",
+        "benchmark_yield_pct": 1.6,
+        "benchmark_observation_date": "2026-08-03",
+        "source_note": "AKDesk 手工合成样例；非真实行情，仅用于学习导入与覆盖门禁"
+      },
+      "expected": { "eligible": true, "spreadBp": 100, "reason": "字段齐全、同日、期限匹配，仅做机械试算", "task": "核对评级与收益率原始出处；100 BP 不是风险评级" }
+    },
+    {
+      "observation": {
+        "bond_code": "DEMO-CREDIT-B",
+        "bond_name": "合成样例乙券",
+        "issuer": "合成主体乙（非真实企业）",
+        "maturity_date": "2029-08-03",
+        "rating": "",
+        "rating_date": "2026-07-01",
+        "yield_pct": 3.1,
+        "yield_observation_date": "2026-08-03",
+        "benchmark_tenor": "3Y",
+        "benchmark_yield_pct": 1.6,
+        "benchmark_observation_date": "2026-08-03",
+        "source_note": "AKDesk 手工合成样例；故意缺少评级，不得补零或推断评级"
+      },
+      "expected": { "eligible": false, "spreadBp": null, "reason": "缺少债项评级，不计算利差", "task": "查验债项评级及其有效时点；无法确认时继续保留缺失" }
+    },
+    {
+      "observation": {
+        "bond_code": "DEMO-CREDIT-C",
+        "bond_name": "合成样例丙券",
+        "issuer": "合成主体丙（非真实企业）",
+        "maturity_date": "2029-08-03",
+        "rating": "AA",
+        "rating_date": "2026-07-01",
+        "yield_pct": 2.9,
+        "yield_observation_date": "2026-08-03",
+        "benchmark_tenor": "3Y",
+        "benchmark_yield_pct": 1.6,
+        "benchmark_observation_date": "2026-07-31",
+        "source_note": "AKDesk 手工合成样例；故意设置异日基准，不得计算严格利差"
+      },
+      "expected": { "eligible": false, "spreadBp": null, "reason": "收益率与基准日期不同，不计算利差", "task": "重新获取有权使用的同日可比基准，核对期限后再试算" }
+    }
+  ]
+}

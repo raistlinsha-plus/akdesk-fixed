@@ -10,6 +10,7 @@ export function researchAvailability(items: HealthItem[]) {
 }
 
 export function marketSessionLabel(items: HealthItem[], page: string): string {
+  if (page === "scenarios") return "独立合成样例 · 非实时";
   if (page === "macro" || page === "sovereign" || page === "chart-lab") {
     return "宏观数据按发布更新";
   }

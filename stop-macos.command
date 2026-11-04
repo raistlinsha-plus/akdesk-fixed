@@ -4,7 +4,7 @@ set -u
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 URL="http://127.0.0.1:8765"
-EXPECTED_VERSION="1.1.1"
+EXPECTED_VERSION="1.2.0"
 
 fail() {
   echo

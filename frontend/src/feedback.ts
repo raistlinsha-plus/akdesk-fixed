@@ -1,4 +1,5 @@
 import { APP_VERSION, REPOSITORY_URL } from "./release";
+import { scenarioById } from "./scenarios";
 
 export type FeedbackKind = "bug" | "data" | "feature";
 
@@ -6,8 +7,22 @@ const FEEDBACK_PAGES = new Set([
   "help", "demo", "market", "market-changes", "money", "curves", "bonds",
   "futures", "credit", "convertibles", "issuance", "forex", "macro",
   "sovereign", "chart-lab", "release-review", "report", "weekly-review",
-  "research", "projects", "topics", "watchlist", "calculator", "health",
+  "research", "projects", "topics", "watchlist", "calculator", "health", "scenarios",
 ]);
+
+export type ScenarioOutcome = "completed" | "blocked" | "browsed";
+export type ReuseIntent = "yes" | "no" | "unsure";
+
+// Fixed allowlisted metadata only. Never add URL/location, form drafts or notes.
+export function scenarioFeedback(id: string, outcome: string, reuse: string, surface: string) {
+  const scenario = scenarioById(id)?.title ?? "未指定案例";
+  const result = outcome === "completed" ? "已完成样例任务" : outcome === "blocked" ? "中途遇到阻碍" : outcome === "browsed" ? "只浏览了案例" : "未选择";
+  const intent = reuse === "yes" ? "愿意尝试" : reuse === "no" ? "暂时不会" : "不确定";
+  const entry = surface === "online" ? "静态在线演示" : surface === "local" ? "本地案例样例区" : "未指定";
+  const fields = { version: `v${APP_VERSION}`, scenario, result, reuse: intent, surface: entry, mode: "合成样例（非真实业务任务）" };
+  const query = new URLSearchParams({ template: "scenario_feedback.yml", title: `[Scenario] v${APP_VERSION} ${scenario}`, ...fields });
+  return { url: `${REPOSITORY_URL}/issues/new?${query.toString()}`, preview: Object.entries(fields).map(([key, value]) => `${key}: ${value}`).join("\n") };
+}
 
 export function feedbackUrl(kind: FeedbackKind, page = "help", mode = "unknown"): string {
   const templates = { bug: "bug_report.yml", data: "data_source.yml", feature: "feature_request.yml" };
