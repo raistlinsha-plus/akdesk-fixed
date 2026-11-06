@@ -463,7 +463,7 @@ def _receipt(
         or saved["entry_id"] <= 0
         or "evidence_id" not in saved
         or (
-            request.kind == "market_signal"
+            request.kind in {"market_signal", "asset_reference"}
             and (type(saved.get("evidence_id")) is not int or saved["evidence_id"] <= 0)
         )
         or (request.kind == "brief_note" and saved.get("evidence_id") is not None)
@@ -606,6 +606,12 @@ def workflow_capture(
             raise WorkflowConflict("该来源缓存已过期，请先刷新并核验后再保存为证据")
         if cached.meta.fetched_at.isoformat() != request.expected_fetched_at:
             raise WorkflowConflict("来源在确认过程中已更新，请重新查看后再保存证据")
+    elif request.kind == "asset_reference":
+        from .cross_assets import asset_spec, reference_payload
+        spec = asset_spec(request.asset_id or "")
+        entry = ResearchEntryCreate(entry_type="note", title=f'跨资产查询 · {spec["name"]}', content=request.note)
+        evidence = ResearchEvidenceCreate(evidence_type="snapshot", title=f'查询引用 · {spec["name"]}',
+            source_summary=spec["source"], payload=reference_payload(spec["id"]))
     else:
         entry = ResearchEntryCreate(
             entry_type="note",

@@ -9,6 +9,7 @@ import "./workflowCapture.css";
 
 export type WorkflowCaptureSource =
   | { kind: "market_signal"; signal: MarketResearchSignal }
+  | { kind: "asset_reference"; asset: { id: string; name: string } }
   | { kind: "brief_note"; reportDate: string; note: string };
 
 interface CaptureBody {
@@ -19,6 +20,7 @@ interface CaptureBody {
   signal_id?: string;
   expected_fetched_at?: string;
   report_date?: string;
+  asset_id?: string;
 }
 
 interface CaptureResult {
@@ -63,6 +65,7 @@ function fredSource(signal: MarketResearchSignal): boolean {
 }
 
 function eligible(source: WorkflowCaptureSource): boolean {
+  if (source.kind === "asset_reference") return Boolean(source.asset.id);
   if (source.kind === "brief_note") return Boolean(source.note.trim()) && source.note.trim().length <= 8000;
   const signal = source.signal;
   return signal.actionable && signal.trust_level === "trusted" && signal.demo === false
@@ -76,7 +79,7 @@ export function WorkflowCapture({ source, navigate }: {
   source: WorkflowCaptureSource;
   navigate?: (page: string, query?: string) => void;
 }) {
-  const key = source.kind === "market_signal" ? `market:${source.signal.id}` : `brief:${source.reportDate}`;
+  const key = source.kind === "market_signal" ? `market:${source.signal.id}` : source.kind === "asset_reference" ? `asset:${source.asset.id}` : `brief:${source.reportDate}`;
   return <CaptureSession key={key} source={source} navigate={navigate} />;
 }
 
@@ -174,7 +177,7 @@ function CaptureSession({ source, navigate }: {
       kind: source.kind, request_id: identity.current.requestId, confirmed: true, note: text,
       ...(source.kind === "market_signal"
         ? { signal_id: source.signal.id, expected_fetched_at: source.signal.fetched_at }
-        : { report_date: source.reportDate }),
+        : source.kind === "asset_reference" ? { asset_id: source.asset.id } : { report_date: source.reportDate }),
     };
     setPreview({ projectId: selectedProject.id, projectTitle: selectedProject.title, signature, body });
   }
@@ -218,20 +221,20 @@ function CaptureSession({ source, navigate }: {
     }
   }
 
-  const title = source.kind === "market_signal" ? "关联研究项目" : "将人工备注保存为研究笔记";
-  const entryTitle = Array.from(source.kind === "market_signal" ? `市场变化 · ${source.signal.title}` : `简报备注 · ${source.reportDate}`).slice(0, 160).join("");
+  const title = source.kind === "market_signal" ? "关联研究项目" : source.kind === "asset_reference" ? "保存查询引用到项目" : "将人工备注保存为研究笔记";
+  const entryTitle = Array.from(source.kind === "market_signal" ? `市场变化 · ${source.signal.title}` : source.kind === "asset_reference" ? `跨资产查询 · ${source.asset.name}` : `简报备注 · ${source.reportDate}`).slice(0, 160).join("");
   return <>
     <button ref={buttonRef} className="workflow-capture-trigger" type="button" disabled={!canCapture} onClick={() => setOpen(true)} title={!canCapture ? (source.kind === "market_signal" ? "仅可信、可行动、非演示且观测日为近7天的非FRED信号可关联；请先回原模块核验。" : "先在简报中填写自己的备注；不自动复制报告数据。") : undefined}><FilePlus2 size={14} />{title}</button>
     {open ? createPortal(<div className="workflow-capture-overlay" onMouseDown={event => { if (event.target === event.currentTarget) close(); }}>
       <section ref={dialogRef} className="workflow-capture-dialog" role="dialog" aria-modal="true" aria-labelledby={headingId} tabIndex={-1} onKeyDown={event => { if ((event.metaKey || event.ctrlKey) && ["r", "1", "k"].includes(event.key.toLowerCase())) { event.preventDefault(); event.stopPropagation(); return; } trapFocus(event, dialogRef.current); if (event.key === "Escape") { event.stopPropagation(); close(); } }}>
         <header><div><span className="eyebrow">PREVIEW · CONFIRM · SAVE</span><h2 id={headingId}>{title}</h2></div><button type="button" className="icon-button" aria-label="关闭保存预览" disabled={busy} onClick={close}><X size={18} /></button></header>
-        <p className="workflow-capture-boundary">只写入所选项目；不会自动创建项目、评级或投资结论。{source.kind === "market_signal" ? "服务端重新核对当前一条信号及抓取时点，不接受浏览器提交的行情数值。" : "仅保存你手工填写的备注与报告日期引用，不复制简报正文、行情或 FRED 响应。"}请先核验数据使用权限；手工内容也不要包含密钥、受限原文或 FRED API 内容。</p>
+        <p className="workflow-capture-boundary">只写入所选项目；不会自动创建项目、评级或投资结论。{source.kind === "market_signal" ? "服务端重新核对当前一条信号及抓取时点，不接受浏览器提交的行情数值。" : source.kind === "asset_reference" ? "只保存资产查询标识、来源链接与自己的备注，不保存行情数值或观测日期，不向AI发送该引用。" : "仅保存你手工填写的备注与报告日期引用，不复制简报正文、行情或 FRED 响应。"}请先核验数据使用权限；手工内容也不要包含密钥、受限原文或 FRED API 内容。</p>
         {!canCapture ? <p role="alert">当前内容已变化或不满足保存条件，请先核验来源/备注后重新预览。</p> : null}
         {loading ? <p role="status"><LoaderCircle size={14} className="spin" />正在读取可选项目…</p> : null}
         <fieldset disabled={busy || loading || !canCapture}>
           <label>目标研究项目<select value={projectId} disabled={busy || loading || !canCapture} onChange={event => setProjectId(event.target.value)}><option value="">请选择已有项目</option>{projects.map(project => <option value={project.id} key={project.id}>{project.title}</option>)}</select></label>
           {!loading && !projects.length ? <div className="workflow-capture-empty"><p>暂无可选项目，或读取失败。先建立项目，再返回保存；不会自动立项。</p><button type="button" className="text-button" onClick={() => setRetry(value => value + 1)}>重新读取项目</button>{navigate ? <button type="button" className="text-button" onClick={() => { close(); navigate("projects"); }}>打开研究项目 <ArrowRight size={13} /></button> : null}</div> : null}
-          {source.kind === "market_signal" ? <label>本次研究备注（可选）<textarea value={note} disabled={busy || loading || !canCapture} maxLength={8000} rows={3} onChange={event => setNote(event.target.value)} placeholder="只记录自己的判断、分歧或下一步核验，不要粘贴受限内容。" /></label> : null}
+          {source.kind !== "brief_note" ? <label>本次研究备注（可选）<textarea value={note} disabled={busy || loading || !canCapture} maxLength={8000} rows={3} onChange={event => setNote(event.target.value)} placeholder="只记录自己的判断、分歧或下一步核验，不要粘贴受限内容。" /></label> : null}
           {!saved ? <button type="button" className="secondary-button" onClick={prepare} disabled={!selectedProject || !canCapture || loading || busy || needsRecheck}>预览保存内容</button> : null}
         </fieldset>
         {preview && preview.signature === signature ? <div className="workflow-capture-preview" aria-label="即将保存的内容">
@@ -243,9 +246,9 @@ function CaptureSession({ source, navigate }: {
               <div><dt>数值和状态</dt><dd>{source.signal.value} {source.signal.unit} · {source.signal.data_state} · 质量 {source.signal.quality_score}</dd></div>
               <div><dt>来源</dt><dd>{source.signal.source}</dd></div>
               <div><dt>观测 / 抓取</dt><dd>{source.signal.observation_time} / {source.signal.fetched_at}</dd></div>
-            </> : <div><dt>报告日期（仅引用）</dt><dd>{source.reportDate}</dd></div>}
+            </> : source.kind === "asset_reference" ? <div><dt>资产查询引用（无行情数值）</dt><dd>{source.asset.id} · {source.asset.name}</dd></div> : <div><dt>报告日期（仅引用）</dt><dd>{source.reportDate}</dd></div>}
           </dl>
-          <h4>人工备注正文</h4><pre>{preview.body.note || "（未填写；仅保存当前一条信号的来源快照）"}</pre>
+          <h4>人工备注正文</h4><pre>{preview.body.note || (source.kind === "asset_reference" ? "（未填写；仅保存查询引用，不是价格证据）" : "（未填写；仅保存当前一条信号的来源快照）")}</pre>
           <p>这不是全市场或完整简报快照。网络中断后可保留同一预览重试；变更项目或内容需重新预览，并先核对原项目是否已保存。</p>
           {saved ? <div className="workflow-capture-success" role="status"><CheckCircle2 size={16} /><span>已保存到「{saved.projectTitle}」{saved.result.deduplicated ? "（重试已去重）" : ""}。原简报备注仍保留，不自动清空。</span></div> : <button className="primary-button" type="button" disabled={busy || loading || !canCapture || !selectedProject || needsRecheck} onClick={confirm}>{busy ? <LoaderCircle size={14} className="spin" /> : <FilePlus2 size={14} />}{busy ? "正在保存，请稍候" : "确认保存到该项目"}</button>}
           {saved && navigate ? <button className="text-button" type="button" onClick={() => { close(); navigate("projects", String(saved.result.project_id)); }}>打开已保存的研究项目 <ArrowRight size={13} /></button> : null}

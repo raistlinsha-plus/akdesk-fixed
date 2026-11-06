@@ -4,6 +4,7 @@ import { scenarioById } from "./scenarios";
 export type FeedbackKind = "bug" | "data" | "feature";
 
 const FEEDBACK_PAGES = new Set([
+  "cross-assets",
   "help", "demo", "market", "market-changes", "money", "curves", "bonds",
   "futures", "credit", "convertibles", "issuance", "forex", "macro",
   "sovereign", "chart-lab", "release-review", "report", "weekly-review",

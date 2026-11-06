@@ -78,7 +78,7 @@ def connector_catalog(
             access_mode="public",
             credential_configured=True,
             credential_source="not_required",
-            capabilities=["中国固收行情", "人民币参考价", "可转债", "发行日历"],
+            capabilities=["中国固收行情", "人民币参考价", "可转债", "发行日历", "黄金与指数公开源预览（仅内存）"],
             storage_mode="mixed_upstream_cache",
             cache_ttl_seconds=None,
             persistence_notice=(

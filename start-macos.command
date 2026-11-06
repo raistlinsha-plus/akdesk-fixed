@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 VENV="$ROOT/.venv"
 URL="http://127.0.0.1:8765"
-EXPECTED_VERSION="1.2.0"
+EXPECTED_VERSION="1.3.0"
 REQUIREMENTS_LOCK="$ROOT/backend/requirements.lock"
 REQUIREMENTS_STAMP="$VENV/.akdesk-requirements.sha256"
 

@@ -62,6 +62,9 @@ def is_fred_ai_content(value: Any) -> bool:
 
 
 def ai_record_allowed(value: Any) -> bool:
+    payload = value.get("payload") if isinstance(value, dict) else getattr(value, "payload", None)
+    if isinstance(payload, dict) and payload.get("ai_processing_allowed") is False:
+        return False
     explicit_permission = (
         value.get("ai_processing_allowed")
         if isinstance(value, dict)

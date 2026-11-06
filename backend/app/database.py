@@ -1861,7 +1861,7 @@ class Database:
                     if _is_fred_evidence(item.source_summary, item.payload)
                     else str(item.payload.get("provider") or "")[:80]
                 ),
-                "ai_processing_allowed": not _is_fred_evidence(
+                "ai_processing_allowed": item.payload.get("ai_processing_allowed") is not False and not _is_fred_evidence(
                     item.source_summary, item.payload
                 ),
                 "observation_end": item.observation_end,

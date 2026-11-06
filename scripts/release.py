@@ -40,6 +40,8 @@ ROOT_DOCUMENTS = {
     "DATA_USAGE.md",
 }
 BASELINE_DOCUMENTS = {
+    "docs/AKDesk-Fixed-v1.3.0-产品与使用指南.md",
+    "docs/AKDesk-Fixed-v1.3.0-开发与Review记录.md",
     "docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md",
     "docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md",
     "docs/AKDesk-Fixed-v1.1.2-场景案例与使用指南.md",

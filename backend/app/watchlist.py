@@ -12,17 +12,27 @@ WATCH_ADAPTERS = {
     "convertible": ("convertibles", "convertibles"),
     "macro": (None, "macro"),
     "fx": (None, "fx"),
+    "index": (None, "cross-assets"),
+    "gold": (None, "cross-assets"),
 }
 
 
 def enrich_watchlist(
-    service: DataService, items: list[WatchlistItem]
+    service: DataService, items: list[WatchlistItem], cross_assets=None
 ) -> list[dict[str, Any]]:
     enriched: list[dict[str, Any]] = []
     for item in items:
         adapter, page = WATCH_ADAPTERS[item.object_type]
         quote: dict[str, Any] | None = None
         meta: dict[str, Any] | None = None
+        if item.object_type in {"index", "gold"} and cross_assets is not None:
+            try:
+                row = cross_assets.peek(item.object_id)
+            except ValueError:
+                row = None
+            if row and row["price"] is not None:
+                quote = {"primary_label": "公开源价格", "primary_value": row["price"], "primary_unit": row["unit"], "change_label": "价格变动", "change_value": row["change_pct"], "change_unit": "%"}
+                meta = {"source": row["source"], "observation_time": row["observation_time"], "fetched_at": row["fetched_at"], "data_state": row["state"], "trust_level": "partial", "quality_score": 50, "market_status": "延时未知", "demo": row["demo"]}
         candidate_adapters = (
             ("fx_pairs", "fx_rmb_reference")
             if item.object_type == "fx"

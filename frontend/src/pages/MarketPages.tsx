@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useWatchlist } from "../components/WatchlistContext";
 import { CreateProjectButton } from "../components/CreateProjectButton";
+import { WorkflowCapture } from "../components/WorkflowCapture";
 import { AiInsightCard } from "../components/AiInsightCard";
 import { GettingStartedGuide } from "../components/GettingStartedGuide";
 import { apiGet } from "../api";
@@ -575,6 +576,8 @@ export function DashboardPage({ refreshSeed, navigate }: PageProps) {
         description="把本页变化、可信边界和待验证问题压缩为可复核的短摘要"
         revision={refreshSeed}
       />
+
+      <Panel title="股债金汇观察" eyebrow="GOLD · FOUR INDICES · ON DEMAND"><div className="cross-context-links" style={{padding:18}}><p>新增黄金 Au99.99 与四个宽基指数；按需读取免费公开源，延时未知，研究仅保存查询引用。</p><button className="secondary-button" onClick={()=>navigate?.("cross-assets")}>打开跨资产观察 <ChevronRight size={14}/></button></div></Panel>
 
       <GettingStartedGuide
         mode="market"
@@ -1642,6 +1645,8 @@ export function WatchlistPage({ navigate }: { navigate: (page: string, query?: s
     convertible: "可转债",
     macro: "宏观指标",
     fx: "外汇",
+    index: "指数",
+    gold: "黄金",
   };
 
   return (
@@ -1683,7 +1688,7 @@ export function WatchlistPage({ navigate }: { navigate: (page: string, query?: s
                     <small>{item.object_id} · 更新 {formatDateTime(item.updated_at)}</small>
                   </div>
                   <div className="watch-card-actions">
-                    <CreateProjectButton objectType={item.object_type} objectId={item.object_id} objectName={item.name} source={enriched.find((value) => value.id === item.id)?.source_meta?.source} observationTime={enriched.find((value) => value.id === item.id)?.source_meta?.observation_time} />
+                    {item.object_type === "index" || item.object_type === "gold" ? <WorkflowCapture source={{kind:"asset_reference",asset:{id:item.object_id,name:item.name}}} navigate={navigate}/> : <CreateProjectButton objectType={item.object_type} objectId={item.object_id} objectName={item.name} source={enriched.find((value) => value.id === item.id)?.source_meta?.source} observationTime={enriched.find((value) => value.id === item.id)?.source_meta?.observation_time} />}
                     <button
                       className={classNames("icon-button", item.pinned && "active")}
                       onClick={() => revise(item.id, { pinned: !item.pinned })}

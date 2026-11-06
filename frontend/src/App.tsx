@@ -85,8 +85,10 @@ import {
 const HelpPage = lazy(() => import("./pages/HelpPage").then((module) => ({ default: module.HelpPage })));
 const ResearchPage = lazy(() => import("./pages/ResearchPage").then((module) => ({ default: module.ResearchPage })));
 const ScenariosPage = lazy(() => import("./pages/ScenariosPage").then((module) => ({ default: module.ScenariosPage })));
+const CrossAssetPage = lazy(() => import("./pages/CrossAssetPage").then(module=>({default:module.CrossAssetPage})));
 
 type PageId =
+  | "cross-assets"
   | "research-desk"
   | "dashboard"
   | "market-changes"
@@ -130,6 +132,7 @@ interface GlobalAiStatus {
 }
 
 const NAV_ITEMS: Record<PageId, NavItem> = {
+  "cross-assets": { id:"cross-assets", label:"股债金汇观察", hint:"", icon:ChartNoAxesCombined, keywords:"黄金 Au99.99 股票 指数 沪深300 上证 创业板 跨资产" },
   "research-desk": { id: "research-desk", label: "研究首页", hint: "", icon: BookOpenCheck, keywords: "投研首页 宏观固收投研工作台" },
   dashboard: { id: "dashboard", label: "今日市场", hint: "", icon: Gauge, keywords: "固收市场 市场首页 今日固收脉搏" },
   "market-changes": { id: "market-changes", label: "市场变化", hint: "", icon: Activity, keywords: "变化 异动 上次查看 可信信号" },
@@ -208,6 +211,7 @@ function navigationForMode(
       {
         label: "全球市场",
         items: [
+          item("cross-assets"),
           item("fx"),
           item("macro"),
           item("sovereign"),
@@ -255,6 +259,7 @@ function navigationForMode(
       items: [
         item("market-changes"),
         item("dashboard", { label: "固收市场" }),
+        item("cross-assets"),
         item("fx"),
         item("money"),
         item("curves"),
@@ -787,6 +792,7 @@ export default function App() {
           {page === "watchlist" ? <WatchlistPage navigate={navigate} /> : null}
           {page === "health" ? <HealthPage /> : null}
           {page === "scenarios" ? <Suspense fallback={<p role="status">正在打开场景案例…</p>}><ScenariosPage selectedId={pageQuery} onSelect={id => navigate("scenarios", id)} navigate={navigate} /></Suspense> : null}
+          {page === "cross-assets" ? <Suspense fallback={<p role="status">正在打开跨资产观察…</p>}><CrossAssetPage refreshSeed={refreshSeed} initialQuery={pageQuery} navigate={navigate}/></Suspense> : null}
           {page === "help" ? <Suspense fallback={<p role="status">正在打开帮助与反馈…</p>}><HelpPage navigate={navigate} /></Suspense> : null}
         </main>
       </div>
@@ -985,7 +991,7 @@ export default function App() {
             aria-labelledby="workspace-onboarding-title"
           >
             <div className="workspace-onboarding-copy">
-              <span className="eyebrow">AKDESK FIXED · V1.2.0</span>
+              <span className="eyebrow">AKDESK FIXED · V1.3.0</span>
               <h1 id="workspace-onboarding-title">你通常先做哪件事？</h1>
               <p>选择一个使用场景即可开始。它只设置默认落地页和导航顺序；全部行情、投研、信用与全球模块仍可随时访问。</p>
               <button className="secondary-button" onClick={() => { setOnboardingOpen(false); navigate("scenarios"); }}>先用五分钟合成案例体验，不设置默认入口 <ChevronRight size={15} /></button>

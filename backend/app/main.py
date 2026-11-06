@@ -114,6 +114,7 @@ from .topics import (
     topic_markdown,
 )
 from .watchlist import enrich_watchlist
+from .cross_assets import CrossAssetService, asset_spec
 from .world_bank import WorldBankProviderError, WorldBankService
 from .workflow import (
     WorkflowConflict, WorkflowNotFound, review_checkpoint,
@@ -198,6 +199,29 @@ service = DataService(
     cache_path=DATA_DIR / "market-cache.db",
     on_dataset=consume_dataset,
 )
+cross_assets_service = CrossAssetService()
+
+
+def cross_response(payload: dict) -> Response:
+    return Response(json.dumps(payload, ensure_ascii=False), media_type="application/json", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/api/v1/cross-assets/catalog")
+def cross_catalog():
+    return cross_response(cross_assets_service.catalog())
+
+
+@app.get("/api/v1/cross-assets/quotes")
+async def cross_quotes(kind: Literal["index", "gold"]):
+    return cross_response(await run_in_threadpool(cross_assets_service.quotes, kind))
+
+
+@app.get("/api/v1/cross-assets/history")
+async def cross_history(asset_id: str):
+    try:
+        return cross_response(await run_in_threadpool(cross_assets_service.history, asset_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 def research_signal_settings() -> ResearchSignalSettings:
@@ -313,6 +337,7 @@ async def events(refresh: bool = Query(default=False)):
 def sources_health():
     return [
         *service.health_items(),
+        *cross_assets_service.health_items(),
         macro_service.health_item(),
         world_bank_service.health_item(),
         gdelt_service.health_item(),
@@ -322,7 +347,7 @@ def sources_health():
 @app.get("/api/v1/connectors")
 def external_connectors():
     return connector_catalog(
-        market_health=service.health_items(),
+        market_health=[*service.health_items(), *cross_assets_service.health_items()],
         fred_health=macro_service.health_item(),
         fred_status=macro_service.integration_status(),
         world_bank_health=world_bank_service.health_item(),
@@ -530,11 +555,19 @@ def list_watchlist():
 
 @app.get("/api/v1/watchlists/enriched")
 def list_enriched_watchlist():
-    return enrich_watchlist(service, database.list_watchlist())
+    return enrich_watchlist(service, database.list_watchlist(), cross_assets_service)
 
 
 @app.post("/api/v1/watchlists")
 def add_watchlist(item: WatchlistCreate):
+    if item.object_type in {"index", "gold"}:
+        try:
+            spec = asset_spec(item.object_id)
+            if spec["kind"] != item.object_type:
+                raise ValueError("资产类别不匹配")
+            item.name = spec["name"]
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
     return database.add_watchlist(item)
 
 

@@ -99,7 +99,7 @@ class HealthItem(BaseModel):
         return "limited"
 
 
-WatchObjectType = Literal["bond", "future", "convertible", "macro", "fx"]
+WatchObjectType = Literal["bond", "future", "convertible", "macro", "fx", "index", "gold"]
 ResearchProjectObjectType = Literal[
     "bond", "future", "convertible", "macro", "fx", "issuer"
 ]
@@ -326,6 +326,13 @@ class ResearchEvidenceCreate(BaseModel):
             self.observation_end = None
             ids = [item["series_id"] for item in self.payload["series"]]
             self.source_summary = "FRED" + (" · " + ", ".join(ids) if ids else "")
+        elif self.payload.get("provider") == "AKShare public preview":
+            from .cross_assets import asset_spec, reference_payload
+            spec = asset_spec(str(self.payload.get("asset_id") or ""))
+            self.payload = reference_payload(spec["id"])
+            self.source_summary = spec["source"]
+            self.observation_start = None
+            self.observation_end = None
         return self
 
 
@@ -412,13 +419,14 @@ class ResearchEntryItem(ResearchEntryCreate):
 
 class WorkflowCaptureCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    kind: Literal["market_signal", "brief_note"]
+    kind: Literal["market_signal", "brief_note", "asset_reference"]
     request_id: UUID
     confirmed: Literal[True]
     note: str = Field(default="", max_length=8_000)
     signal_id: str | None = Field(default=None, min_length=1, max_length=200)
     expected_fetched_at: str | None = Field(default=None, min_length=1, max_length=50)
     report_date: date | None = None
+    asset_id: str | None = Field(default=None, min_length=1, max_length=80)
 
     @field_validator("confirmed", mode="before")
     @classmethod
@@ -430,6 +438,14 @@ class WorkflowCaptureCreate(BaseModel):
     @model_validator(mode="after")
     def validate_capture_kind(self):
         self.note = self.note.strip()
+        if self.kind == "asset_reference":
+            from .cross_assets import asset_spec
+            asset_spec(self.asset_id or "")
+            if self.report_date is not None or self.signal_id is not None or self.expected_fetched_at is not None:
+                raise ValueError("查询引用不接受报价/报告字段")
+            return self
+        if self.asset_id is not None:
+            raise ValueError("该保存方式不接受资产查询标识")
         if self.kind == "market_signal":
             if not self.signal_id or not self.expected_fetched_at or self.report_date is not None:
                 raise ValueError("市场变化须提供信号标识和已预览抓取时点，不接受报告日期")
