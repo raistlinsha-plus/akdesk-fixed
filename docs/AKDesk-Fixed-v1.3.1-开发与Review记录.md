@@ -8,6 +8,10 @@
 
 ## Review 发现与修复
 
+推送后的发布前复核还发现开发工具链minimatch 10.2.6告警：[GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)。它不在生产依赖中；对typescript-estree的传递依赖单独固定11.0.1，不将ESLint仍使用的3.x统一跨主版本替换。此变更重新验证lint、测试、构建与完整依赖审计。
+
+远端首次运行的后端任务因旧配置 `macos-14-arm64-us-default` 不受支持而取消，尚未执行测试；不是测试通过。按[GitHub当前支持列表](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)改为macos-15，并将前端审计扩大到开发依赖的moderate门槛。最终远端结果以Release附带运行链接为准。
+
 | 问题 | 修复及回归覆盖 |
 | --- | --- |
 | ETF慢响应可能把用户切回旧选择 | 先选择、后加载；返回只合并数据，不抢当前选择；前端迟到响应回归 |

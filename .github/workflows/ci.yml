@@ -16,7 +16,7 @@ concurrency:
 jobs:
   backend:
     name: Backend / Python ${{ matrix.python-version }}
-    runs-on: macos-14
+    runs-on: macos-15
     strategy:
       fail-fast: false
       matrix:
@@ -60,9 +60,9 @@ jobs:
       - name: Lint, test and build
         working-directory: frontend
         run: npm run check
-      - name: Audit production dependencies
+      - name: Audit production and development dependencies
         working-directory: frontend
-        run: npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org
+        run: npm audit --audit-level=moderate --registry=https://registry.npmjs.org
       - name: Build independent static demo
         working-directory: frontend
         run: npm run build:demo

@@ -21,7 +21,7 @@
 | Python3.11/3.12最终矩阵 | 各315项通过 |
 | 正式ZIP白名单、秘密与权限检查 | 106个文件；版本、manifest、Markdown链接、脚本权限、SBOM检查通过；无疑似凭据或用户数据库；最终摘要以SHA256SUMS为准 |
 | 解压后隔离合成HTTP冒烟 | 通过：HTML/资源、health版本、目录/FRED no-store、黄金/指数/ETF/日线、非法ID、复盘基线、备注及ETF引用的保存/幂等/严格字段校验 |
-| 依赖 | Python pip check通过；官方npm registry生产依赖审计0项漏洞 |
+| 依赖 | Python pip check通过；发布前修复minimatch开发传递依赖告警后，官方npm registry完整审计（含开发）0项漏洞；147项前端测试、lint与两类构建再次通过 |
 | GitHub源码、Release资源和Pages | 不以本机通过代替远端成功；最终状态与运行记录列于本版Release |
 | Inkstone文档同步 | 单独在本机同步记录中核对，不将文档准备等同已导入 |
 
