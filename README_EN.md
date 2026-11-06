@@ -1,16 +1,18 @@
 # AKDesk Fixed
 
-**v1.2.0: a daily research workflow.** Explicitly capture an eligible market signal into an existing project, save only your own brief notes, and compare project changes with the last confirmed review checkpoint. Includes the previously local v1.1.2 synthetic casebook. No new data feeds, models or default telemetry. See the [current guide](./docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md), [acceptance record](./docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md) and [English casebook](./docs/examples/AKDesk-v1.1.2-casebook-EN.md). Public download/deployment status is determined by the actual Release and Actions runs.
+**v1.3.1: small cross-asset observation, with explicit data boundaries.** Explore Au99.99 gold, four indices and four on-demand ETF examples, then connect query references and your own notes to a local research workflow. Not a full-market stock or real-time trading terminal. New feed values are memory-only and excluded from numeric exports and AI. See the [current manual](./docs/AKDesk-Fixed-v1.3.1-用户手册.md), [review](./docs/AKDesk-Fixed-v1.3.1-开发与Review记录.md) and [release verification](./docs/AKDesk-Fixed-v1.3.1-升级与发布验收.md) (Chinese).
 
 Turn funding rates, yield curves and CGB futures changes into a concise fixed-income brief with sources and timestamps.
 
-[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#local-installation) [![v1.2.0](https://img.shields.io/badge/version-v1.2.0-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)
+[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#local-installation) [![v1.3.1](https://img.shields.io/badge/version-v1.3.1-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)
 
 **v1.1.1 data-usage update (2026-11-03):** adopts AKShare 1.20.22 and upstream rate-limit cooldowns. FRED numeric CSV export is replaced by query-reference Markdown; FRED-origin content is excluded from AI processing as a conservative product policy. A personal key or an MIT software license does not grant data rights. See [data-usage boundaries](./DATA_USAGE.md) and [upgrade notes](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md) (Chinese).
 
-**[Try the browser demo](https://raistlinsha-plus.github.io/akdesk-fixed/)** · **[Download the local app](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)** · [中文](./README.md) · [Feedback](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)
+**[Try the three-minute cross-asset demo](https://raistlinsha-plus.github.io/akdesk-fixed/#/cross-assets)** · [Fixed-income brief](https://raistlinsha-plus.github.io/akdesk-fixed/#/brief) · **[Download the local app](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)** · [中文](./README.md) · [Feedback](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)
 
 ![One-page brief UI with fixed synthetic data](./docs/media/v1.1.0/05-brief.png)
+
+The image shows the v1.1 synthetic fixed-income path, not the new cross-asset screen. New path: choose an asset → load daily observations → write your own note → download a synthetic worksheet. Live-mode export contains references and personal notes only. ETF examples are not recommendations; unadjusted price changes are not total returns. New modules do not merge all bond/FX feeds into a synchronized portfolio report.
 
 Follow one path: **observe changes → verify the yield curve → add notes and export a brief**.
 
@@ -25,7 +27,7 @@ Targets Apple Silicon MacBook Air, **macOS 12+ and Python 3.11–3.13**. Initial
 macOS 12+ is a compatibility target. This release was physically tested on macOS 26.6.2 / Apple Silicon; other OS versions have not each been tested in this cycle.
 
 1. Install a supported Python; with Homebrew, use `brew install python@3.13`.
-2. Select the `AKDesk-Fixed-v1.2.0.zip` asset in [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest), verify its SHA-256 and unzip the whole package. Use only a version whose assets have actually been published.
+2. Select the `AKDesk-Fixed-v1.3.1.zip` asset in [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest), verify its SHA-256 and unzip the whole package. Use only a version whose assets have actually been published.
 3. Double-click `start-macos.command`. It runs local checks, installs locked dependencies and opens `http://127.0.0.1:8765`.
 
 GitHub's automatic **Source code** archive is for source inspection and development. It is different from the official ZIP checked for release manifest, built assets and executable permissions; source users may need to build the UI or restore script permissions. Available downloads and verification results are recorded in the Release page and [release/acceptance record](./docs/AKDesk-Fixed-v1.1.0-发布与验收记录.md).
@@ -45,6 +47,7 @@ The launcher checks Python, release files, directory permissions, disk space and
 - A one-page brief for funding, the 10Y yield, curve spreads and CGB futures, with gaps and per-source timestamps. The full daily review remains available.
 - Watchlists, evidence collection, research projects, topics, counter-evidence, tasks and weekly reviews.
 - Credit Watch R2, FX, macro charts, sovereign comparisons and external event leads.
+- Small gold/index observation and four explicitly selected ETF daily-history examples; no whole-market ETF scans, NAV premium/discount or total-return calculation.
 - Explicit sample/mixed/unknown provenance, cache status and missing values. Missing inputs do not become zero or a market-direction conclusion.
 
 Temporary notes can accompany the brief's Markdown and print/PDF output but are not automatically saved as research notes. Core market and research workflows remain; FRED export and review markers are restricted by the [v1.1.1 update](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md). See also the [v1.1 introduction](./docs/AKDesk-Fixed-v1.1.0-产品介绍.md) and [full feature manual](./docs/AKDesk-Fixed-v1.0.0-用户手册.md), currently in Chinese.

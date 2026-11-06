@@ -43,6 +43,18 @@ afterEach(async () => {
 afterAll(() => vi.restoreAllMocks());
 
 describe("static GitHub demo", () => {
+  it("opens the cross-asset acquisition journey without APIs or research writes",async()=>{
+    window.history.replaceState(null,"","/akdesk-fixed/#/cross-assets");
+    const user=userEvent.setup();render(<DemoApp/>);
+    await screen.findByRole("heading",{name:"股债金汇观察"});
+    await user.click(screen.getByRole("button",{name:"黄金 Au99.99"}));
+    await user.click(screen.getByRole("button",{name:"按需载入／重读日线"}));
+    await screen.findByRole("img",{name:"示例曲线图"});
+    await user.click(screen.getByRole("button",{name:"整理跨资产观察底稿"}));
+    expect(screen.getByRole("button",{name:"下载合成观察底稿"})).toBeTruthy();
+    expect(screen.queryByRole("button",{name:"保存查询引用到项目"})).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it("opens shared case deep links and handles history without requesting data", async () => {
     window.history.replaceState(null, "", "/akdesk-fixed/#/scenarios?q=credit");
     const user = userEvent.setup();

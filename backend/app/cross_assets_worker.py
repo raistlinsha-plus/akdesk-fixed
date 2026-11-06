@@ -1,8 +1,11 @@
 """Disposable AKShare worker, no keychain/database access."""
+
 from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from .cross_assets import ASSETS, MARKER
 from .provider import is_rate_limit_error
@@ -15,19 +18,36 @@ def main() -> None:
     try:
         if mode == "quote" and key == "index":
             frame = ak.stock_zh_index_spot_sina()
-            symbols = {item["symbol"] for item in ASSETS.values() if item["kind"] == "index"}
+            symbols = {
+                item["symbol"] for item in ASSETS.values() if item["kind"] == "index"
+            }
             frame = frame[frame["代码"].isin(symbols)]
         elif mode == "quote" and key == "gold":
             frame = ak.spot_quotations_sge(symbol="Au99.99").tail(1)
         elif mode == "history" and key in ASSETS:
             spec = ASSETS[key]
-            frame = ak.spot_hist_sge(symbol=spec["symbol"]) if spec["kind"] == "gold" else ak.stock_zh_index_daily(symbol=spec["symbol"])
+            if spec["kind"] == "etf":
+                now = datetime.now(ZoneInfo("Asia/Shanghai"))
+                frame = ak.fund_etf_hist_em(
+                    symbol=spec["symbol"],
+                    period="daily",
+                    start_date=(now - timedelta(days=1200)).strftime("%Y%m%d"),
+                    end_date=now.strftime("%Y%m%d"),
+                    adjust="",
+                )
+            else:
+                frame = (
+                    ak.spot_hist_sge(symbol=spec["symbol"])
+                    if spec["kind"] == "gold"
+                    else ak.stock_zh_index_daily(symbol=spec["symbol"])
+                )
         else:
             raise ValueError("unsupported request")
         records = json.loads(frame.to_json(orient="records", date_format="iso"))
         payload = {"ok": True, "records": records}
     except Exception as exc:
-        payload = {"ok": False, "rate_limited": is_rate_limit_error(exc)}
+        response = getattr(exc, "response", None)
+        payload = {"ok": False, "rate_limited": is_rate_limit_error(exc) or getattr(response, "status_code", None) == 429}
     print(MARKER + json.dumps(payload, ensure_ascii=False))
 
 

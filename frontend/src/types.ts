@@ -158,7 +158,7 @@ export interface HealthItem {
 
 export interface WatchlistItem {
   id: number;
-  object_type: "bond" | "future" | "convertible" | "macro" | "fx" | "index" | "gold";
+  object_type: "bond" | "future" | "convertible" | "macro" | "fx" | "index" | "gold" | "etf";
   object_id: string;
   name: string;
   note: string;

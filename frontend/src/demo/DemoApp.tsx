@@ -23,11 +23,13 @@ import { ScenarioCards, ScenariosPage } from "../pages/ScenariosPage";
 import { ScenarioFeedback } from "../components/ScenarioFeedback";
 
 const LineChart = lazy(() => import("../components/Charts").then((module) => ({ default: module.LineChart })));
+const CrossAssetPage = lazy(()=>import("../pages/CrossAssetPage").then(module=>({default:module.CrossAssetPage})));
 const BarChart = lazy(() => import("../components/Charts").then((module) => ({ default: module.BarChart })));
 const FEEDBACK = feedbackUrl("feature", "demo", "demo");
-type DemoPage = "overview" | "changes" | "curves" | "brief" | "scenarios";
+type DemoPage = "overview" | "changes" | "curves" | "brief" | "scenarios" | "cross-assets";
 const PAGES: Array<{ id: DemoPage; label: string; step?: string }> = [
   { id: "overview", label: "产品概览" },
+  { id: "cross-assets", label: "股债金汇体验" },
   { id: "changes", label: "市场变化", step: "01" },
   { id: "curves", label: "曲线核验", step: "02" },
   { id: "brief", label: "一页简报", step: "03" },
@@ -136,6 +138,7 @@ export function DemoApp() {
                 <h1>看懂一组市场变化，<br />带走一页研究底稿。</h1>
                 <p className="demo-intro-description">AKDesk 把资金、曲线和国债期货的变化整理到同一条路径：先观察，再核验，最后形成带来源与时点的简报。</p>
                 <div className="demo-intro-actions">
+                  <button className="demo-button demo-button-primary" onClick={()=>navigate("cross-assets")}>体验股债金汇 <ArrowRight size={16}/></button>
                   <button className="demo-button demo-button-primary" onClick={() => navigate("changes")}>开始 3 步体验 <ArrowRight size={16} /></button>
                   <button className="demo-button demo-button-outline" onClick={() => navigate("brief")}>先看简报成品 <FileText size={15} /></button>
                 </div>
@@ -223,6 +226,7 @@ export function DemoApp() {
           </>
         ) : null}
         {page === "scenarios" ? <ScenariosPage key={resetSeed} selectedId={scenarioId} surface="online" onSelect={id => navigate("scenarios", id)} /> : null}
+        {page === "cross-assets" ? <Suspense fallback={<p role="status">正在打开合成跨资产体验…</p>}><CrossAssetPage key={resetSeed} synthetic initialQuery={scenarioId}/></Suspense> : null}
       </main>
 
       <footer className="demo-footer"><div><strong>AKDesk Fixed</strong><span>MIT 开源 · 本地优先 · 个人研究</span></div><p>当前为固定合成样例，不代表真实行情。本地版使用公开数据，适合个人学习与研究。</p><a href={FEEDBACK} target="_blank" rel="noreferrer">反馈体验 <ArrowUpRight size={13} /></a></footer>

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import {cleanup,fireEvent,render,screen} from "@testing-library/react";
+import {act,cleanup,fireEvent,render,screen} from "@testing-library/react";
 import {afterEach,expect,it,vi} from "vitest";
 import {CrossAssetPage} from "./CrossAssetPage";
 import {apiGet} from "../api";
@@ -26,4 +26,17 @@ it("loads only quotes initially and history only after explicit request",async()
   expect(apiGet).toHaveBeenCalledTimes(2);
   expect(screen.getByRole("button",{name:"按需载入／重读日线"})).toBeTruthy();
   expect(apiGet).not.toHaveBeenCalledWith(expect.stringContaining("/history"),expect.anything());
+});
+
+it("ETF response does not steal selection after the user moves to gold",async()=>{
+  let resolveEtf!:(value:unknown)=>void;
+  vi.mocked(apiGet).mockImplementation(path=>path.startsWith("/cross-assets/etf?")?new Promise(resolve=>{resolveEtf=resolve;}) as ReturnType<typeof apiGet>:Promise.resolve({data:syntheticQuotes().filter(item=>path.endsWith("kind=gold")?item.kind==="gold":item.kind==="index"),state:"demo",policy:{notice:""}}) as ReturnType<typeof apiGet>);
+  render(<CrossAssetPage/>);
+  await screen.findByRole("button",{name:"黄金 Au99.99"});
+  fireEvent.click(screen.getByRole("button",{name:"载入 黄金ETF（518880）"}));
+  fireEvent.click(screen.getByRole("button",{name:"黄金 Au99.99"}));
+  await act(async()=>{resolveEtf({data:syntheticQuotes().filter(item=>item.id==="SSE:518880")});});
+  expect(screen.getByRole("heading",{name:"黄金 Au99.99 · 日线观察"})).toBeTruthy();
+  expect(screen.getByRole("button",{name:"黄金ETF（518880）"})).toBeTruthy();
+  expect(apiGet).toHaveBeenCalledTimes(3);
 });

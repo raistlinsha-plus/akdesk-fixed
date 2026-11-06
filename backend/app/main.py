@@ -170,6 +170,7 @@ async def no_store_fred_responses(request: Request, call_next):
 
 
 database = Database(DATA_DIR / "akdesk-fixed.db")
+database.calibrate_cross_asset_references()
 backup_scheduler = ResearchBackupScheduler.from_environment(
     database, DATA_DIR / "backups"
 )
@@ -199,7 +200,7 @@ service = DataService(
     cache_path=DATA_DIR / "market-cache.db",
     on_dataset=consume_dataset,
 )
-cross_assets_service = CrossAssetService()
+cross_assets_service = CrossAssetService(market_service=service)
 
 
 def cross_response(payload: dict) -> Response:
@@ -220,6 +221,14 @@ async def cross_quotes(kind: Literal["index", "gold"]):
 async def cross_history(asset_id: str):
     try:
         return cross_response(await run_in_threadpool(cross_assets_service.history, asset_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/cross-assets/etf")
+async def cross_etf(asset_id: str):
+    try:
+        return cross_response(await run_in_threadpool(cross_assets_service.etf, asset_id))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -560,7 +569,7 @@ def list_enriched_watchlist():
 
 @app.post("/api/v1/watchlists")
 def add_watchlist(item: WatchlistCreate):
-    if item.object_type in {"index", "gold"}:
+    if item.object_type in {"index", "gold", "etf"}:
         try:
             spec = asset_spec(item.object_id)
             if spec["kind"] != item.object_type:

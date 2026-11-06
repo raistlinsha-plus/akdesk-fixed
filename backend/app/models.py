@@ -99,7 +99,7 @@ class HealthItem(BaseModel):
         return "limited"
 
 
-WatchObjectType = Literal["bond", "future", "convertible", "macro", "fx", "index", "gold"]
+WatchObjectType = Literal["bond", "future", "convertible", "macro", "fx", "index", "gold", "etf"]
 ResearchProjectObjectType = Literal[
     "bond", "future", "convertible", "macro", "fx", "issuer"
 ]
@@ -326,7 +326,7 @@ class ResearchEvidenceCreate(BaseModel):
             self.observation_end = None
             ids = [item["series_id"] for item in self.payload["series"]]
             self.source_summary = "FRED" + (" · " + ", ".join(ids) if ids else "")
-        elif self.payload.get("provider") == "AKShare public preview":
+        elif str(self.payload.get("provider", "")).casefold() == "akshare public preview":
             from .cross_assets import asset_spec, reference_payload
             spec = asset_spec(str(self.payload.get("asset_id") or ""))
             self.payload = reference_payload(spec["id"])

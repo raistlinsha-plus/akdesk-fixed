@@ -1647,6 +1647,7 @@ export function WatchlistPage({ navigate }: { navigate: (page: string, query?: s
     fx: "外汇",
     index: "指数",
     gold: "黄金",
+    etf: "ETF",
   };
 
   return (
@@ -1688,7 +1689,7 @@ export function WatchlistPage({ navigate }: { navigate: (page: string, query?: s
                     <small>{item.object_id} · 更新 {formatDateTime(item.updated_at)}</small>
                   </div>
                   <div className="watch-card-actions">
-                    {item.object_type === "index" || item.object_type === "gold" ? <WorkflowCapture source={{kind:"asset_reference",asset:{id:item.object_id,name:item.name}}} navigate={navigate}/> : <CreateProjectButton objectType={item.object_type} objectId={item.object_id} objectName={item.name} source={enriched.find((value) => value.id === item.id)?.source_meta?.source} observationTime={enriched.find((value) => value.id === item.id)?.source_meta?.observation_time} />}
+                    {item.object_type === "index" || item.object_type === "gold" || item.object_type === "etf" ? <WorkflowCapture source={{kind:"asset_reference",asset:{id:item.object_id,name:item.name}}} navigate={navigate}/> : <CreateProjectButton objectType={item.object_type} objectId={item.object_id} objectName={item.name} source={enriched.find((value) => value.id === item.id)?.source_meta?.source} observationTime={enriched.find((value) => value.id === item.id)?.source_meta?.observation_time} />}
                     <button
                       className={classNames("icon-button", item.pinned && "active")}
                       onClick={() => revise(item.id, { pinned: !item.pinned })}

@@ -38,7 +38,7 @@ body:
     id: version
     attributes:
       label: AKDesk、macOS 与 Python 版本
-      placeholder: v1.1.0 / macOS 15.x / Python 3.13.x
+      placeholder: v1.3.1 / macOS 15.x / Python 3.13.x
     validations:
       required: true
   - type: textarea

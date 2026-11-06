@@ -7,7 +7,7 @@ body:
     id: version
     attributes:
       label: AKDesk 版本（可选）
-      placeholder: v1.1.0
+      placeholder: v1.3.1
   - type: input
     id: page
     attributes:

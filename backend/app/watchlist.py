@@ -14,6 +14,7 @@ WATCH_ADAPTERS = {
     "fx": (None, "fx"),
     "index": (None, "cross-assets"),
     "gold": (None, "cross-assets"),
+    "etf": (None, "cross-assets"),
 }
 
 
@@ -25,7 +26,7 @@ def enrich_watchlist(
         adapter, page = WATCH_ADAPTERS[item.object_type]
         quote: dict[str, Any] | None = None
         meta: dict[str, Any] | None = None
-        if item.object_type in {"index", "gold"} and cross_assets is not None:
+        if item.object_type in {"index", "gold", "etf"} and cross_assets is not None:
             try:
                 row = cross_assets.peek(item.object_id)
             except ValueError:

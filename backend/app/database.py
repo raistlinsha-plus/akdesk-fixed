@@ -3063,6 +3063,7 @@ class Database:
                 source.close()
             staged = Database(staged_path)
             staged.calibrate_fred_storage()
+            staged.calibrate_cross_asset_references()
             with staged._connect() as cleaned:
                 with self._connect() as live:
                     cleaned.backup(live)
@@ -4147,6 +4148,27 @@ class Database:
     def clear_gdelt_cache(self) -> None:
         with self._connect() as connection:
             connection.execute("DELETE FROM gdelt_query_cache")
+
+    def calibrate_cross_asset_references(self) -> int:
+        """Sanitize tagged references in the working DB, not source backups or user notes."""
+        from .cross_assets import asset_spec, reference_payload
+        changed = 0
+        with self._connect() as connection:
+            for table in ("research_evidence", "research_evidence_basket"):
+                for row in connection.execute(f"SELECT id,payload,source_summary,observation_start,observation_end FROM {table} WHERE payload LIKE ?", ("%AKShare public preview%",)).fetchall():
+                    try:
+                        payload = json.loads(row["payload"])
+                    except (ValueError,TypeError):
+                        raise ValueError("跨资产查询引用损坏，请核对备份，不自动覆盖") from None
+                    if not isinstance(payload,dict) or str(payload.get("provider", "")).casefold() != "akshare public preview":
+                        continue
+                    spec = asset_spec(str(payload.get("asset_id") or ""))
+                    replacement = reference_payload(spec["id"])
+                    if payload == replacement and row["source_summary"] == spec["source"] and row["observation_start"] is None and row["observation_end"] is None:
+                        continue
+                    connection.execute(f"UPDATE {table} SET payload=?,source_summary=?,observation_start=NULL,observation_end=NULL WHERE id=?", (json.dumps(replacement,ensure_ascii=False),spec["source"],row["id"]))
+                    changed += 1
+        return changed
 
     def calibrate_fred_storage(self) -> dict[str, int]:
         """Reduce all structured FRED evidence to user-selected parameters.

@@ -28,6 +28,9 @@ def release_document_fixture(tmp_path, monkeypatch):
         "docs/AKDesk-Fixed-v1.1.2-场景案例与使用指南.md": "本版合成案例指南\n",
         "docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md": "本版工作流指南\n",
         "docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md": "本版验收范围\n",
+        "docs/AKDesk-Fixed-v1.3.1-用户手册.md": "跨资产当前手册\n",
+        "docs/AKDesk-Fixed-v1.3.1-升级与发布验收.md": "跨资产验收范围\n",
+        "docs/examples/AKDesk-v1.3.1-股债金汇合成底稿.md": "明确合成底稿\n",
         "docs/examples/AKDesk-v1.1.2-casebook-EN.md": "English synthetic casebook\n",
         "examples/scenarios/credit-review-synthetic.csv": "bond_code\nDEMO-CREDIT-A\n",
         "docs/AKDesk-Fixed-v1.1.0-用户手册.md": "当前手册\n",
@@ -98,6 +101,9 @@ def test_release_whitelist_excludes_historical_and_unreviewed_media(
     assert "docs/AKDesk-Fixed-v1.1.2-场景案例与使用指南.md" in files
     assert "docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md" in files
     assert "docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md" in files
+    assert "docs/AKDesk-Fixed-v1.3.1-用户手册.md" in files
+    assert "docs/AKDesk-Fixed-v1.3.1-升级与发布验收.md" in files
+    assert "docs/examples/AKDesk-v1.3.1-股债金汇合成底稿.md" in files
     assert "docs/examples/AKDesk-v1.1.2-casebook-EN.md" in files
     assert "examples/scenarios/credit-review-synthetic.csv" in files
     assert "docs/AKDesk-Fixed-v1.1.0-用户手册.md" in files

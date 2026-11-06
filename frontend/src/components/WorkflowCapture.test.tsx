@@ -36,6 +36,19 @@ async function openBrief(note = "自己的待核验判断") {
 }
 
 describe("explicit workflow capture", () => {
+  it("saves an asset reference with no quote values or observation metadata", async()=>{
+    const user=userEvent.setup();
+    render(<WorkflowCapture source={{kind:"asset_reference",asset:{id:"SSE:510300",name:"沪深300ETF"}}}/>);
+    await user.click(screen.getByRole("button",{name:"保存查询引用到项目"}));
+    await screen.findByRole("option",{name:"利率观察甲"});
+    await user.selectOptions(screen.getByLabelText("目标研究项目"),"1");
+    await user.click(screen.getByRole("button",{name:"预览保存内容"}));
+    expect(apiPost).not.toHaveBeenCalled();
+    vi.mocked(apiPost).mockResolvedValue(result());
+    await user.click(screen.getByRole("button",{name:"确认保存到该项目"}));
+    expect(apiPost).toHaveBeenCalledWith("/research/projects/1/workflow-capture",{kind:"asset_reference",asset_id:"SSE:510300",request_id:expect.any(String),confirmed:true,note:""},expect.anything());
+    await screen.findByRole("status");
+  });
   it("does not load projects or write until a user opens an eligible capture", async () => {
     const user = userEvent.setup();
     const { rerender } = render(<WorkflowCapture source={{ kind: "market_signal", signal: { ...signal, demo: true } }} />);

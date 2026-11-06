@@ -7,7 +7,7 @@ body:
     id: version
     attributes:
       label: AKDesk 版本
-      placeholder: v1.2.0
+      placeholder: v1.3.1
   - type: input
     id: scenario
     attributes:

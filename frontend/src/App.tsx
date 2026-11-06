@@ -45,7 +45,6 @@ import { ChartLabPage } from "./pages/ChartLabPage";
 import { InvestmentDeskPage } from "./pages/InvestmentDeskPage";
 import { MacroPage } from "./pages/MacroPage";
 import { MarketChangesPage } from "./pages/MarketChangesPage";
-import { ProjectsPage } from "./pages/ProjectsPage";
 import { CreditPage } from "./pages/CreditPage";
 import { ReleaseReviewPage } from "./pages/ReleaseReviewPage";
 import { SovereignPage } from "./pages/SovereignPage";
@@ -86,6 +85,7 @@ const HelpPage = lazy(() => import("./pages/HelpPage").then((module) => ({ defau
 const ResearchPage = lazy(() => import("./pages/ResearchPage").then((module) => ({ default: module.ResearchPage })));
 const ScenariosPage = lazy(() => import("./pages/ScenariosPage").then((module) => ({ default: module.ScenariosPage })));
 const CrossAssetPage = lazy(() => import("./pages/CrossAssetPage").then(module=>({default:module.CrossAssetPage})));
+const ProjectsPage = lazy(()=>import("./pages/ProjectsPage").then(module=>({default:module.ProjectsPage})));
 
 type PageId =
   | "cross-assets"
@@ -772,7 +772,7 @@ export default function App() {
           {page === "research-desk" ? <InvestmentDeskPage refreshSeed={refreshSeed} navigate={navigate} /> : null}
           {page === "dashboard" ? <DashboardPage refreshSeed={refreshSeed} navigate={navigate} /> : null}
           {page === "market-changes" ? <MarketChangesPage refreshSeed={refreshSeed} navigate={navigate} /> : null}
-          {page === "projects" ? <ProjectsPage initialQuery={pageQuery} navigate={navigate} /> : null}
+          {page === "projects" ? <Suspense fallback={<p role="status">正在打开研究项目…</p>}><ProjectsPage initialQuery={pageQuery} navigate={navigate} /></Suspense> : null}
           {page === "topics" ? <TopicResearchPage initialQuery={pageQuery} /> : null}
           {page === "macro" ? <MacroPage initialQuery={pageQuery} navigate={navigate} /> : null}
           {page === "sovereign" ? <SovereignPage initialQuery={pageQuery} refreshSeed={refreshSeed} /> : null}
@@ -991,7 +991,7 @@ export default function App() {
             aria-labelledby="workspace-onboarding-title"
           >
             <div className="workspace-onboarding-copy">
-              <span className="eyebrow">AKDESK FIXED · V1.3.0</span>
+              <span className="eyebrow">AKDESK FIXED · V1.3.1</span>
               <h1 id="workspace-onboarding-title">你通常先做哪件事？</h1>
               <p>选择一个使用场景即可开始。它只设置默认落地页和导航顺序；全部行情、投研、信用与全球模块仍可随时访问。</p>
               <button className="secondary-button" onClick={() => { setOnboardingOpen(false); navigate("scenarios"); }}>先用五分钟合成案例体验，不设置默认入口 <ChevronRight size={15} /></button>
