@@ -34,6 +34,7 @@ export function WeeklyReviewPage({ refreshSeed, navigate }: { refreshSeed: numbe
   return (
     <div className="page-stack weekly-review-page">
       <PageHeading eyebrow="WEEKLY REVIEW" title="每周研究复盘" description="汇总项目更新、反证、任务、发布复盘和待复盘事项" />
+      {navigate ? <button type="button" className="text-button" onClick={() => navigate("cross-asset-week")}>看行情而非项目进度？打开股债金汇周复盘 →</button> : null}
       <div className="filter-bar">
         <label><span>周结束日</span><input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label>
         <button className="secondary-button" onClick={() => setReloadSeed(value => value + 1)} disabled={loading}><RefreshCcw size={14} /> 刷新</button>

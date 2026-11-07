@@ -2,13 +2,15 @@
 
 从黄金、指数和固收市场出发，把观察、出处与自己的判断整理成可复盘的研究底稿。
 
+**v1.4.1「周复盘可用性版」**：四项结果独立返回，遇到缺数或超时可只重读一项；从原模块返回会保留日期和当前标签页内的草稿。沿用沪深300、10年国债收益率、Au99.99 和美元兑人民币参考价，不做跨资产总分。[产品介绍](./docs/AKDesk-Fixed-v1.4.1-产品介绍.md) · [用户手册](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) · [使用与验收](./docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md)。
+
 **v1.3.1「跨资产体验与可信收口版」**：新增 Au99.99 黄金、四个指数和四个按需 ETF 观察示例，支持日线、共同日期比较和查询引用工作流；保留固收、信用与持续研究。不是全市场股票或实时交易终端。新行情只在内存展示，不进入数值导出或 AI。[产品介绍](./docs/AKDesk-Fixed-v1.3.1-产品介绍.md) · [用户手册](./docs/AKDesk-Fixed-v1.3.1-用户手册.md) · [发布验收](./docs/AKDesk-Fixed-v1.3.1-升级与发布验收.md)。
 
-[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#本地安装三步) [![v1.3.1](https://img.shields.io/badge/version-v1.3.1-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)
+[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#本地安装三步) [![v1.4.1](https://img.shields.io/badge/version-v1.4.1-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/tag/v1.4.1)
 
 **v1.1.1 数据边界更新（2026-11-03）**：适配 AKShare 1.20.22 的上游限流停试；FRED 内容不做数值导出或 AI 处理，研究只保存查询引用；市场导出保留使用边界。自备 Key、软件 MIT 或连接成功均不等于数据授权。参见[数据使用规则](./DATA_USAGE.md)与[升级说明](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md)。
 
-**[3分钟股债金汇合成体验](https://raistlinsha-plus.github.io/akdesk-fixed/#/cross-assets)** · [一页固收简报](https://raistlinsha-plus.github.io/akdesk-fixed/#/brief) · **[下载本地版](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)** · [English](./README_EN.md) · [反馈](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)
+**[3 分钟首任务](https://raistlinsha-plus.github.io/akdesk-fixed/#/start)** · [股债金汇周复盘样例](https://raistlinsha-plus.github.io/akdesk-fixed/#/cross-asset-week) · [一页固收简报](https://raistlinsha-plus.github.io/akdesk-fixed/#/brief) · **[下载本地版](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)** · [English](./README_EN.md) · [反馈](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)
 
 ![一页固收简报界面：固定合成样例](./docs/media/v1.1.0/05-brief.png)
 
@@ -29,10 +31,10 @@
 macOS 12+ 为兼容目标；本轮实际验证环境为 macOS 26.6.2 / Apple Silicon，其他系统小版本未逐一实机验收。
 
 1. 准备受支持的 Python。使用 Homebrew 时可执行 `brew install python@3.13`。
-2. 在 [Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) 选择 `AKDesk-Fixed-v1.3.1.zip` 正式资源，核对对应 SHA-256，完整解压；以页面实际可用资源为准。
+2. 从 [v1.4.1 Release](https://github.com/raistlinsha-plus/akdesk-fixed/releases/tag/v1.4.1) 下载 `AKDesk-Fixed-v1.4.1.zip` 与 `SHA256SUMS`。核对 SHA-256 后完整解压。
 3. 双击 `start-macos.command`。启动器执行本地预检、安装锁定依赖，并打开 `http://127.0.0.1:8765`。
 
-GitHub 自动生成的 **Source code** 压缩包用于源码查看和开发，与经过发布清单、构建资源和执行权限检查的正式 ZIP 不同；源码用户可能需要自行构建界面或恢复脚本权限。实际可下载版本与验收结果以 Release 页面和 [发布与验收记录](./docs/AKDesk-Fixed-v1.1.0-发布与验收记录.md) 为准。
+GitHub 自动生成的 **Source code** 压缩包用于源码查看和开发，与经过发布清单、构建资源和执行权限检查的安装 ZIP 不同；源码用户可能需要自行构建界面或恢复脚本权限。本地验收见 [v1.4.1 使用与验收](./docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md)，公开可下载版本以 Releases 实际资产为准。
 
 macOS 阻止脚本时，可右键选择“打开”。执行权限丢失时，在项目目录运行：
 
@@ -40,19 +42,20 @@ macOS 阻止脚本时，可右键选择“打开”。执行权限丢失时，�
 chmod +x start-macos.command start-macos-demo.command stop-macos.command
 ```
 
-**停止服务**：在原启动终端按 `Control+C`，或双击 `stop-macos.command`。只关闭浏览器不会停止服务。同版本已运行时，启动器会打开现有服务；端口冲突和旧版本会给出提示。
+**停止服务**：在原启动终端按 `Control+C`，或用同一安装目录的 `stop-macos.command`。只关闭浏览器不会停止服务。启动器仅复用同安装、版本、模式与数据目录的实例；自定义 `AKDESK_PORT` 须在启停时一致。
 
-**启动遇到问题**：预检检查 Python、文件、权限、空间和证书位置；依赖失败有分类恢复提示。可独立执行 `python3 scripts/preflight.py --json`。进入应用后，打开“使用与反馈”，主动生成并预览脱敏诊断摘要，再决定是否分享；不会自动上传 Key、路径、数据库或研究正文。详细恢复步骤见 [用户手册](./docs/AKDesk-Fixed-v1.1.0-用户手册.md)。
+**启动遇到问题**：预检检查 Python、文件、权限、空间和证书位置；依赖失败有分类恢复提示。可独立执行 `python3 scripts/preflight.py --json`。进入应用后，打开“使用与反馈”，主动生成并预览脱敏诊断摘要，再决定是否分享；不会自动上传 Key、路径、数据库或研究正文。详细恢复步骤见 [用户手册](./docs/AKDesk-Fixed-v1.4.1-用户手册.md)。
 
 ## 能完成哪些工作
 
 - **快速市场底稿**：查看变化、核验曲线，生成包含资金、利差、期货、出处和时间的一页简报；完整每日复盘仍保留现券、发行事件和研究工作流。
 - **小范围跨资产观察**：黄金、四个指数、四个按需ETF，连接原有固收与外汇模块；按需日线、同类共同日期比较、查询引用及人工备注，不扫描全市场。
+- **股债金汇周复盘**：选一周，四项独立返回并可单项重读。回原模块核验再返回，所选日期和标签页内草稿不丢；真实底稿不导出行情数值。
 - **持续个人研究**：统一自选、证据篮、研究项目、专题、反证、任务与每周复盘，记录观点如何变化。
 - **信用与跨市场观察**：信用观察 R2、外汇、宏观图表、主权比较与事件线索。
 - **解释数据状态**：区分真实、缓存、过期、演示和混合来源；缺失保持为空，关键数值不足时方向待核验。
 
-临时备注可以随简报复制、下载 Markdown 或打印/PDF，不会自动保存为研究笔记。旧归档没有逐源出处时会显示待核验。市场与研究主体功能保留；FRED 数值导出和版本标记已按 v1.1.1 收紧，详见[升级说明](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md)、[产品介绍](./docs/AKDesk-Fixed-v1.1.0-产品介绍.md) 与 [完整功能手册](./docs/AKDesk-Fixed-v1.0.0-用户手册.md)。
+临时备注可以随简报复制、下载 Markdown 或打印/PDF，不会自动保存为研究笔记。旧归档没有逐源出处时会显示待核验。具体操作见 [当前用户手册](./docs/AKDesk-Fixed-v1.4.1-用户手册.md)，数据限制见[数据使用规则](./DATA_USAGE.md)。
 
 ## 四类数据源
 
@@ -67,7 +70,7 @@ chmod +x start-macos.command start-macos-demo.command stop-macos.command
 
 This product uses the FRED® API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.
 
-应用没有使用遥测或追踪 SDK。研究数据保存在本机；反馈由用户主动提交。数据缓存、凭据、AI 发送范围和备份规则详见 [用户手册](./docs/AKDesk-Fixed-v1.1.0-用户手册.md)。
+应用没有使用遥测或追踪 SDK。研究数据保存在本机；反馈由用户主动提交。数据缓存、凭据、AI 发送范围和备份规则见 [当前用户手册](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) 与 [数据使用规则](./DATA_USAGE.md)。
 
 ## 适合谁
 
@@ -77,7 +80,8 @@ This product uses the FRED® API but is not endorsed or certified by the Federal
 
 ## 文档与反馈
 
-- [v1.3.1 产品介绍](./docs/AKDesk-Fixed-v1.3.1-产品介绍.md) · [用户手册](./docs/AKDesk-Fixed-v1.3.1-用户手册.md) · [测试清单](./docs/AKDesk-Fixed-v1.3.1-测试用例清单.md)
+- 当前：[v1.4.1 产品介绍](./docs/AKDesk-Fixed-v1.4.1-产品介绍.md) · [用户手册](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) · [测试清单](./docs/AKDesk-Fixed-v1.4.1-测试用例清单.md) · [使用与验收](./docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md)
+- 历史：[v1.4.0 指南](./docs/AKDesk-Fixed-v1.4.0-产品与使用指南.md) · [v1.3.2 首任务](./docs/AKDesk-Fixed-v1.3.2-体验指南.md) · [v1.3.1 产品介绍](./docs/AKDesk-Fixed-v1.3.1-产品介绍.md)
 - [v1.3.1 Review](./docs/AKDesk-Fixed-v1.3.1-开发与Review记录.md) · [升级与发布验收](./docs/AKDesk-Fixed-v1.3.1-升级与发布验收.md) · [获客素材与观察计划](./docs/AKDesk-Fixed-v1.3.1-GitHub获客与发布准备.md)
 - [v1.2 产品与使用指南](./docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md) · [发布与验收](./docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md)
 - [三条场景指南](./docs/AKDesk-Fixed-v1.1.2-场景案例与使用指南.md) · [English casebook](./docs/examples/AKDesk-v1.1.2-casebook-EN.md) · [利率研究成品](./docs/examples/AKDesk-v1.1.2-利率研究样例.md) · [信用复核成品](./docs/examples/AKDesk-v1.1.2-信用复核样例.md)

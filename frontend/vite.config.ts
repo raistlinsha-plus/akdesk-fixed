@@ -9,6 +9,7 @@ export default defineConfig({
     },
   },
   build: {
+    manifest: true,
     target: "es2022",
     // ECharts is loaded on demand as its own chunk; 550 kB is the expected
     // uncompressed ceiling for that optional analytics dependency.

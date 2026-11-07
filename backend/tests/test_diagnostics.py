@@ -193,9 +193,43 @@ def test_preflight_clean_install_with_available_release(tmp_path, monkeypatch):
     (tmp_path / "backend").mkdir()
     (tmp_path / "backend/requirements.lock").touch()
     (tmp_path / "frontend/dist").mkdir(parents=True)
-    (tmp_path / "frontend/dist/index.html").touch()
+    dist = tmp_path / "frontend/dist"
+    (dist / "assets").mkdir()
+    (dist / "assets/app.js").write_text("export {};", encoding="utf-8")
+    (dist / "index.html").write_text(
+        '<script type="module" src="/assets/app.js"></script>', encoding="utf-8"
+    )
     assert preflight.inspect_environment(tmp_path)["ok"] is True
     assert not (tmp_path / "data").exists()
+
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        "",
+        '<script type="module" src="/assets/missing.js"></script>',
+        '<script type="module" src="/assets/app.js"></script>'
+        '<link rel="stylesheet" href="/assets/missing.css">',
+        '<script type="module" src="/assets/../outside.js"></script>',
+        '<script type="module" src="//example.invalid/assets/app.js"></script>',
+    ],
+)
+def test_preflight_broken_frontend_resources_are_actionable(tmp_path, monkeypatch, html):
+    monkeypatch.setenv("AKDESK_DATA_DIR", str(tmp_path / "private-data"))
+    (tmp_path / "backend").mkdir()
+    (tmp_path / "backend/requirements.lock").touch()
+    dist = tmp_path / "frontend/dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "assets/app.js").touch()
+    (dist / "outside.js").touch()
+    (dist / "index.html").write_text(html, encoding="utf-8")
+    report = preflight.inspect_environment(tmp_path)
+    check = next(item for item in report["checks"] if item["code"] == "frontend")
+    assert not report["ok"] and check["status"] == "error"
+    assert "完整重新解压" in check["recovery"]
+    assert str(tmp_path) not in json.dumps(report)
+    assert "example.invalid" not in json.dumps(report)
+    assert not (tmp_path / "private-data").exists()
 
 
 def test_preflight_relative_data_directory_matches_launcher_root(tmp_path, monkeypatch):

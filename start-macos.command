@@ -4,8 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 VENV="$ROOT/.venv"
-URL="http://127.0.0.1:8765"
-EXPECTED_VERSION="1.3.1"
+EXPECTED_VERSION="1.4.1"
 REQUIREMENTS_LOCK="$ROOT/backend/requirements.lock"
 REQUIREMENTS_STAMP="$VENV/.akdesk-requirements.sha256"
 
@@ -19,6 +18,8 @@ trap cleanup_install_log EXIT
 fail() {
   echo
   echo "启动失败：$1"
+  echo "尚未安装成功也可先体验固定合成数据：https://raistlinsha-plus.github.io/akdesk-fixed/"
+  echo "反馈时只描述故障类别和操作步骤，不粘贴个人路径、密钥或原始安装日志。"
   if [[ "${AKDESK_NONINTERACTIVE:-0}" != "1" ]]; then
     echo "按任意键关闭窗口。"
     read -k 1
@@ -29,23 +30,6 @@ fail() {
 
 echo ""
 echo "AKDesk Fixed · macOS 本地启动器"
-
-RUNNING_HEALTH="$(curl --connect-timeout 1 --max-time 2 -fsS "$URL/api/v1/health" 2>/dev/null || true)"
-if [[ -n "$RUNNING_HEALTH" ]]; then
-  if print -r -- "$RUNNING_HEALTH" | grep -q "\"version\":\"$EXPECTED_VERSION\""; then
-    echo "v$EXPECTED_VERSION 服务已经运行，正在打开浏览器……"
-    echo "如需停止，请回到原启动窗口按 Control+C，或双击 stop-macos.command。"
-    if [[ "${AKDESK_NO_BROWSER:-0}" != "1" ]]; then
-      open "$URL"
-    fi
-    exit 0
-  fi
-  fail "8765 端口上正在运行其他版本。请先关闭旧版启动窗口，再重新双击本启动器"
-fi
-
-if command -v lsof >/dev/null 2>&1 && lsof -nP -iTCP:8765 -sTCP:LISTEN >/dev/null 2>&1; then
-  fail "8765 端口已被无响应进程占用。请关闭旧版启动窗口，或在“活动监视器”结束对应 Python 进程后重试"
-fi
 
 PYTHON="${AKDESK_PYTHON:-}"
 if [[ -z "$PYTHON" ]]; then
@@ -65,6 +49,19 @@ fi
 
 if ! "$PYTHON" -c 'import sys; raise SystemExit(not ((3, 11) <= sys.version_info < (3, 14)))'; then
   fail "需要 Python 3.11–3.13。推荐执行 brew install python@3.13"
+fi
+
+[[ -f "$ROOT/scripts/launcher.py" ]] || fail "发布包缺少启动组件，请重新下载完整 ZIP 并解压"
+PORT="$("$PYTHON" "$ROOT/scripts/launcher.py" port)" || fail "请检查端口配置"
+URL="http://127.0.0.1:$PORT"
+if "$PYTHON" "$ROOT/scripts/launcher.py" probe "$EXPECTED_VERSION"; then
+  echo "同一安装、模式与数据目录的服务已运行：$URL"
+  if [[ "${AKDESK_NO_BROWSER:-0}" != "1" ]]; then
+    open "$URL"
+  fi
+  exit 0
+else
+  [[ "$?" == "3" ]] || fail "未复用已有实例，请按上方提示处理"
 fi
 
 [[ -f "$ROOT/scripts/preflight.py" ]] || fail "发布包缺少启动预检，请重新下载完整 ZIP 并解压"
@@ -124,6 +121,9 @@ if [[ ! -f "$ROOT/frontend/dist/index.html" ]]; then
 fi
 
 echo "启动完成后会自动打开浏览器：$URL"
+if [[ "$PORT" != "8765" ]]; then
+  echo "自定义端口：请在同一端口配置下运行停止器，或在原启动窗口按 Control+C。"
+fi
 echo "停止服务：在本窗口按 Control+C，或随时双击 stop-macos.command。"
 echo "只关闭浏览器页面不会停止服务。"
 echo ""

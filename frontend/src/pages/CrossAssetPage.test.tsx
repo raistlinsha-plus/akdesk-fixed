@@ -28,6 +28,29 @@ it("loads only quotes initially and history only after explicit request",async()
   expect(apiGet).not.toHaveBeenCalledWith(expect.stringContaining("/history"),expect.anything());
 });
 
+it("keeps working sources visible and makes missing-source recovery explicit", async () => {
+  const navigate = vi.fn();
+  const index = syntheticQuotes().filter(item => item.kind === "index");
+  vi.mocked(apiGet).mockImplementation(path => (
+    path.endsWith("kind=gold")
+      ? Promise.reject(new Error("private error detail"))
+      : Promise.resolve({ data: index })
+  ) as ReturnType<typeof apiGet>);
+  render(<CrossAssetPage navigate={navigate} />);
+  expect((await screen.findByRole("alert")).textContent).toContain("黄金：读取失败或超时");
+  expect(screen.queryByText(/private error detail/)).toBeNull();
+  expect(screen.getByRole("button", { name: "上证指数" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "查看数据健康" }));
+  expect(navigate).toHaveBeenLastCalledWith("health");
+  fireEvent.click(screen.getByRole("button", { name: "改用明确标记的合成首任务" }));
+  expect(navigate).toHaveBeenLastCalledWith("help", "start");
+  vi.mocked(apiGet).mockImplementation(path => Promise.resolve({
+    data: path.endsWith("kind=gold") ? [{ ...syntheticQuotes()[4], price: null }] : index,
+  }) as ReturnType<typeof apiGet>);
+  fireEvent.click(screen.getByRole("button", { name: "重新读取" }));
+  expect((await screen.findByRole("alert")).textContent).toContain("黄金：暂未取得有效报价");
+});
+
 it("ETF response does not steal selection after the user moves to gold",async()=>{
   let resolveEtf!:(value:unknown)=>void;
   vi.mocked(apiGet).mockImplementation(path=>path.startsWith("/cross-assets/etf?")?new Promise(resolve=>{resolveEtf=resolve;}) as ReturnType<typeof apiGet>:Promise.resolve({data:syntheticQuotes().filter(item=>path.endsWith("kind=gold")?item.kind==="gold":item.kind==="index"),state:"demo",policy:{notice:""}}) as ReturnType<typeof apiGet>);

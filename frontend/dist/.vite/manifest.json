@@ -1,0 +1,159 @@
+{
+  "_OnePageBrief-BqT2trFY.css": {
+    "file": "assets/OnePageBrief-BqT2trFY.css",
+    "src": "_OnePageBrief-BqT2trFY.css"
+  },
+  "_OnePageBrief-CBGMs1gK.js": {
+    "file": "assets/OnePageBrief-CBGMs1gK.js",
+    "name": "OnePageBrief",
+    "imports": [
+      "index.html"
+    ],
+    "css": [
+      "assets/OnePageBrief-BqT2trFY.css"
+    ]
+  },
+  "_crossAssets-C6IsRQFK.js": {
+    "file": "assets/crossAssets-C6IsRQFK.js",
+    "name": "crossAssets"
+  },
+  "_feedback-7dw0MgMo.js": {
+    "file": "assets/feedback-7dw0MgMo.js",
+    "name": "feedback",
+    "imports": [
+      "_scenarios-1z18uueB.js"
+    ]
+  },
+  "_rotate-ccw-BBcvDHbo.js": {
+    "file": "assets/rotate-ccw-BBcvDHbo.js",
+    "name": "rotate-ccw",
+    "imports": [
+      "index.html"
+    ]
+  },
+  "_scenarios-1z18uueB.js": {
+    "file": "assets/scenarios-1z18uueB.js",
+    "name": "scenarios"
+  },
+  "index.html": {
+    "file": "assets/index-BTHbKFGW.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "dynamicImports": [
+      "src/components/Charts.tsx",
+      "src/components/Charts.tsx",
+      "src/components/Charts.tsx",
+      "src/components/Charts.tsx",
+      "src/components/Charts.tsx",
+      "src/components/Charts.tsx",
+      "src/components/Charts.tsx",
+      "src/pages/HelpPage.tsx",
+      "src/pages/ResearchPage.tsx",
+      "src/pages/ScenariosPage.tsx",
+      "src/pages/CrossAssetPage.tsx",
+      "src/pages/CrossAssetWeekPage.tsx",
+      "src/pages/ProjectsPage.tsx"
+    ],
+    "css": [
+      "assets/index-oUmbNaFs.css"
+    ]
+  },
+  "src/components/Charts.tsx": {
+    "file": "assets/Charts-CckZ47Ig.js",
+    "name": "Charts",
+    "src": "src/components/Charts.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html"
+    ]
+  },
+  "src/pages/CrossAssetPage.tsx": {
+    "file": "assets/CrossAssetPage-CdjXMNdT.js",
+    "name": "CrossAssetPage",
+    "src": "src/pages/CrossAssetPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_crossAssets-C6IsRQFK.js",
+      "_scenarios-1z18uueB.js",
+      "_feedback-7dw0MgMo.js"
+    ],
+    "dynamicImports": [
+      "src/components/Charts.tsx"
+    ],
+    "css": [
+      "assets/CrossAssetPage-B3RmKJGE.css"
+    ]
+  },
+  "src/pages/CrossAssetWeekPage.tsx": {
+    "file": "assets/CrossAssetWeekPage--4S7zEj3.js",
+    "name": "CrossAssetWeekPage",
+    "src": "src/pages/CrossAssetWeekPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_scenarios-1z18uueB.js"
+    ],
+    "css": [
+      "assets/CrossAssetWeekPage-B7lX-0d-.css"
+    ]
+  },
+  "src/pages/HelpPage.tsx": {
+    "file": "assets/HelpPage-OOv38Cv7.js",
+    "name": "HelpPage",
+    "src": "src/pages/HelpPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_feedback-7dw0MgMo.js",
+      "_scenarios-1z18uueB.js",
+      "src/pages/ScenariosPage.tsx",
+      "_crossAssets-C6IsRQFK.js",
+      "_OnePageBrief-CBGMs1gK.js",
+      "_rotate-ccw-BBcvDHbo.js"
+    ],
+    "css": [
+      "assets/HelpPage-TY-bY2to.css"
+    ]
+  },
+  "src/pages/ProjectsPage.tsx": {
+    "file": "assets/ProjectsPage-P0m6Pzjv.js",
+    "name": "ProjectsPage",
+    "src": "src/pages/ProjectsPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_rotate-ccw-BBcvDHbo.js"
+    ],
+    "css": [
+      "assets/ProjectsPage-QMwQkNGD.css"
+    ]
+  },
+  "src/pages/ResearchPage.tsx": {
+    "file": "assets/ResearchPage-BY9smSW6.js",
+    "name": "ResearchPage",
+    "src": "src/pages/ResearchPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_OnePageBrief-CBGMs1gK.js"
+    ]
+  },
+  "src/pages/ScenariosPage.tsx": {
+    "file": "assets/ScenariosPage-QBp5L70t.js",
+    "name": "ScenariosPage",
+    "src": "src/pages/ScenariosPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_OnePageBrief-CBGMs1gK.js",
+      "_feedback-7dw0MgMo.js",
+      "_scenarios-1z18uueB.js",
+      "_rotate-ccw-BBcvDHbo.js"
+    ],
+    "css": [
+      "assets/ScenariosPage-DhapHK4r.css"
+    ]
+  }
+}

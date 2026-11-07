@@ -1,15 +1,15 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "serialNumber": "urn:uuid:c20ad1b9-63e8-5a26-96b8-ca5750c444f6",
+  "serialNumber": "urn:uuid:ef381b84-a2ce-5270-ad56-d966555741a3",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-11-06T17:49:00.111330Z",
+    "timestamp": "2026-11-07T17:04:00.470826Z",
     "component": {
       "type": "application",
-      "bom-ref": "pkg:generic/akdesk-fixed@1.3.1",
+      "bom-ref": "pkg:generic/akdesk-fixed@1.4.1",
       "name": "AKDesk Fixed",
-      "version": "1.3.1",
+      "version": "1.4.1",
       "licenses": [
         {
           "license": {
@@ -21,7 +21,7 @@
     "properties": [
       {
         "name": "akdesk:python-lock-sha256",
-        "value": "3bcfc4f9b1d2abc9ee416f72331e2fd013085a0d3938bc64d5874e640e70628c"
+        "value": "6e4465eff890396e6c3371b4642d0386d03c7167c68ec9e1a0240c7fd10acc3c"
       }
     ]
   },

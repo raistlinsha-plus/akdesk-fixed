@@ -19,8 +19,10 @@ from urllib.parse import quote, unquote, urlsplit
 
 try:
     from .generate_release_metadata import generate_metadata
+    from .preflight import frontend_bundle_ready
 except ImportError:
     from generate_release_metadata import generate_metadata
+    from preflight import frontend_bundle_ready
 
 ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_URL = "https://github.com/raistlinsha-plus/akdesk-fixed"
@@ -40,6 +42,14 @@ ROOT_DOCUMENTS = {
     "DATA_USAGE.md",
 }
 BASELINE_DOCUMENTS = {
+    "docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md",
+    "docs/AKDesk-Fixed-v1.4.1-产品介绍.md",
+    "docs/AKDesk-Fixed-v1.4.1-用户手册.md",
+    "docs/AKDesk-Fixed-v1.4.1-测试用例清单.md",
+    "docs/AKDesk-Fixed-v1.4.0-产品与使用指南.md",
+    "docs/AKDesk-Fixed-v1.4.0-开发与验收记录.md",
+    "docs/AKDesk-Fixed-v1.3.2-体验指南.md",
+    "docs/AKDesk-Fixed-v1.3.2-验证记录.md",
     "docs/AKDesk-Fixed-v1.3.1-产品介绍.md",
     "docs/AKDesk-Fixed-v1.3.1-用户手册.md",
     "docs/AKDesk-Fixed-v1.3.1-开发与Review记录.md",
@@ -254,6 +264,7 @@ def source_files() -> set[Path]:
         ROOT / "backend" / "requirements.txt",
         ROOT / "backend" / "requirements.lock",
         ROOT / "scripts" / "preflight.py",
+        ROOT / "scripts" / "launcher.py",
         ROOT / "scripts" / "build_demo_video.py",
         *(ROOT / path for path in SYNTHETIC_MEDIA),
         *(ROOT / "examples").rglob("*.py"),
@@ -347,6 +358,9 @@ def verify_tree(stage: Path, version: str) -> dict[str, object]:
         Path("RELEASE_MANIFEST.json"),
         *EXECUTABLES,
     }
+    modern_launcher = tuple(int(part) for part in version.split("-")[0].split(".")[:2]) >= (1, 4)
+    if modern_launcher:
+        required.update({Path("scripts/launcher.py"), Path("frontend/dist/.vite/manifest.json")})
     missing = sorted(str(path) for path in required if not (stage / path).is_file())
     if missing:
         raise RuntimeError(f"发布包缺少文件：{missing}")
@@ -367,10 +381,20 @@ def verify_tree(stage: Path, version: str) -> dict[str, object]:
     )
     if manifest.get("version") != version:
         raise RuntimeError("发布清单版本不一致")
-    for item in manifest.get("files", []):
+    entries = manifest.get("files", [])
+    expected = {item["path"] for item in entries}
+    actual = {
+        path.relative_to(stage).as_posix() for path in stage.rglob("*")
+        if path.is_file() and path != stage / "RELEASE_MANIFEST.json"
+    }
+    if expected != actual or len(expected) != len(entries) or len(expected) != manifest.get("file_count"):
+        raise RuntimeError("发布清单文件集合不一致")
+    for item in entries:
         path = stage / str(item["path"])
-        if not path.is_file() or sha256(path) != item["sha256"]:
+        if path.stat().st_size != item["size"] or sha256(path) != item["sha256"]:
             raise RuntimeError(f"发布清单校验失败：{item['path']}")
+    if modern_launcher and not frontend_bundle_ready(stage):
+        raise RuntimeError("前端构建清单或按需资源校验失败")
     sbom = json.loads((stage / "SBOM.cdx.json").read_text(encoding="utf-8"))
     if sbom.get("metadata", {}).get("component", {}).get("version") != version:
         raise RuntimeError("SBOM 版本不一致")

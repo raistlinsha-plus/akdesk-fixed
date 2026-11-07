@@ -7,8 +7,9 @@ import { PageHeading } from "./MarketPages";
 import "./help.css";
 import { DATA_RULES_REVIEWED_AT, DATA_USAGE_NOTICE, FRED_USAGE_NOTICE } from "../dataUsage";
 import { ScenarioCards } from "./ScenariosPage";
+import { ExperienceTask } from "../components/ExperienceTask";
 
-export function HelpPage({ navigate }: { navigate: (page: string, query?: string) => void }) {
+export function HelpPage({ navigate, initialQuery = "" }: { navigate: (page: string, query?: string) => void; initialQuery?: string }) {
   const [report, setReport] = useState<DiagnosticReport | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -44,8 +45,15 @@ export function HelpPage({ navigate }: { navigate: (page: string, query?: string
     URL.revokeObjectURL(url);
   }
 
+  if (initialQuery === "start") return <div className="page-stack help-page">
+    <div><button className="secondary-button" onClick={() => navigate("help")}>返回使用与反馈</button></div>
+    <ExperienceTask surface="local" />
+  </div>;
+
   return <div className="page-stack help-page">
     <PageHeading eyebrow="GET STARTED & FEEDBACK" title="使用与反馈" description={`AKDesk Fixed v${APP_VERSION} · 从一份简报开始，遇到问题也能找到下一步。`} />
+    <section className="help-start panel"><div><LifeBuoy size={24} /><h2>先做三分钟首任务</h2><p>用合成资料核对两只 ETF，写下判断并带走底稿。不需要设置数据源或创建项目。</p></div><button className="secondary-button" onClick={() => navigate("help", "start")}>开始三分钟首任务 <ArrowRight size={15} /></button></section>
+    <section className="help-diagnostics panel"><h2>区分启动故障和行情缺失</h2><p>网页打不开：先看原启动窗口的预检提示，确认服务仍在运行。已能打开网页但行情为“—”：先核对观测日期、来源与缓存状态，不必重新安装。</p><button className="secondary-button" onClick={() => navigate("health")}>查看数据健康 <ArrowRight size={15} /></button></section>
     <section className="help-casebook panel"><span className="eyebrow">FIVE-MINUTE CASEBOOK</span><h2>选一个任务，先用合成资料练习</h2><p>独立样例不会写入研究库。先看方法与成品，再进入正式模块；不需要 FRED 或 AI Key。</p><ScenarioCards onSelect={id => navigate("scenarios", id)} /></section>
     <section className="help-start panel">
       <div><LifeBuoy size={24} /><h2>先完成一次市场复盘</h2><p>查看变化，回到曲线核验，再把资金、曲线与期货整理成带出处的简报。</p></div>

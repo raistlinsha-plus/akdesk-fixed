@@ -6,6 +6,7 @@ import sqlite3
 import re
 import tempfile
 import threading
+import time
 import webbrowser
 from contextlib import asynccontextmanager
 from datetime import date, datetime
@@ -93,7 +94,7 @@ from .models import (
     WorkflowCaptureCreate,
     ReviewCheckpointCreate,
 )
-from .paths import default_data_dir
+from .paths import default_data_dir, launch_port, path_id
 from .provider import DataService
 from .release_review import evaluate_release_review
 from .research import build_daily_report, build_market_brief
@@ -266,6 +267,18 @@ def info() -> dict:
 @app.get("/api/v1/health")
 def basic_health() -> dict:
     return {"status": "ok", "version": __version__}
+
+
+@app.get("/api/v1/local-instance", include_in_schema=False)
+def local_instance() -> dict:
+    return {
+        "name": "AKDesk Fixed",
+        "version": __version__,
+        "pid": os.getpid(),
+        "root_id": path_id(PROJECT_ROOT),
+        "data_id": path_id(DATA_DIR),
+        "demo": service.demo_only,
+    }
 
 
 @app.get("/api/v1/diagnostics")
@@ -2032,11 +2045,20 @@ def frontend(path: str):
 
 
 def run() -> None:
-    port = int(os.getenv("AKDESK_PORT", "8765"))
-    url = f"http://127.0.0.1:{port}"
+    port = launch_port()
+    server = uvicorn.Server(
+        uvicorn.Config(app, host="127.0.0.1", port=port, log_level="info")
+    )
     if os.getenv("AKDESK_NO_BROWSER", "0") != "1":
-        threading.Timer(1.2, lambda: webbrowser.open(url)).start()
-    uvicorn.run(app, host="127.0.0.1", port=port, log_level="info")
+        def open_when_ready():
+            deadline = time.monotonic() + 30
+            while not server.started and not server.should_exit and time.monotonic() < deadline:
+                time.sleep(0.1)
+            if server.started and not server.should_exit:
+                webbrowser.open(f"http://127.0.0.1:{port}")
+
+        threading.Thread(target=open_when_ready, daemon=True).start()
+    server.run()
 
 
 if __name__ == "__main__":

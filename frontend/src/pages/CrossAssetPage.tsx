@@ -61,7 +61,17 @@ export function CrossAssetPage({refreshSeed = 0, initialQuery = "", navigate, sy
       busy=true; controller=new AbortController(); setLoading(true); setError("");
       timeout=setTimeout(()=>controller?.abort(),25_000);
       const results=await Promise.allSettled([read<CrossQuotes>("/cross-assets/quotes?kind=index",controller.signal),read<CrossQuotes>("/cross-assets/quotes?kind=gold",controller.signal)]);
-      if(active){const rows=results.flatMap(item=>item.status==="fulfilled"?item.value.data:[]);setQuotes(current=>[...rows,...current.filter(item=>item.kind==="etf")]);if(results.some(item=>item.status==="rejected"))setError("部分来源读取失败或超时；保留缺失，不用其他产品替代。可重新读取。");setLoading(false);}
+      if(active){
+        const rows=results.flatMap(item=>item.status==="fulfilled"?item.value.data:[]);
+        const problems=results.flatMap((item,index)=>{
+          const label=index===0?"指数":"黄金";
+          if(item.status==="rejected")return [`${label}：读取失败或超时`];
+          return item.value.data.some(row=>row.price!==null&&Number.isFinite(row.price))?[]:[`${label}：暂未取得有效报价`];
+        });
+        setQuotes(current=>[...rows,...current.filter(item=>item.kind==="etf")]);
+        setError(problems.join("；"));
+        setLoading(false);
+      }
       clearTimeout(timeout);busy=false;
     }
     void load(); const timer=setInterval(()=>void load(),300_000); const visible=()=>{if(document.visibilityState==="visible")void load();}; document.addEventListener("visibilitychange",visible);
@@ -84,8 +94,10 @@ export function CrossAssetPage({refreshSeed = 0, initialQuery = "", navigate, sy
   return <div className="page-stack cross-assets-page">
     <header className="cross-assets-heading"><div><span className="eyebrow">CROSS-ASSET · OBSERVE BEFORE YOU CONCLUDE</span><h1>股债金汇观察</h1><p>黄金与四个宽基指数，连接原有固收、外汇和研究工作流。</p></div><button className="secondary-button" disabled={loading||synthetic} onClick={()=>setReload(value=>value+1)}><RefreshCcw size={14}/>重新读取</button></header>
     <p className="cross-policy" role="note">{synthetic ? "固定 2026-08-03 合成体验，不连接行情/AI/研究库；允许导出本页合成样例。" : CROSS_NOTICE}</p>
+    {navigate && !synthetic ? <button className="text-button" onClick={() => navigate("cross-asset-week")}>打开股债金汇周复盘 <ArrowRight size={14} /></button> : null}
     <nav className="cross-context-links" aria-label="原有市场模块">{[["money","资金面"],["curves","收益率曲线"],["futures","国债期货"],["fx","人民币与外汇"]].map(([page,label])=><button className="text-button" key={page} disabled={!navigate} onClick={()=>navigate?.(page)}>{label}<ArrowRight size={13}/></button>)}<button className="secondary-button" onClick={()=>setBrief(value=>!value)}>{brief?"收起观察底稿":"整理跨资产观察底稿"}</button></nav>
-    {loading?<p role="status">正在按需读取公开源；每5分钟最多更新一次，后台标签页暂停轮询。</p>:null}{error?<p role="alert">{error}</p>:null}
+    {loading?<p role="status">正在按需读取公开源；每5分钟最多更新一次，后台标签页暂停轮询。</p>:null}
+    {error?<div className="cross-policy"><p role="alert">{error}。缺失不代表价格为零；仍可查看其他来源。先检查数据健康，稍后再重新读取。</p>{navigate?<div className="cross-controls"><button className="secondary-button" onClick={()=>navigate("health")}>查看数据健康</button><button className="secondary-button" onClick={()=>navigate("help","start")}>改用明确标记的合成首任务</button></div>:null}</div>:null}
     <EtfPicker synthetic={synthetic} onChoose={id=>setSelected(id)} onLoaded={quote=>{setQuotes(current=>[...current.filter(item=>item.id!==quote.id),quote]);}}/>
     {routeError?<p role="alert">{routeError}</p>:null}
     <section className="cross-quote-grid" aria-label="黄金与指数报价">{quotes.map(item=><article key={item.id} className={selected===item.id?"selected":""}>

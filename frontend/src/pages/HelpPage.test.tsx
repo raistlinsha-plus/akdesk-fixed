@@ -11,6 +11,17 @@ vi.mock("./MarketPages", () => ({ PageHeading: ({ title }: { title: string }) =>
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 
 describe("HelpPage voluntary diagnostics", () => {
+  it("opens a local first-task deep link without requesting diagnostics or real data", async () => {
+    const navigate = vi.fn();
+    const { rerender } = render(<HelpPage navigate={navigate} />);
+    await userEvent.click(screen.getByRole("button", { name: "开始三分钟首任务" }));
+    expect(navigate).toHaveBeenCalledWith("help", "start");
+    rerender(<HelpPage navigate={navigate} initialQuery="start" />);
+    expect(screen.getByRole("heading", { name: "带走一份股债金汇观察底稿" })).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "返回使用与反馈" }));
+    expect(navigate).toHaveBeenLastCalledWith("help");
+    expect(apiGet).not.toHaveBeenCalled();
+  });
   it("opens a selected case without creating a project or requesting diagnostics", async () => {
     const navigate = vi.fn();
     render(<HelpPage navigate={navigate} />);

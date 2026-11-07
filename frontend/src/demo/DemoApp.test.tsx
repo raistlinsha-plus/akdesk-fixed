@@ -43,6 +43,20 @@ afterEach(async () => {
 afterAll(() => vi.restoreAllMocks());
 
 describe("static GitHub demo", () => {
+  it("prioritizes the three-minute task and leaves the sample when navigating back", async () => {
+    const user = userEvent.setup();
+    render(<DemoApp />);
+    await user.click(screen.getByRole("button", { name: "开始三分钟首任务" }));
+    await screen.findByRole("heading", { name: "带走一份股债金汇观察底稿" });
+    await user.click(screen.getByRole("button", { name: "核验样例依据" }));
+    expect(screen.getByText("—（缺失）")).toBeTruthy();
+    await user.click(screen.getByRole("link", { name: "产品概览" }));
+    await screen.findByRole("heading", { level: 1, name: "看懂一组市场变化，带走一页研究底稿。" });
+    window.history.replaceState(null, "", "/akdesk-fixed/#/start");
+    fireEvent(window, new PopStateEvent("popstate"));
+    await screen.findByRole("heading", { name: "观察变化" });
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it("opens the cross-asset acquisition journey without APIs or research writes",async()=>{
     window.history.replaceState(null,"","/akdesk-fixed/#/cross-assets");
     const user=userEvent.setup();render(<DemoApp/>);

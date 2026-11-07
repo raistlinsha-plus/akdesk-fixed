@@ -1,0 +1,49 @@
+name: 三分钟首任务体验反馈
+description: 分别反馈样例完成、安装和七日内实际复访；不上传任何私人资料
+title: "[Experience] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: AKDesk 版本
+      placeholder: v1.4.1
+  - type: input
+    id: surface
+    attributes:
+      label: 体验入口
+      description: 静态在线演示或本地合成体验
+  - type: input
+    id: result
+    attributes:
+      label: 样例任务实际结果
+      description: 只浏览、完成并打开合成底稿，或中途遇到阻碍。
+    validations:
+      required: true
+  - type: input
+    id: install
+    attributes:
+      label: 本地安装状态
+      description: 未说明、尚未安装、已启动，或安装与启动遇到阻碍。
+  - type: input
+    id: reuse
+    attributes:
+      label: 七日内实际再次使用
+      description: 未到复访时点请选择不确定；意愿不等同于已复访。
+  - type: input
+    id: interest
+    attributes:
+      label: 下一步最需要什么
+      description: 跨资产周复盘、转债与正股联动，或本地持仓复盘。
+  - type: textarea
+    id: obstacle
+    attributes:
+      label: 哪一步卡住，或想完成什么任务？
+      description: 可选。请描述操作、预期和结果，不上传密钥、底稿、数据库或未公开业务数据。
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 提交前检查
+      options:
+        - label: 我知道这是公开反馈，未包含凭据、私人资料或无权公开的数据。
+          required: true

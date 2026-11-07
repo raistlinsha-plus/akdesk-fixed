@@ -4,12 +4,54 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
 import ssl
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
+from app.paths import default_data_dir  # noqa: E402
+
+
+class FrontendEntry(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.modules: list[str] = []
+        self.resources: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = dict(attrs)
+        if tag == "script" and values.get("type") == "module" and values.get("src"):
+            self.modules.append(values["src"] or "")
+        if tag == "link" and values.get("rel") in {"stylesheet", "modulepreload"}:
+            if href := values.get("href"):
+                self.resources.append(href)
+
+
+def frontend_ready(index: Path) -> bool:
+    """Validate the locally referenced Vite entry resources without requests."""
+    try:
+        parser = FrontendEntry()
+        parser.feed(index.read_text(encoding="utf-8"))
+        parser.close()
+        assets = (index.parent / "assets").resolve()
+        if not parser.modules or not assets.is_relative_to(index.parent.resolve()):
+            return False
+        for resource in [*parser.modules, *parser.resources]:
+            url = urlsplit(resource)
+            if url.scheme or url.netloc or resource.startswith("//"):
+                return False
+            target = (index.parent / unquote(url.path).lstrip("/")).resolve()
+            if not target.is_relative_to(assets) or not target.is_file():
+                return False
+        return True
+    except (OSError, UnicodeError, ValueError, RuntimeError):
+        return False
 
 
 def _writable_parent(path: Path) -> Path:
@@ -17,6 +59,51 @@ def _writable_parent(path: Path) -> Path:
     while not parent.exists() and parent != parent.parent:
         parent = parent.parent
     return parent
+
+
+def packaged_install(root: Path) -> bool:
+    return (root / "RELEASE_MANIFEST.json").exists() or (
+        (root / "scripts/launcher.py").is_file() and not (root / "frontend/package.json").is_file()
+    )
+
+
+def frontend_bundle_ready(root: Path) -> bool:
+    dist = root / "frontend/dist"
+    release_manifest = root / "RELEASE_MANIFEST.json"
+    vite_manifest = dist / ".vite/manifest.json"
+    try:
+        if not frontend_ready(dist / "index.html"):
+            return False
+        packaged = packaged_install(root)
+        if vite_manifest.exists() or packaged:
+            chunks = json.loads(vite_manifest.read_text(encoding="utf-8"))
+            if not any(chunk.get("isEntry") for chunk in chunks.values()):
+                return False
+            for chunk in chunks.values():
+                for resource in [chunk["file"], *chunk.get("css", []), *chunk.get("assets", [])]:
+                    path = (dist / resource).resolve()
+                    if not path.is_relative_to(dist.resolve()) or not path.is_file():
+                        return False
+                if any(key not in chunks for key in [*chunk.get("imports", []), *chunk.get("dynamicImports", [])]):
+                    return False
+        if packaged:
+            manifest = json.loads(release_manifest.read_text(encoding="utf-8"))
+            files = [item for item in manifest["files"] if item["path"].startswith("frontend/dist/")]
+            expected = {item["path"] for item in files}
+            if expected != {p.relative_to(root).as_posix() for p in dist.rglob("*") if p.is_file()}:
+                return False
+            if len(expected) != len(files):
+                return False
+            for item in files:
+                path = root / item["path"]
+                if not path.resolve().is_relative_to(dist.resolve()) or path.stat().st_size != item["size"]:
+                    return False
+                with path.open("rb") as fp:
+                    if hashlib.file_digest(fp, "sha256").hexdigest() != item["sha256"]:
+                        return False
+        return True
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, RuntimeError):
+        return False
 
 
 def inspect_environment(root: Path) -> dict[str, object]:
@@ -55,23 +142,7 @@ def inspect_environment(root: Path) -> dict[str, object]:
             "项目目录不可写",
             "将完整项目移动到当前用户可写的文件夹，勿直接在压缩包或只读磁盘中启动。",
         )
-    configured = os.getenv("AKDESK_DATA_DIR")
-    legacy = root / "data"
-    if configured:
-        data_dir = Path(configured).expanduser()
-        # The launcher starts the backend from root; use the same anchor even
-        # when Finder or another terminal invoked this preflight elsewhere.
-        if not data_dir.is_absolute():
-            data_dir = root / data_dir
-    elif any(
-        (legacy / name).exists()
-        for name in ("akdesk-fixed.db", "market-cache.db", "backups")
-    ):
-        data_dir = legacy
-    elif sys.platform == "darwin":
-        data_dir = Path.home() / "Library/Application Support/AKDesk Fixed"
-    else:
-        data_dir = Path.home() / ".local/share/akdesk-fixed"
+    data_dir = default_data_dir(root)
     data_parent = _writable_parent(data_dir)
     if data_parent.is_dir() and os.access(data_parent, os.W_OK | os.X_OK):
         add("data_writable", "ok", "数据目录可写")
@@ -107,12 +178,21 @@ def inspect_environment(root: Path) -> dict[str, object]:
             "未找到默认 TLS 证书位置",
             "若安装提示 CERTIFICATE_VERIFY_FAILED，请运行 Python 安装目录中的 Install Certificates.command 后重试；不要关闭证书校验。",
         )
-    if (root / "frontend/dist/index.html").is_file():
-        add("frontend", "ok", "已找到预构建界面")
+    index = root / "frontend/dist/index.html"
+    if index.is_file():
+        if frontend_bundle_ready(root):
+            add("frontend", "ok", "预构建界面资源校验通过")
+        else:
+            add(
+                "frontend",
+                "error",
+                "预构建界面损坏或缺少引用资源（含按需页面）",
+                "正式 ZIP 请完整重新解压到新文件夹；源码用户请重新构建 frontend。无需删除研究数据。",
+            )
     else:
         add(
             "frontend",
-            "warning",
+            "error" if packaged_install(root) else "warning",
             "缺少预构建界面",
             "普通用户请重新下载正式发布 ZIP；开发者可安装 Node.js 后构建。",
         )

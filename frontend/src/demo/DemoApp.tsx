@@ -24,12 +24,16 @@ import { ScenarioFeedback } from "../components/ScenarioFeedback";
 
 const LineChart = lazy(() => import("../components/Charts").then((module) => ({ default: module.LineChart })));
 const CrossAssetPage = lazy(()=>import("../pages/CrossAssetPage").then(module=>({default:module.CrossAssetPage})));
+const CrossAssetWeekPage = lazy(()=>import("../pages/CrossAssetWeekPage").then(module=>({default:module.CrossAssetWeekPage})));
+const ExperienceTask = lazy(() => import("../components/ExperienceTask").then((module) => ({ default: module.ExperienceTask })));
 const BarChart = lazy(() => import("../components/Charts").then((module) => ({ default: module.BarChart })));
 const FEEDBACK = feedbackUrl("feature", "demo", "demo");
-type DemoPage = "overview" | "changes" | "curves" | "brief" | "scenarios" | "cross-assets";
+type DemoPage = "overview" | "start" | "changes" | "curves" | "brief" | "scenarios" | "cross-assets" | "cross-asset-week";
 const PAGES: Array<{ id: DemoPage; label: string; step?: string }> = [
   { id: "overview", label: "产品概览" },
+  { id: "start", label: "三分钟首任务" },
   { id: "cross-assets", label: "股债金汇体验" },
+  { id: "cross-asset-week", label: "股债金汇周复盘样例" },
   { id: "changes", label: "市场变化", step: "01" },
   { id: "curves", label: "曲线核验", step: "02" },
   { id: "brief", label: "一页简报", step: "03" },
@@ -138,8 +142,8 @@ export function DemoApp() {
                 <h1>看懂一组市场变化，<br />带走一页研究底稿。</h1>
                 <p className="demo-intro-description">AKDesk 把资金、曲线和国债期货的变化整理到同一条路径：先观察，再核验，最后形成带来源与时点的简报。</p>
                 <div className="demo-intro-actions">
-                  <button className="demo-button demo-button-primary" onClick={()=>navigate("cross-assets")}>体验股债金汇 <ArrowRight size={16}/></button>
-                  <button className="demo-button demo-button-primary" onClick={() => navigate("changes")}>开始 3 步体验 <ArrowRight size={16} /></button>
+                  <button className="demo-button demo-button-primary" onClick={() => navigate("start")}>开始三分钟首任务 <ArrowRight size={16} /></button>
+                  <button className="demo-button demo-button-outline" onClick={() => navigate("changes")}>开始 3 步体验 <ArrowRight size={16} /></button>
                   <button className="demo-button demo-button-outline" onClick={() => navigate("brief")}>先看简报成品 <FileText size={15} /></button>
                 </div>
                 <ul className="demo-proof-points">
@@ -184,11 +188,13 @@ export function DemoApp() {
             </section>
             <section className="demo-faq" aria-labelledby="demo-faq-heading">
               <h2 id="demo-faq-heading">开始之前，你可能想知道</h2>
-              <details><summary>在线演示和本地版有什么区别？</summary><p>演示使用固定合成数据，只展示市场变化、曲线核验和简报导出的流程。本地版在你的 Mac 上运行，可连接真实公开数据，并保存自选、研究项目和复盘。在线演示不检查你的本机环境，也不会替你安装任何软件。</p></details>
+              <details><summary>在线演示和本地版有什么区别？</summary><p>演示使用固定合成数据，可完成三分钟 ETF 观察底稿，也保留市场变化、曲线核验和一页简报。本地版在你的 Mac 上运行，可连接公开数据，并保存自选、研究项目和复盘。在线演示不检查本机环境，也不会替你安装软件。</p></details>
               <details><summary>需要账号、FRED 或 AI 的 API Key 吗？</summary><p>这次在线体验不需要任何账号或 Key。使用本地版的中国固收市场功能也不需要 FRED 或 AI Key；FRED 宏观数据和 AI 助手为独立可选功能，启用时再由用户配置自己的 Key。</p></details>
             </section>
           </>
         ) : null}
+
+        {page === "start" ? <Suspense fallback={<p role="status">正在载入合成首任务…</p>}><ExperienceTask key={resetSeed} surface="online" /></Suspense> : null}
 
         {page === "changes" ? (
           <>
@@ -227,6 +233,7 @@ export function DemoApp() {
         ) : null}
         {page === "scenarios" ? <ScenariosPage key={resetSeed} selectedId={scenarioId} surface="online" onSelect={id => navigate("scenarios", id)} /> : null}
         {page === "cross-assets" ? <Suspense fallback={<p role="status">正在打开合成跨资产体验…</p>}><CrossAssetPage key={resetSeed} synthetic initialQuery={scenarioId}/></Suspense> : null}
+        {page === "cross-asset-week" ? <Suspense fallback={<p role="status">正在打开合成周复盘…</p>}><CrossAssetWeekPage key={resetSeed} sample /></Suspense> : null}
       </main>
 
       <footer className="demo-footer"><div><strong>AKDesk Fixed</strong><span>MIT 开源 · 本地优先 · 个人研究</span></div><p>当前为固定合成样例，不代表真实行情。本地版使用公开数据，适合个人学习与研究。</p><a href={FEEDBACK} target="_blank" rel="noreferrer">反馈体验 <ArrowUpRight size={13} /></a></footer>
