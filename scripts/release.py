@@ -42,6 +42,8 @@ ROOT_DOCUMENTS = {
     "DATA_USAGE.md",
 }
 BASELINE_DOCUMENTS = {
+    "docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md",
+    "docs/examples/AKDesk-v1.4.2-股债金汇周复盘样例.md",
     "docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md",
     "docs/AKDesk-Fixed-v1.4.1-产品介绍.md",
     "docs/AKDesk-Fixed-v1.4.1-用户手册.md",
@@ -86,7 +88,7 @@ SYNTHETIC_MEDIA = {
         "demo-tour.zh-CN.vtt",
         "示例-固收简报.md",
     )
-}
+} | {Path("docs/media/v1.4.2/weekly-review.png")}
 EXECUTABLES = {
     Path("start-macos.command"),
     Path("start-macos-demo.command"),
@@ -169,8 +171,8 @@ def verify_version_consistency(version: str) -> None:
     app_source = (ROOT / "frontend" / "src" / "App.tsx").read_text(
         encoding="utf-8"
     )
-    if f"V{version.upper()}" not in app_source:
-        raise RuntimeError("前端版本标识没有同步")
+    if 'import { APP_VERSION } from "./release"' not in app_source or "V{APP_VERSION}" not in app_source:
+        raise RuntimeError("前端版本标识未引用统一版本")
     release_source = (ROOT / "frontend" / "src" / "release.ts").read_text(encoding="utf-8")
     if f'APP_VERSION = "{version}"' not in release_source:
         raise RuntimeError("前端发布版本标识没有同步")

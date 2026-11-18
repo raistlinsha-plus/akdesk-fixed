@@ -18,6 +18,7 @@ def release_document_fixture(tmp_path, monkeypatch):
         "![历史行情](./docs/audits/old/live.png)\n"
         "![未审媒体](./docs/media/v1.1.0/unreviewed-live.png)\n"
         "![合成演示](./docs/media/v1.1.0/05-brief.png)\n"
+        "![合成周复盘](./docs/media/v1.4.2/weekly-review.png)\n"
         "[使用规则](./DATA_USAGE.md)\n"
     )
     files = {
@@ -31,6 +32,7 @@ def release_document_fixture(tmp_path, monkeypatch):
         "docs/AKDesk-Fixed-v1.3.1-用户手册.md": "跨资产当前手册\n",
         "docs/AKDesk-Fixed-v1.3.1-升级与发布验收.md": "跨资产验收范围\n",
         "docs/examples/AKDesk-v1.3.1-股债金汇合成底稿.md": "明确合成底稿\n",
+        "docs/examples/AKDesk-v1.4.2-股债金汇周复盘样例.md": "本版合成周复盘底稿\n",
         "docs/examples/AKDesk-v1.1.2-casebook-EN.md": "English synthetic casebook\n",
         "examples/scenarios/credit-review-synthetic.csv": "bond_code\nDEMO-CREDIT-A\n",
         "docs/AKDesk-Fixed-v1.1.0-用户手册.md": "当前手册\n",
@@ -45,6 +47,7 @@ def release_document_fixture(tmp_path, monkeypatch):
         "docs/audits/old/live.png",
         "docs/media/v1.1.0/unreviewed-live.png",
         "docs/media/v1.1.0/05-brief.png",
+        "docs/media/v1.4.2/weekly-review.png",
     ):
         path = root / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -56,6 +59,23 @@ def release_document_fixture(tmp_path, monkeypatch):
 def test_release_version_sources_are_consistent() -> None:
     version = release.current_version()
     release.verify_version_consistency(version)
+
+
+@pytest.mark.parametrize(
+    ("log", "expected"),
+    [
+        ("CERTIFICATE_VERIFY_FAILED; ERROR: No matching distribution found for example", "证书校验失败"),
+        ("OSError: [Errno 28] No space left on device", "磁盘空间不足"),
+        ("ReadTimeoutError: Read timed out\nERROR: No matching distribution found for example", "下载依赖时连接"),
+        ("ERROR: example.whl is not a supported wheel on this platform", "依赖包不兼容"),
+        ("ERROR: Package 'example' requires a different Python: 3.13 not in '<3.13'", "依赖包不兼容"),
+        ("ERROR: Ignored versions that require a different Python\nERROR: No matching distribution found for example", "当前软件源未提供"),
+    ],
+)
+def test_pip_recovery_distinguishes_connection_source_and_platform(log, expected) -> None:
+    from scripts.preflight import pip_install_recovery
+
+    assert pip_install_recovery(log).startswith(expected)
 
 
 def test_release_forbidden_paths_cover_user_and_developer_data() -> None:
@@ -108,6 +128,8 @@ def test_release_whitelist_excludes_historical_and_unreviewed_media(
     assert "examples/scenarios/credit-review-synthetic.csv" in files
     assert "docs/AKDesk-Fixed-v1.1.0-用户手册.md" in files
     assert "docs/media/v1.1.0/05-brief.png" in files
+    assert "docs/media/v1.4.2/weekly-review.png" in files
+    assert "docs/examples/AKDesk-v1.4.2-股债金汇周复盘样例.md" in files
     assert "docs/audits/old/旧 复核.md" not in files
     assert "docs/audits/old/live.png" not in files
     assert "docs/media/v1.1.0/unreviewed-live.png" not in files
@@ -132,6 +154,7 @@ def test_stage_links_use_online_archives_without_rewriting_sources(
     assert f"{release.RAW_ARCHIVE_URL}/docs/audits/old/live.png" in staged
     assert f"{release.RAW_ARCHIVE_URL}/docs/media/v1.1.0/unreviewed-live.png" in staged
     assert "![合成演示](./docs/media/v1.1.0/05-brief.png)" in staged
+    assert "![合成周复盘](./docs/media/v1.4.2/weekly-review.png)" in staged
     assert (stage / "docs/media/v1.1.0/05-brief.png").is_file()
     assert not (stage / "docs/audits").exists()
     assert (root / "README.md").read_text(encoding="utf-8") == original

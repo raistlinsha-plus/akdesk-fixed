@@ -31,9 +31,9 @@ const FEEDBACK = feedbackUrl("feature", "demo", "demo");
 type DemoPage = "overview" | "start" | "changes" | "curves" | "brief" | "scenarios" | "cross-assets" | "cross-asset-week";
 const PAGES: Array<{ id: DemoPage; label: string; step?: string }> = [
   { id: "overview", label: "产品概览" },
-  { id: "start", label: "三分钟首任务" },
-  { id: "cross-assets", label: "股债金汇体验" },
   { id: "cross-asset-week", label: "股债金汇周复盘样例" },
+  { id: "start", label: "ETF 首任务" },
+  { id: "cross-assets", label: "股债金汇体验" },
   { id: "changes", label: "市场变化", step: "01" },
   { id: "curves", label: "曲线核验", step: "02" },
   { id: "brief", label: "一页简报", step: "03" },
@@ -128,7 +128,7 @@ export function DemoApp() {
       <nav className="demo-nav" aria-label="在线演示导航">
         {PAGES.map((item) => (
           <a href={`#/${item.id}`} key={item.id} className={page === item.id ? "is-active" : undefined} aria-current={page === item.id ? "page" : undefined}>
-            {item.step ? <span>{item.step}</span> : <ChartNoAxesCombined size={15} />}{item.label}
+            {item.step ? <span aria-hidden="true">{item.step}</span> : <ChartNoAxesCombined size={15} aria-hidden="true" />}{item.label}
           </a>
         ))}
       </nav>
@@ -138,13 +138,12 @@ export function DemoApp() {
           <>
             <section className="demo-intro">
               <div className="demo-intro-copy">
-                <p className="demo-eyebrow">YOUR FIRST FIXED-INCOME BRIEF</p>
-                <h1>看懂一组市场变化，<br />带走一页研究底稿。</h1>
-                <p className="demo-intro-description">AKDesk 把资金、曲线和国债期货的变化整理到同一条路径：先观察，再核验，最后形成带来源与时点的简报。</p>
+                <p className="demo-eyebrow">YOUR FIRST WEEKLY REVIEW</p>
+                <h1>看懂本周股债金汇，<br />带走一份复盘底稿。</h1>
+                <p className="demo-intro-description">选一周，核对每项变化和观测日，写下自己的判断与待核验事项。先用固定合成数据练习，再在 Mac 上做自己的复盘。</p>
                 <div className="demo-intro-actions">
-                  <button className="demo-button demo-button-primary" onClick={() => navigate("start")}>开始三分钟首任务 <ArrowRight size={16} /></button>
-                  <button className="demo-button demo-button-outline" onClick={() => navigate("changes")}>开始 3 步体验 <ArrowRight size={16} /></button>
-                  <button className="demo-button demo-button-outline" onClick={() => navigate("brief")}>先看简报成品 <FileText size={15} /></button>
+                  <button className="demo-button demo-button-primary" onClick={() => navigate("cross-asset-week")}>在线做一份周复盘 <ArrowRight size={16} /></button>
+                  <button className="demo-button demo-button-outline" onClick={() => navigate("brief")}>查看一页固收简报 <FileText size={15} /></button>
                 </div>
                 <ul className="demo-proof-points">
                   <li><Check size={14} /> 免费开源 · MIT</li>
@@ -152,22 +151,17 @@ export function DemoApp() {
                   <li><Check size={14} /> 数据与研究留在本机</li>
                 </ul>
               </div>
-              <article className="demo-output-preview" aria-label="示例简报预览">
-                <div className="demo-preview-caption"><span><FileText size={14} /> 一页固收简报</span><span className="demo-example-pill">示例</span></div>
-                <h2>资金期限分化，长端收益率下行</h2>
-                <p className="demo-preview-date">{DEMO_DATE} · 固定场景</p>
-                <dl className="demo-preview-metrics">
-                  <div><dt>Shibor O/N</dt><dd>1.4250<span>%</span></dd><small className="demo-value-down">−2.10 BP</small></div>
-                  <div><dt>10Y 国债</dt><dd>1.8000<span>%</span></dd><small className="demo-value-down">−2.00 BP</small></div>
-                  <div><dt>T 示例合约</dt><dd>108.055</dd><small className="demo-value-up">+0.12%</small></div>
-                </dl>
-                <div className="demo-preview-note"><span>下一步核验</span><p>关注隔夜与 1W 的分化；对照曲线前值，保留超长端期货的方向差异。</p></div>
-                <div className="demo-preview-footer"><span>内置合成数据 · 非实时</span><button onClick={() => navigate("brief")}>查看完整简报 <ArrowUpRight size={14} /></button></div>
+              <article className="demo-output-preview" aria-label="股债金汇周复盘底稿预览">
+                <div className="demo-preview-caption"><span><FileText size={14} /> 股债金汇周复盘</span><span className="demo-example-pill">合成示例</span></div>
+                <h2>区分已观察到的变化与待核验事项</h2>
+                <div className="demo-preview-note"><span>我的判断</span><p>股指上涨与长端收益率下行同时出现，但这是两条独立观察，不能据此判断因果。</p></div>
+                <div className="demo-preview-note"><span>下周核验</span><p>人民币参考价缺前一期观测，不判断涨跌；先补齐原始观测再比较。</p></div>
+                <div className="demo-preview-footer"><span>内置合成数据 · 非实时</span></div>
               </article>
             </section>
 
             <section className="demo-journey" aria-labelledby="demo-journey-heading">
-              <div className="demo-section-title"><h2 id="demo-journey-heading">从变化到产出，只走一条路径</h2><span>这次体验不需要配置任何数据源</span></div>
+              <div className="demo-section-title"><h2 id="demo-journey-heading">另一条路径：一页固收简报</h2><span>从资金变化、曲线核验到简报导出</span></div>
               <div className="demo-step-grid">
                 <button className="demo-step-card" onClick={() => navigate("changes")}><span className="demo-step-number">01</span><Waves size={20} /><h3>观察市场变化</h3><p>查看三项示例变化，展开出处与计算口径。</p><span className="demo-step-link">打开市场变化 <ArrowRight size={14} /></span></button>
                 <button className="demo-step-card" onClick={() => navigate("curves")}><span className="demo-step-number">02</span><ChartNoAxesCombined size={20} /><h3>核验收益率曲线</h3><p>对照最新与前值，理解期限利差和 BP 变化。</p><span className="demo-step-link">核验曲线 <ArrowRight size={14} /></span></button>
@@ -188,7 +182,7 @@ export function DemoApp() {
             </section>
             <section className="demo-faq" aria-labelledby="demo-faq-heading">
               <h2 id="demo-faq-heading">开始之前，你可能想知道</h2>
-              <details><summary>在线演示和本地版有什么区别？</summary><p>演示使用固定合成数据，可完成三分钟 ETF 观察底稿，也保留市场变化、曲线核验和一页简报。本地版在你的 Mac 上运行，可连接公开数据，并保存自选、研究项目和复盘。在线演示不检查本机环境，也不会替你安装软件。</p></details>
+              <details><summary>在线演示和本地版有什么区别？</summary><p>演示使用固定合成数据，可完成股债金汇周复盘；ETF 首任务和一页固收简报仍可体验。本地版在你的 Mac 上运行，周复盘可读取真实数据，底稿仅导出引用、所选区间和你的备注。在线演示不会检查或安装本机环境。</p></details>
               <details><summary>需要账号、FRED 或 AI 的 API Key 吗？</summary><p>这次在线体验不需要任何账号或 Key。使用本地版的中国固收市场功能也不需要 FRED 或 AI Key；FRED 宏观数据和 AI 助手为独立可选功能，启用时再由用户配置自己的 Key。</p></details>
             </section>
           </>
@@ -233,7 +227,7 @@ export function DemoApp() {
         ) : null}
         {page === "scenarios" ? <ScenariosPage key={resetSeed} selectedId={scenarioId} surface="online" onSelect={id => navigate("scenarios", id)} /> : null}
         {page === "cross-assets" ? <Suspense fallback={<p role="status">正在打开合成跨资产体验…</p>}><CrossAssetPage key={resetSeed} synthetic initialQuery={scenarioId}/></Suspense> : null}
-        {page === "cross-asset-week" ? <Suspense fallback={<p role="status">正在打开合成周复盘…</p>}><CrossAssetWeekPage key={resetSeed} sample /></Suspense> : null}
+        {page === "cross-asset-week" ? <Suspense fallback={<p role="status">正在打开合成周复盘…</p>}><CrossAssetWeekPage key={resetSeed} sample online /></Suspense> : null}
       </main>
 
       <footer className="demo-footer"><div><strong>AKDesk Fixed</strong><span>MIT 开源 · 本地优先 · 个人研究</span></div><p>当前为固定合成样例，不代表真实行情。本地版使用公开数据，适合个人学习与研究。</p><a href={FEEDBACK} target="_blank" rel="noreferrer">反馈体验 <ArrowUpRight size={13} /></a></footer>

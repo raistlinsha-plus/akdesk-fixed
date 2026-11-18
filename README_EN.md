@@ -1,38 +1,28 @@
 # AKDesk Fixed
 
-**v1.4.1 weekly review usability release.** The four series load independently and can be retried one at a time. A source drill-down preserves the selected date and that tab's in-memory draft. Real-data exports remain reference-only; the synthetic sample stays separate. No new feeds, AI processing, telemetry or trading. See the [usage and validation guide](./docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md).
+**Review China's stocks, bonds, gold and FX for a week, and take away a worksheet with sources.** AKDesk is an open-source macOS research tool with a fixed-income focus.
 
-Explore Au99.99 gold, four indices and four on-demand ETF examples, then connect query references and your own notes to a local research workflow. Not a full-market stock or real-time trading terminal. These feed values are memory-only and excluded from numeric exports and AI. See the [current manual](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) or the [historical v1.3.1 review](./docs/AKDesk-Fixed-v1.3.1-开发与Review记录.md) (Chinese).
+**[Try the weekly review](https://raistlinsha-plus.github.io/akdesk-fixed/#/cross-asset-week)** · [See the finished Markdown](./docs/examples/AKDesk-v1.4.2-股债金汇周复盘样例.md) · [One-page fixed-income brief](https://raistlinsha-plus.github.io/akdesk-fixed/#/brief) · [Download for macOS](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) · [中文](./README.md)
 
-Turn funding rates, yield curves and CGB futures changes into a concise fixed-income brief with sources and timestamps.
+![Completed cross-asset weekly review with synthetic observations, an FX gap and an analyst note](./docs/media/v1.4.2/weekly-review.png)
 
-[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#local-installation) [![v1.4.1](https://img.shields.io/badge/version-v1.4.1-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/tag/v1.4.1)
+**Pick a week → check observation dates and gaps → write a judgment → export.** The demo uses fixed synthetic data. It requires no install, login or API key. If Pages is inaccessible, open the Markdown example above. The app's UI is primarily Chinese.
 
-**v1.1.1 data-usage update (2026-11-03):** adopts AKShare 1.20.22 and upstream rate-limit cooldowns. FRED numeric CSV export is replaced by query-reference Markdown; FRED-origin content is excluded from AI processing as a conservative product policy. A personal key or an MIT software license does not grant data rights. See [data-usage boundaries](./DATA_USAGE.md) and [upgrade notes](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md) (Chinese).
+**v1.4.2:** New local sessions without an entry preference open the same task. The four real series cover CSI 300, China's 10-year government bond yield, Au99.99 and the USD/CNY reference midpoint. A missing series does not prevent export: real worksheets include the selected date range, query references and your note, not quote values. [First-use and validation guide](./docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md) (Chinese).
 
-**[Try the three-minute first task](https://raistlinsha-plus.github.io/akdesk-fixed/#/start)** · [Weekly cross-asset sample](https://raistlinsha-plus.github.io/akdesk-fixed/#/cross-asset-week) · [Fixed-income brief](https://raistlinsha-plus.github.io/akdesk-fixed/#/brief) · **[Download the local app](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)** · [中文](./README.md) · [Feedback](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)
-
-![One-page brief UI with fixed synthetic data](./docs/media/v1.1.0/05-brief.png)
-
-The image shows the v1.1 synthetic fixed-income path, not the new cross-asset screen. New path: choose an asset → load daily observations → write your own note → download a synthetic worksheet. Live-mode export contains references and personal notes only. ETF examples are not recommendations; unadjusted price changes are not total returns. New modules do not merge all bond/FX feeds into a synchronized portfolio report.
-
-Follow one path: **observe changes → verify the yield curve → add notes and export a brief**.
-
-The static demo uses fixed **2026-08-03 synthetic data**, not live quotes. It needs no installation, login or API key and connects to no market-data service or local backend. The app's business UI is currently Chinese; this README does not imply a fully English-localized product.
-
-[60-second video](https://raistlinsha-plus.github.io/akdesk-fixed/akdesk-demo-60s.mp4) · [Example Markdown](./docs/media/v1.1.0/示例-固收简报.md) · [Reproducible AKShare case](./docs/examples/AKShare-一页固收简报.md)
+[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#local-installation)
 
 ## Local installation
 
 Targets Apple Silicon MacBook Air, **macOS 12+ and Python 3.11–3.13**. Initial installation needs network access and about 1 GB of free space. The official package includes a prebuilt UI; normal use requires no Node.js, Docker or Rust.
 
-macOS 12+ is a compatibility target. This release was physically tested on macOS 26.6.2 / Apple Silicon; other OS versions have not each been tested in this cycle.
+macOS 12+ is a compatibility target, not a certification of every OS release. See the [validation guide](./docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md).
 
 1. Install a supported Python; with Homebrew, use `brew install python@3.13`.
-2. Download `AKDesk-Fixed-v1.4.1.zip` and `SHA256SUMS` from the [v1.4.1 Release](https://github.com/raistlinsha-plus/akdesk-fixed/releases/tag/v1.4.1). Verify SHA-256 and unzip the whole package.
+2. Download the versioned `AKDesk-Fixed-vX.Y.Z.zip` and `SHA256SUMS` from [GitHub Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest). Verify SHA-256 and unzip the whole package.
 3. Double-click `start-macos.command`. It runs local checks, installs locked dependencies and opens `http://127.0.0.1:8765`.
 
-GitHub's automatic **Source code** archive is for source inspection and development. It is different from the installation ZIP checked for release manifest, built assets and executable permissions. See the [local verification record](./docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md); the Releases page determines public availability.
+GitHub's automatic **Source code** archive is for source inspection and development. It is different from the installation ZIP checked for release manifest, built assets and executable permissions. The Releases page determines public availability.
 
 If macOS blocks the launcher, right-click and choose Open. To restore executable permissions:
 
@@ -78,7 +68,8 @@ Not a sole source for production trading, accounting valuation, regulatory repor
 
 ## Documentation and feedback
 
-- Current: [Product introduction](./docs/AKDesk-Fixed-v1.4.1-产品介绍.md) · [User manual](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) · [Test cases](./docs/AKDesk-Fixed-v1.4.1-测试用例清单.md) · [Usage and validation](./docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md)
+- Current: [First-use and validation guide](./docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md) · [Full v1.4.1 manual](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) (Chinese)
+- [Fixed-income video](https://raistlinsha-plus.github.io/akdesk-fixed/akdesk-demo-60s.mp4) · [ETF exercise](https://raistlinsha-plus.github.io/akdesk-fixed/#/start) · [Reproducible AKShare example](./docs/examples/AKShare-一页固收简报.md)
 - [Changelog](./CHANGELOG.md) · [Roadmap](./ROADMAP.md)
 - [Report a bug/data issue](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose) · [Describe your workflow](https://github.com/raistlinsha-plus/akdesk-fixed/discussions/16)
 

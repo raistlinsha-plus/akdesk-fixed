@@ -1,4 +1,4 @@
-import type { WorkspaceMode } from "./workspaceMode";
+import { workspaceHome, type WorkspaceMode } from "./workspaceMode";
 
 export const EXPERIENCE_PROFILE_KEY = "akdesk.experience-profile.v1";
 
@@ -57,6 +57,15 @@ export function experienceProfile(
   id: ExperienceProfileId | null,
 ): ExperienceProfile | null {
   return EXPERIENCE_PROFILES.find((item) => item.id === id) ?? null;
+}
+
+export function defaultLandingPage(
+  profile: ExperienceProfile | null,
+  defaultMode: WorkspaceMode | null,
+  sessionMode: WorkspaceMode | null,
+): string {
+  if (sessionMode) return workspaceHome(sessionMode);
+  return profile?.landingPage ?? (defaultMode ? workspaceHome(defaultMode) : "cross-asset-week");
 }
 
 export function readExperienceProfile(

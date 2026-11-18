@@ -5,6 +5,7 @@ import type { HistoryResponse } from "./types";
 
 const DAY = 86_400_000;
 export const SAMPLE_END = "2026-07-31";
+export const SAMPLE_ENDS = [SAMPLE_END, "2026-07-24"] as const;
 export const WEEK_NOTE_LIMIT = 2000;
 
 export const WEEK_SERIES = [
@@ -109,8 +110,8 @@ export async function readWeekSeries(spec: WeekSeries, signal: AbortSignal): Pro
 }
 
 export const SAMPLE_WEEK: WeekRows = {
-  stock: { state: "sample", points: [{ date: "2026-07-24", value: 4000 }, { date: "2026-07-31", value: 4040 }] },
-  bond: { state: "sample", points: [{ date: "2026-07-24", value: 1.85 }, { date: "2026-07-31", value: 1.82 }] },
+  stock: { state: "sample", points: [{ date: "2026-07-17", value: 3980 }, { date: "2026-07-24", value: 4000 }, { date: "2026-07-31", value: 4040 }] },
+  bond: { state: "sample", points: [{ date: "2026-07-17", value: 1.87 }, { date: "2026-07-24", value: 1.85 }, { date: "2026-07-31", value: 1.82 }] },
   gold: { state: "sample", points: [{ date: "2026-07-24", value: 780 }, { date: "2026-07-30", value: 787.8 }] },
   fx: { state: "sample", points: [{ date: "2026-07-30", value: 7 }] },
 };

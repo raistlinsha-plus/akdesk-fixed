@@ -43,15 +43,15 @@ afterEach(async () => {
 afterAll(() => vi.restoreAllMocks());
 
 describe("static GitHub demo", () => {
-  it("prioritizes the three-minute task and leaves the sample when navigating back", async () => {
+  it("prioritizes the weekly review and keeps the previous ETF exercise deep link usable", async () => {
     const user = userEvent.setup();
     render(<DemoApp />);
-    await user.click(screen.getByRole("button", { name: "开始三分钟首任务" }));
-    await screen.findByRole("heading", { name: "带走一份股债金汇观察底稿" });
-    await user.click(screen.getByRole("button", { name: "核验样例依据" }));
-    expect(screen.getByText("—（缺失）")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "在线做一份周复盘" }));
+    await screen.findByRole("heading", { name: "股债金汇周复盘" });
+    await user.click(screen.getByRole("button", { name: "读取本周" }));
+    expect(screen.getByText("前期观测 缺失")).toBeTruthy();
     await user.click(screen.getByRole("link", { name: "产品概览" }));
-    await screen.findByRole("heading", { level: 1, name: "看懂一组市场变化，带走一页研究底稿。" });
+    await screen.findByRole("heading", { level: 1, name: "看懂本周股债金汇，带走一份复盘底稿。" });
     window.history.replaceState(null, "", "/akdesk-fixed/#/start");
     fireEvent(window, new PopStateEvent("popstate"));
     await screen.findByRole("heading", { name: "观察变化" });
@@ -81,16 +81,16 @@ describe("static GitHub demo", () => {
     await screen.findByRole("heading", { level: 1, name: "跟踪一个利率观点" });
     expect(screen.getByLabelText("样例研究问题")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "重置体验" }));
-    await screen.findByRole("heading", { level: 1, name: "看懂一组市场变化，带走一页研究底稿。" });
+    await screen.findByRole("heading", { level: 1, name: "看懂本周股债金汇，带走一份复盘底稿。" });
     expect(fetch).not.toHaveBeenCalled();
   });
   it("completes the sample workflow without calling any backend", async () => {
     const user = userEvent.setup();
     render(<DemoApp />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("带走一页研究底稿");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("带走一份复盘底稿");
     expect(screen.getByRole("note").textContent).toContain("固定合成示例，非实时行情");
     expect(screen.getByRole("link", { name: "下载视频" }).getAttribute("href")).toMatch(/\/akdesk-demo-60s\.mp4$/);
-    await user.click(screen.getByRole("button", { name: "开始 3 步体验" }));
+    await user.click(screen.getByRole("link", { name: "市场变化" }));
     await screen.findByRole("heading", { name: "市场变化" });
     expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(4);
     await user.click(screen.getByRole("button", { name: "曲线" }));
@@ -122,7 +122,7 @@ describe("static GitHub demo", () => {
     const note = screen.getByRole("textbox");
     await user.type(note, "临时核验问题");
     await user.click(screen.getByRole("button", { name: "重置体验" }));
-    await screen.findByRole("heading", { level: 1, name: "看懂一组市场变化，带走一页研究底稿。" });
+    await screen.findByRole("heading", { level: 1, name: "看懂本周股债金汇，带走一份复盘底稿。" });
     window.history.replaceState(null, "", "/akdesk-fixed/#/brief");
     fireEvent(window, new PopStateEvent("popstate"));
     await screen.findByRole("heading", { level: 1, name: "一页固收简报" });

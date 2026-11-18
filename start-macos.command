@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 VENV="$ROOT/.venv"
-EXPECTED_VERSION="1.4.1"
+EXPECTED_VERSION="1.4.2"
 REQUIREMENTS_LOCK="$ROOT/backend/requirements.lock"
 REQUIREMENTS_STAMP="$VENV/.akdesk-requirements.sha256"
 
@@ -18,7 +18,7 @@ trap cleanup_install_log EXIT
 fail() {
   echo
   echo "启动失败：$1"
-  echo "尚未安装成功也可先体验固定合成数据：https://raistlinsha-plus.github.io/akdesk-fixed/"
+  echo "尚未安装成功也可先练习合成周复盘：https://raistlinsha-plus.github.io/akdesk-fixed/#/cross-asset-week"
   echo "反馈时只描述故障类别和操作步骤，不粘贴个人路径、密钥或原始安装日志。"
   if [[ "${AKDESK_NONINTERACTIVE:-0}" != "1" ]]; then
     echo "按任意键关闭窗口。"
@@ -91,17 +91,8 @@ if [[ "$INSTALLED_HASH" != "$REQUIREMENTS_HASH" ]] || \
   PIP_LOG="$(mktemp -t akdesk-install)" || fail "无法创建安装临时文件，请检查磁盘空间和临时目录权限"
   if ! PIP_DISABLE_PIP_VERSION_CHECK=1 "$VENV/bin/python" -m pip install \
     -r "$REQUIREMENTS_LOCK" >"$PIP_LOG" 2>&1; then
-    if grep -Eqi 'CERTIFICATE_VERIFY_FAILED|SSL:|certificate verify' "$PIP_LOG"; then
-      RECOVERY="证书校验失败。请运行 Python 安装目录中的 Install Certificates.command 后重试，不要关闭 TLS 校验"
-    elif grep -Eqi 'No space left|Disk quota' "$PIP_LOG"; then
-      RECOVERY="磁盘空间不足。请释放至少 1 GB 空间后重新启动"
-    elif grep -Eqi 'Permission denied|Read-only file system' "$PIP_LOG"; then
-      RECOVERY="安装目录不可写。请把完整项目移到当前用户可写的文件夹后重试"
-    elif grep -Eqi 'No matching distribution|not a supported wheel|requires a different Python' "$PIP_LOG"; then
-      RECOVERY="当前 Python 或处理器没有匹配的依赖包。请使用 Apple Silicon Mac 与 Python 3.11–3.13，并重新下载正式发布 ZIP"
-    else
-      RECOVERY="未能完成依赖安装。请检查网络、代理或 Python 软件源的可访问性后重试；重复启动会继续安装，不会清空研究数据"
-    fi
+    RECOVERY="$("$PYTHON" "$ROOT/scripts/preflight.py" --pip-install-log "$PIP_LOG")" ||
+      RECOVERY="未能完成依赖安装。请检查网络或 Python 软件源后重试；不会清空研究数据"
     rm -f "$PIP_LOG"
     fail "$RECOVERY"
   fi

@@ -1,40 +1,28 @@
 # AKDesk Fixed
 
-从黄金、指数和固收市场出发，把观察、出处与自己的判断整理成可复盘的研究底稿。
+**看懂本周股债金汇，带走一份可核验的复盘底稿。** AKDesk 是一款以固收为核心的开源 macOS 个人研究工具。
 
-**v1.4.1「周复盘可用性版」**：四项结果独立返回，遇到缺数或超时可只重读一项；从原模块返回会保留日期和当前标签页内的草稿。沿用沪深300、10年国债收益率、Au99.99 和美元兑人民币参考价，不做跨资产总分。[产品介绍](./docs/AKDesk-Fixed-v1.4.1-产品介绍.md) · [用户手册](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) · [使用与验收](./docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md)。
+**[在线做一份周复盘](https://raistlinsha-plus.github.io/akdesk-fixed/#/cross-asset-week)** · [查看 Markdown 成品](./docs/examples/AKDesk-v1.4.2-股债金汇周复盘样例.md) · [一页固收简报](https://raistlinsha-plus.github.io/akdesk-fixed/#/brief) · [下载 macOS 版](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) · [English](./README_EN.md)
 
-**v1.3.1「跨资产体验与可信收口版」**：新增 Au99.99 黄金、四个指数和四个按需 ETF 观察示例，支持日线、共同日期比较和查询引用工作流；保留固收、信用与持续研究。不是全市场股票或实时交易终端。新行情只在内存展示，不进入数值导出或 AI。[产品介绍](./docs/AKDesk-Fixed-v1.3.1-产品介绍.md) · [用户手册](./docs/AKDesk-Fixed-v1.3.1-用户手册.md) · [发布验收](./docs/AKDesk-Fixed-v1.3.1-升级与发布验收.md)。
+![股债金汇周复盘完成页：固定合成样例，汇率前期缺失，下方附人工判断](./docs/media/v1.4.2/weekly-review.png)
 
-[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#本地安装三步) [![v1.4.1](https://img.shields.io/badge/version-v1.4.1-f5b84b.svg)](https://github.com/raistlinsha-plus/akdesk-fixed/releases/tag/v1.4.1)
+**选一周 → 核对观测日与缺项 → 写下判断 → 下载底稿。** 图中是固定合成样例，不是真实行情；在线练习无需安装、登录或 API Key。若在线站点打不开，可先打开上面的 Markdown 成品。
 
-**v1.1.1 数据边界更新（2026-11-03）**：适配 AKShare 1.20.22 的上游限流停试；FRED 内容不做数值导出或 AI 处理，研究只保存查询引用；市场导出保留使用边界。自备 Key、软件 MIT 或连接成功均不等于数据授权。参见[数据使用规则](./DATA_USAGE.md)与[升级说明](./docs/AKDesk-Fixed-v1.1.1-升级与使用说明.md)。
+**v1.4.2「首次使用收口版」**：同一任务也在本地版首次打开时呈现，不改已有默认入口。真实版沿用沪深300、10年国债收益率、Au99.99、美元兑人民币参考中间价，缺项不补零；底稿只包含所选区间、查询引用与人工备注。[首次使用与验收](./docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md)
 
-**[3 分钟首任务](https://raistlinsha-plus.github.io/akdesk-fixed/#/start)** · [股债金汇周复盘样例](https://raistlinsha-plus.github.io/akdesk-fixed/#/cross-asset-week) · [一页固收简报](https://raistlinsha-plus.github.io/akdesk-fixed/#/brief) · **[下载本地版](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest)** · [English](./README_EN.md) · [反馈](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose)
-
-![一页固收简报界面：固定合成样例](./docs/media/v1.1.0/05-brief.png)
-
-上图为 v1.1 固收路径的合成示例，不是新增跨资产页面截图。
-
-新路径：**选择黄金/指数/ETF → 载入日线并核对时点 → 写一句自己的观察 → 下载合成底稿**。真实模式只导出查询引用与人工文字，不附新增行情数值。ETF四例不是推荐，不复权价格变化不是总回报。
-
-先走一条路径：**查看市场变化 → 回到收益率曲线核验 → 添加备注并导出简报**。不必先了解全部模块。
-
-在线演示使用固定 **2026-08-03 合成样例**，非实时行情；无需安装、登录或 API Key，不连接行情服务或本地后端。本地完整版保留市场、信用观察、研究项目、专题和周期复盘；业务界面目前以中文为主。
-
-[60 秒演示视频](https://raistlinsha-plus.github.io/akdesk-fixed/akdesk-demo-60s.mp4) · [查看示例 Markdown](./docs/media/v1.1.0/示例-固收简报.md) · [可复现 AKShare 案例](./docs/examples/AKShare-一页固收简报.md)
+[![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#本地安装三步)
 
 ## 本地安装三步
 
 主要适配 Apple Silicon MacBook Air，要求 **macOS 12+、Python 3.11–3.13**。首次安装需要网络与约 1 GB 可用空间。正式包已带预构建界面，普通使用无需 Node.js、Docker 或 Rust。
 
-macOS 12+ 为兼容目标；本轮实际验证环境为 macOS 26.6.2 / Apple Silicon，其他系统小版本未逐一实机验收。
+macOS 12+ 为兼容目标，并非所有系统版本均已实机验收；见 [测试记录](./docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md)。
 
 1. 准备受支持的 Python。使用 Homebrew 时可执行 `brew install python@3.13`。
-2. 从 [v1.4.1 Release](https://github.com/raistlinsha-plus/akdesk-fixed/releases/tag/v1.4.1) 下载 `AKDesk-Fixed-v1.4.1.zip` 与 `SHA256SUMS`。核对 SHA-256 后完整解压。
+2. 从 [GitHub Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) 下载该版本的 `AKDesk-Fixed-v版本号.zip` 与 `SHA256SUMS`。核对 SHA-256 后完整解压。
 3. 双击 `start-macos.command`。启动器执行本地预检、安装锁定依赖，并打开 `http://127.0.0.1:8765`。
 
-GitHub 自动生成的 **Source code** 压缩包用于源码查看和开发，与经过发布清单、构建资源和执行权限检查的安装 ZIP 不同；源码用户可能需要自行构建界面或恢复脚本权限。本地验收见 [v1.4.1 使用与验收](./docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md)，公开可下载版本以 Releases 实际资产为准。
+GitHub 自动生成的 **Source code** 压缩包用于源码查看和开发，与经过发布清单、构建资源和执行权限检查的安装 ZIP 不同；源码用户可能需要自行构建界面或恢复脚本权限。公开可下载版本以 Releases 实际资产为准。
 
 macOS 阻止脚本时，可右键选择“打开”。执行权限丢失时，在项目目录运行：
 
@@ -80,7 +68,8 @@ This product uses the FRED® API but is not endorsed or certified by the Federal
 
 ## 文档与反馈
 
-- 当前：[v1.4.1 产品介绍](./docs/AKDesk-Fixed-v1.4.1-产品介绍.md) · [用户手册](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) · [测试清单](./docs/AKDesk-Fixed-v1.4.1-测试用例清单.md) · [使用与验收](./docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md)
+- 当前：[v1.4.2 首次使用与验收](./docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md) · [完整功能手册（v1.4.1）](./docs/AKDesk-Fixed-v1.4.1-用户手册.md)
+- 快速体验：[60 秒固收简报导览](https://raistlinsha-plus.github.io/akdesk-fixed/akdesk-demo-60s.mp4) · [ETF 首任务](https://raistlinsha-plus.github.io/akdesk-fixed/#/start) · [可复现 AKShare 案例](./docs/examples/AKShare-一页固收简报.md)
 - 历史：[v1.4.0 指南](./docs/AKDesk-Fixed-v1.4.0-产品与使用指南.md) · [v1.3.2 首任务](./docs/AKDesk-Fixed-v1.3.2-体验指南.md) · [v1.3.1 产品介绍](./docs/AKDesk-Fixed-v1.3.1-产品介绍.md)
 - [v1.3.1 Review](./docs/AKDesk-Fixed-v1.3.1-开发与Review记录.md) · [升级与发布验收](./docs/AKDesk-Fixed-v1.3.1-升级与发布验收.md) · [获客素材与观察计划](./docs/AKDesk-Fixed-v1.3.1-GitHub获客与发布准备.md)
 - [v1.2 产品与使用指南](./docs/AKDesk-Fixed-v1.2.0-产品与使用指南.md) · [发布与验收](./docs/AKDesk-Fixed-v1.2.0-发布与验收记录.md)

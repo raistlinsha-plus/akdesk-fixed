@@ -14,8 +14,8 @@ afterEach(() => { cleanup(); vi.resetAllMocks(); });
 
 const mockBond = {
   adapter: "yield_curves", metric: "yield",
-  dates: SAMPLE_WEEK.bond.points.map(point => point.date),
-  series: [{ key: "10Y", values: SAMPLE_WEEK.bond.points.map(point => point.value) }],
+  dates: ["2026-07-24", "2026-07-31"],
+  series: [{ key: "10Y", values: [1.85, 1.82] }],
 };
 
 function card(name: string) {
@@ -24,11 +24,27 @@ function card(name: string) {
 
 it("renders and downloads a purely synthetic week without contacting any API", () => {
   render(<CrossAssetWeekPage sample />);
+  expect(screen.queryByText("-3.00 BP")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "读取本周" }));
   expect(screen.getByText("-3.00 BP")).toBeTruthy();
   expect(screen.getByText("前期观测 缺失")).toBeTruthy();
+  expect((screen.getByRole("button", { name: "下载合成周复盘" }) as HTMLButtonElement).disabled).toBe(true);
   fireEvent.change(screen.getByLabelText("我的判断与下周待核验事项"), { target: { value: "下周继续核对日期" } });
   fireEvent.click(screen.getByRole("button", { name: "下载合成周复盘" }));
   expect(downloadScenarioFile).toHaveBeenCalledWith(expect.stringContaining("下周继续核对日期"), `AKDesk-股债金汇周复盘-${SAMPLE_END}-合成样例.md`);
+  expect(apiGet).not.toHaveBeenCalled();
+});
+
+it("switches only between the two fixture weeks, without mixing results or draft notes", () => {
+  render(<CrossAssetWeekPage sample online />);
+  fireEvent.click(screen.getByRole("button", { name: "读取本周" }));
+  fireEvent.change(screen.getByLabelText("我的判断与下周待核验事项"), { target: { value: "最后一期的待核验事项" } });
+  fireEvent.change(screen.getByLabelText("周结束日"), { target: { value: "2026-07-24" } });
+  expect(screen.queryByText("-3.00 BP")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "读取本周" }));
+  expect(screen.getByText("-2.00 BP")).toBeTruthy();
+  expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("");
+  expect(screen.getByRole("link", { name: /自愿反馈/ }).getAttribute("href")).toMatch(/\/discussions\/16$/);
   expect(apiGet).not.toHaveBeenCalled();
 });
 

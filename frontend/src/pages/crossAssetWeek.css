@@ -4,20 +4,24 @@
 .asset-week h2 { font-size: 1rem; line-height: 1.4; }
 .asset-week p { color: #a9bfd2; line-height: 1.6; }
 .asset-week-kicker { color: #61dfd1; font-size: .74rem; font-weight: 700; letter-spacing: .13em; }
-.asset-week-notice, .asset-week-card, .asset-week-draft { background: #0e1c2c; border: 1px solid #263f54; border-radius: 12px; padding: .9rem 1rem; }
+.asset-week-notice, .asset-week-card, .asset-week-draft, .asset-week-next { background: #0e1c2c; border: 1px solid #263f54; border-radius: 12px; padding: .9rem 1rem; }
+.asset-week-steps { display: flex; flex-wrap: wrap; gap: .4rem 1.9rem; color: #c6d7e6; font-size: .88rem; margin: 0; padding-inline-start: 1.35rem; }
+.asset-week-steps li::marker { color: #80e6da; font-weight: 700; }
 .asset-week-toolbar { display: flex; gap: .7rem 1rem; flex-wrap: wrap; align-items: end; }
 .asset-week-dates-actions, .asset-week-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .65rem; }
 .asset-week label { display: grid; gap: .35rem; font-size: .88rem; color: #c6d7e6; }
-.asset-week input, .asset-week textarea { background: #0a1523; border: 1px solid #395369; border-radius: 7px; color: inherit; padding: .55rem .7rem; color-scheme: dark; font: inherit; }
+.asset-week input, .asset-week select, .asset-week textarea { background: #0a1523; border: 1px solid #395369; border-radius: 7px; color: inherit; padding: .55rem .7rem; color-scheme: dark; font: inherit; }
 .asset-week textarea { width: 100%; box-sizing: border-box; resize: vertical; }
 .asset-week-button, .asset-week-link { display: inline-flex; gap: .45rem; align-items: center; justify-self: start; border: 1px solid #3a646b; border-radius: 7px; padding: .55rem .75rem; background: #103138; color: #c7f5ef; font: inherit; font-size: .88rem; cursor: pointer; }
 .asset-week-link { padding: .25rem 0; background: transparent; border-color: transparent; color: #81e2d8; }
+.asset-week a { text-decoration: none; }
+.asset-week a:hover { text-decoration: underline; }
 .asset-week-secondary { background: #142639; border-color: #395369; color: #c6d7e6; }
 .asset-week-card-actions .asset-week-secondary { padding: .35rem .5rem; font-size: .78rem; }
 .asset-week-button:disabled { opacity: .6; cursor: not-allowed; }
 .asset-week :focus-visible { outline: 2px solid #83ece2; outline-offset: 3px; }
 .asset-week-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr)); gap: .8rem; }
-.asset-week-card, .asset-week-draft { display: grid; gap: .65rem; align-content: start; min-width: 0; }
+.asset-week-card, .asset-week-draft, .asset-week-next { display: grid; gap: .65rem; align-content: start; min-width: 0; }
 .asset-week-card-top { display: flex; gap: .5rem; justify-content: space-between; align-items: center; }
 .asset-week-card-top span { color: #80e6da; font-weight: 700; }
 .asset-week-card-top small, .asset-week-dates { color: #a9bfd2; font-size: .78rem; }

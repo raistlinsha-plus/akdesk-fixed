@@ -3,7 +3,7 @@
 set -u
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-EXPECTED_VERSION="1.4.1"
+EXPECTED_VERSION="1.4.2"
 
 fail() {
   echo

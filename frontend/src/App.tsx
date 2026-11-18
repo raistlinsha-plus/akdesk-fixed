@@ -37,6 +37,7 @@ import { AlertsPanel } from "./components/AlertsPanel";
 import { AiAssistantPanel } from "./components/AiAssistantPanel";
 import { classNames } from "./components/UI";
 import type { WeekDraft } from "./crossAssetWeek";
+import { APP_VERSION } from "./release";
 import { trapFocus } from "./focus";
 import { marketSessionLabel, researchAvailability } from "./healthStatus";
 import { startVisibilityPolling } from "./visibilityPolling";
@@ -76,6 +77,7 @@ import {
 import { recordRecentMarketPage } from "./marketDashboard";
 import {
   EXPERIENCE_PROFILES,
+  defaultLandingPage,
   experienceProfile,
   readExperienceProfile,
   writeExperienceProfile,
@@ -316,17 +318,14 @@ export default function App() {
     savedDefaultMode ?? savedProfile?.mode ?? null,
     savedSessionMode,
   );
-  const initialRoute = currentRoute(
-    savedSessionMode
-      ? workspaceHome(initialWorkspaceMode)
-      : (savedProfile?.landingPage as PageId | undefined) ?? workspaceHome(initialWorkspaceMode),
-  );
+  const defaultPage = defaultLandingPage(savedProfile, savedDefaultMode, savedSessionMode) as PageId;
+  const initialRoute = currentRoute(defaultPage);
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(
     initialWorkspaceMode,
   );
   const [experienceProfileId, setExperienceProfileId] =
     useState<ExperienceProfileId | null>(savedProfileId);
-  const [onboardingOpen, setOnboardingOpen] = useState(savedProfileId === null && !["scenarios", "help", "cross-asset-week"].includes(initialRoute.page));
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [entrySettingsOpen, setEntrySettingsOpen] = useState(false);
   const [page, setPage] = useState<PageId>(initialRoute.page);
   const [pageQuery, setPageQuery] = useState(initialRoute.query);
@@ -436,7 +435,7 @@ export default function App() {
 
   useEffect(() => {
     const handleHash = () => {
-      const route = currentRoute(workspaceHome(workspaceMode));
+      const route = currentRoute(defaultPage);
       setPage(route.page);
       setPageQuery(route.query);
     };
@@ -446,7 +445,7 @@ export default function App() {
       window.removeEventListener("hashchange", handleHash);
       window.removeEventListener("popstate", handleHash);
     };
-  }, [workspaceMode]);
+  }, [defaultPage]);
 
   useEffect(() => {
     if (onboardingOpen) {
@@ -815,6 +814,8 @@ export default function App() {
                 key={pageQuery === "sample" ? "sample" : "local"}
                 sample={pageQuery === "sample"}
                 navigate={navigate}
+                onChooseEntry={savedProfileId === null && savedDefaultMode === null
+                  ? () => setEntrySettingsOpen(true) : undefined}
                 draft={weekDraft}
                 onDraftChange={setWeekDraft}
                 onSource={link => {
@@ -1022,7 +1023,7 @@ export default function App() {
             aria-labelledby="workspace-onboarding-title"
           >
             <div className="workspace-onboarding-copy">
-              <span className="eyebrow">AKDESK FIXED · V1.4.1</span>
+              <span className="eyebrow">AKDESK FIXED · V{APP_VERSION}</span>
               <h1 id="workspace-onboarding-title">你通常先做哪件事？</h1>
               <p>选择一个使用场景即可开始。它只设置默认落地页和导航顺序；全部行情、投研、信用与全球模块仍可随时访问。</p>
               <button className="secondary-button" onClick={() => { setOnboardingOpen(false); navigate("help", "start"); }}>先做三分钟合成首任务，不设置默认入口 <ChevronRight size={15} /></button>

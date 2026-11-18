@@ -3,12 +3,15 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { mkdir, readFile, readdir } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
-const [base, workspace] = process.argv.slice(2);
+const [base, workspace, mode, screenshot] = process.argv.slice(2);
+const live = mode === "--live";
+const demoPath = live ? undefined : mode;
 assert.match(base, /^http:\/\/127\.0\.0\.1:\d+$/);
+assert(!demoPath || /^\/[^?#]*\/$/.test(demoPath));
 const profile = join(workspace, "chrome-profile");
 const downloads = join(workspace, "downloads");
 await mkdir(downloads);
@@ -17,13 +20,13 @@ const chrome = spawn("/Applications/Google Chrome.app/Contents/MacOS/Google Chro
   "--disable-sync", "--disable-component-update", "--no-first-run",
   "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1",
   "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=0",
-  `--user-data-dir=${profile}`, base + "/#/help?q=start",
+  `--user-data-dir=${profile}`, base + (demoPath || "/"),
 ], { stdio: "ignore" });
 const exited = once(chrome, "exit");
 let socket;
 
-async function until(operation, message) {
-  const deadline = Date.now() + 15_000;
+async function until(operation, message, timeoutMs = 15_000) {
+  const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const result = await operation();
     if (result) return result;
@@ -93,6 +96,60 @@ try {
   await cdp("Page.enable");
   await cdp("Runtime.enable");
   await cdp("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: downloads });
+  if (demoPath) {
+    await cdp("Emulation.setDeviceMetricsOverride", { width: 1280, height: 1200, deviceScaleFactor: 1, mobile: false });
+    await contains("带走一份复盘底稿");
+    await click("在线做一份周复盘");
+    await contains("固定合成样例 · 非真实行情");
+    await click("读取本周");
+    await contains("前期观测 缺失");
+    assert(await evaluate(`document.querySelector(".asset-week-draft button").disabled`));
+    await writeNote("股指上涨与长端收益率下行是两条独立观察。人民币参考价缺前期观测，下周先核验原始来源。");
+    await click("下载合成周复盘");
+    const note = await downloaded("2026-07-31-合成样例.md");
+    assert.match(note, /固定合成样例 · 非真实行情/);
+    assert.match(note, /人民币参考价缺前期观测/);
+    assert.match(note, /区间观测不足/);
+    if (screenshot) {
+      await evaluate("window.scrollTo(0, 0)");
+      const clip = await evaluate(`(() => {
+        const section = document.querySelector(".asset-week").getBoundingClientRect();
+        return { x: Math.max(0, Math.floor(section.x + scrollX - 16)), y: Math.max(0, Math.floor(section.y + scrollY - 16)),
+          width: Math.ceil(section.width + 32), height: Math.ceil(section.height + 32), scale: 1 };
+      })()`);
+      const image = await cdp("Page.captureScreenshot", { format: "png", clip, captureBeyondViewport: true });
+      await writeFile(screenshot, Buffer.from(image.data, "base64"));
+    }
+    await cdp("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
+    assert(await evaluate("document.querySelector('.asset-week').scrollWidth <= document.querySelector('.asset-week').clientWidth + 1"));
+    console.log("PASS browser: static Pages layout, weekly sample, markdown and narrow viewport");
+  } else if (live) {
+    await contains("股债金汇周复盘");
+    await contains("最近已过周五");
+    assert.equal(await evaluate('document.querySelector(".workspace-onboarding")'), null);
+    assert.equal(await evaluate('document.querySelector(".asset-week-card")'), null);
+    const date = await evaluate('document.querySelector(".asset-week input[type=date]").value');
+    await click("读取本周");
+    await until(() => evaluate(`(() => {
+      const cards = [...document.querySelectorAll(".asset-week-card")];
+      return cards.length === 4 && cards.every(card => card.getAttribute("aria-busy") === "false");
+    })()`), "Real reads did not settle", 42_000);
+    const states = await evaluate(`[...document.querySelectorAll(".asset-week-card")].map(card =>
+      [card.querySelector("h2").textContent, card.querySelector("small").textContent, card.querySelector("strong").textContent !== "—"])`);
+    assert(states.every(([, state]) => !/演示|合成/.test(state)), "Unexpected demo values in real app");
+    await writeNote("冷启动验收：记录缺项并保留查询线索。");
+    await click("下载查询引用底稿");
+    const markdown = await downloaded(date + "-查询引用.md");
+    assert.match(markdown, /冷启动验收/);
+    assert.match(markdown, /查询引用版/);
+    assert.doesNotMatch(markdown, /固定合成样例|前期观测|本期观测/);
+    console.log("PASS cold real-mode UI and reference export", JSON.stringify(states));
+  } else {
+  await contains("股债金汇周复盘");
+  await contains("最近已过周五");
+  assert.equal(await evaluate('document.querySelector(".workspace-onboarding")'), null);
+  assert.equal(await evaluate('localStorage.getItem("akdesk.experience-profile.v1")'), null);
+  await go("/#/help?q=start");
   await contains("带走一份股债金汇观察底稿");
   await click("核验样例依据");
   assert(await evaluate(`(() => {
@@ -105,6 +162,8 @@ try {
   assert.match(await downloaded("首任务-合成底稿.md"), /实测首任务底稿/);
   await cdp("Emulation.setDeviceMetricsOverride", { width: 430, height: 900, deviceScaleFactor: 1, mobile: false });
   await go("/#/cross-asset-week?q=sample");
+  await contains("固定合成样例 · 非真实行情");
+  await click("读取本周");
   await contains("-3.00 BP");
   await contains("前期观测 缺失");
   await writeNote("实测周复盘底稿");
@@ -141,7 +200,12 @@ try {
   assert.match(reference, /核验后保留的人工备注/);
   assert.match(reference, /查询引用版/);
   assert.doesNotMatch(reference, /-3\.00 BP|\+1\.00%|固定合成样例/);
-  console.log("PASS browser: first task, sample download, source return, single read and reference download");
+  await evaluate(`localStorage.setItem("akdesk.experience-profile.v1", "rates"); true`);
+  await evaluate(`history.replaceState(null, "", "/"); setTimeout(() => location.reload(), 0); true`);
+  await until(() => evaluate(`document.querySelector("main h1")?.textContent === "宏观固收投研工作台"`),
+    "Saved research profile did not keep its normal landing page");
+  console.log("PASS browser: fresh entry, legacy ETF task, weekly sample, source return, single read and reference download");
+  }
 } finally {
   socket?.close();
   chrome.kill("SIGTERM");

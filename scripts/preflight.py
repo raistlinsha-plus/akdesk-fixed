@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import ssl
 import sys
@@ -16,6 +17,28 @@ from urllib.parse import unquote, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from app.paths import default_data_dir  # noqa: E402
+
+
+def pip_install_recovery(log: str) -> str:
+    """Classify pip failures without printing the log (URLs may be sensitive)."""
+    def matches(pattern: str) -> bool:
+        return re.search(pattern, log, re.IGNORECASE) is not None
+
+    if matches(r"CERTIFICATE_VERIFY_FAILED|SSL:|certificate verify"):
+        return "证书校验失败。请运行 Python 安装目录中的 Install Certificates.command 后重试，不要关闭 TLS 校验"
+    if matches(r"No space left|Disk quota"):
+        return "磁盘空间不足。请释放至少 1 GB 空间后重新启动"
+    if matches(r"Permission denied|Read-only file system"):
+        return "安装目录不可写。请把完整项目移到当前用户可写的文件夹后重试"
+    if matches(r"TimeoutError|timed out|RemoteDisconnected|IncompleteRead|Connection (?:error|reset|refused)|"
+               r"Network is unreachable|Temporary failure in name resolution|"
+               r"Failed to establish a new connection|[45]\d\d (?:Client|Server) Error|HTTP error [45]\d\d"):
+        return "下载依赖时连接软件源失败或中断。请检查网络或代理，重新启动会继续安装，不会清空研究数据"
+    if matches(r"is not a supported wheel on this platform|ERROR: Package [^\n]+ requires a different Python"):
+        return "依赖包不兼容当前 Python 或处理器。请确认使用 Apple Silicon Mac 与 Python 3.11–3.13"
+    if matches(r"No matching distribution found|Could not find a version that satisfies"):
+        return "当前软件源未提供所需的锁定依赖。请检查软件源及网络后重试；不要自行改锁定版本"
+    return "未能完成依赖安装。请检查网络、代理或 Python 软件源的可访问性后重试；重复启动会继续安装，不会清空研究数据"
 
 
 class FrontendEntry(HTMLParser):
@@ -209,7 +232,15 @@ def main() -> int:
         "--root", type=Path, default=Path(__file__).resolve().parents[1]
     )
     parser.add_argument("--json", action="store_true", help="输出不含个人路径的 JSON")
+    parser.add_argument("--pip-install-log", type=Path, help=argparse.SUPPRESS)
     args = parser.parse_args()
+    if args.pip_install_log is not None:
+        try:
+            log = args.pip_install_log.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            log = ""
+        print(pip_install_recovery(log))
+        return 0
     report = inspect_environment(args.root.resolve())
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
