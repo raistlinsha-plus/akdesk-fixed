@@ -2,13 +2,13 @@
 
 **Review China's stocks, bonds, gold and FX for a week, and take away a worksheet with sources.** AKDesk is an open-source macOS research tool with a fixed-income focus.
 
-**[Try the weekly review](https://raistlinsha-plus.github.io/akdesk-fixed/#/cross-asset-week)** · [See the finished Markdown](./docs/examples/AKDesk-v1.4.2-股债金汇周复盘样例.md) · [One-page fixed-income brief](https://raistlinsha-plus.github.io/akdesk-fixed/#/brief) · [Download for macOS](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) · [中文](./README.md)
+**[Try a two-week review](https://raistlinsha-plus.github.io/akdesk-fixed/#/week-story)** · [See the finished Markdown](./docs/examples/AKDesk-v1.5.0-连续两周复盘样例.md) · [60-second tour](https://raistlinsha-plus.github.io/akdesk-fixed/akdesk-continuity-60s.mp4) · [Download for macOS](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest) · [中文](./README.md)
 
-![Completed cross-asset weekly review with synthetic observations, an FX gap and an analyst note](./docs/media/v1.4.2/weekly-review.png)
+![Two-week review with synthetic observations and an analyst note](./docs/media/v1.5.0/two-week-review.png)
 
 **Pick a week → check observation dates and gaps → write a judgment → export.** The demo uses fixed synthetic data. It requires no install, login or API key. If Pages is inaccessible, open the Markdown example above. The app's UI is primarily Chinese.
 
-**v1.4.2:** New local sessions without an entry preference open the same task. The four real series cover CSI 300, China's 10-year government bond yield, Au99.99 and the USD/CNY reference midpoint. A missing series does not prevent export: real worksheets include the selected date range, query references and your note, not quote values. [First-use and validation guide](./docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md) (Chinese).
+**v1.5.0:** Save your judgment and follow-up question locally, revisit them the following week, and keep prior revisions. No project setup or complete market feed is required. Saved worksheets contain your text and query references, never copies of market quotes. [Continuity and validation guide](./docs/AKDesk-Fixed-v1.5.0-使用与验收指南.md) (Chinese).
 
 [![MIT](https://img.shields.io/badge/license-MIT-44c8bb.svg)](./LICENSE) [![macOS](https://img.shields.io/badge/platform-macOS-0b1727.svg)](#local-installation)
 
@@ -16,7 +16,7 @@
 
 Targets Apple Silicon MacBook Air, **macOS 12+ and Python 3.11–3.13**. Initial installation needs network access and about 1 GB of free space. The official package includes a prebuilt UI; normal use requires no Node.js, Docker or Rust.
 
-macOS 12+ is a compatibility target, not a certification of every OS release. See the [validation guide](./docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md).
+macOS 12+ is a compatibility target, not a certification of every OS release. See the [validation guide](./docs/AKDesk-Fixed-v1.5.0-使用与验收指南.md).
 
 1. Install a supported Python; with Homebrew, use `brew install python@3.13`.
 2. Download the versioned `AKDesk-Fixed-vX.Y.Z.zip` and `SHA256SUMS` from [GitHub Releases](https://github.com/raistlinsha-plus/akdesk-fixed/releases/latest). Verify SHA-256 and unzip the whole package.
@@ -68,7 +68,7 @@ Not a sole source for production trading, accounting valuation, regulatory repor
 
 ## Documentation and feedback
 
-- Current: [First-use and validation guide](./docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md) · [Full v1.4.1 manual](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) (Chinese)
+- Current: [Continuity and validation guide](./docs/AKDesk-Fixed-v1.5.0-使用与验收指南.md) · [Full v1.4.1 manual](./docs/AKDesk-Fixed-v1.4.1-用户手册.md) (Chinese)
 - [Fixed-income video](https://raistlinsha-plus.github.io/akdesk-fixed/akdesk-demo-60s.mp4) · [ETF exercise](https://raistlinsha-plus.github.io/akdesk-fixed/#/start) · [Reproducible AKShare example](./docs/examples/AKShare-一页固收简报.md)
 - [Changelog](./CHANGELOG.md) · [Roadmap](./ROADMAP.md)
 - [Report a bug/data issue](https://github.com/raistlinsha-plus/akdesk-fixed/issues/new/choose) · [Describe your workflow](https://github.com/raistlinsha-plus/akdesk-fixed/discussions/16)

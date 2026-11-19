@@ -48,6 +48,13 @@ SCENES = (
     Scene(7, "05-brief.png", "带走可以继续编辑的材料", "来源与时点保留在导出中；可补临时备注、下载 Markdown 或打印。", crop=(90, 900, 1350, 1605)),
     Scene(5, "01-overview.png", "从在线体验开始", "喜欢这个流程？下载 macOS 本地版连接真实数据，或到 GitHub 反馈。", cover=True),
 )
+CONTINUITY_SCENES = (
+    Scene(8, "two-week-review.png", "AKDesk Fixed · 两周连续复盘", "画面来自固定合成案例；不是实时行情，不需要登录或 API Key。", crop=(0, 0, 1232, 530)),
+    Scene(14, "two-week-review.png", "01 第一周：留下判断和问题", "记录对长端变化的观察，并说明下一周想核验什么。", crop=(0, 195, 1232, 530)),
+    Scene(15, "two-week-review.png", "02 下一周：接着核验", "直接看到上周的问题，缺项照实保留，不补零、不猜因果。", crop=(0, 530, 1232, 850)),
+    Scene(14, "two-week-review.png", "03 保留本周的新判断", "记录人工依据与下周关注事项；样例不写入任何研究库。", crop=(0, 754, 1232, 1069)),
+    Scene(9, "two-week-review.png", "带走两周底稿，再试 macOS 本地版", "真实记录只保存个人文字与查询引用，不保存行情快照。", crop=(0, 1010, 1232, 1287)),
+)
 
 
 def font_path() -> Path:
@@ -73,8 +80,8 @@ def centered(draw: ImageDraw.ImageDraw, y: int, text: str, font: ImageFont.FreeT
     draw.text(((WIDTH - (right - left)) / 2, y), text, font=font, fill=fill)
 
 
-def render_scene(scene: Scene, output: Path, font: Path, index: int) -> None:
-    image = Image.open(MEDIA / scene.image).convert("RGB")
+def render_scene(scene: Scene, output: Path, font: Path, index: int, media: Path, total: int) -> None:
+    image = Image.open(media / scene.image).convert("RGB")
     if scene.crop:
         image = image.crop(scene.crop)
     canvas = Image.new("RGB", (WIDTH, HEIGHT), BACKGROUND)
@@ -83,7 +90,7 @@ def render_scene(scene: Scene, output: Path, font: Path, index: int) -> None:
     canvas.paste(image, (x, y))
     draw = ImageDraw.Draw(canvas)
     draw.text((40, 13), "真实界面截图导览 · 固定合成示例 · 非实时录屏", font=load_font(font, 17), fill="#a4bac8")
-    draw.text((1130, 13), f"{index + 1:02d} / {len(SCENES):02d}", font=load_font(font, 17), fill="#8ba5b7")
+    draw.text((1130, 13), f"{index + 1:02d} / {total:02d}", font=load_font(font, 17), fill="#8ba5b7")
     draw.line((40, 792, WIDTH - 40, 792), fill="#315062", width=1)
     draw.text((40, 811), scene.title, font=load_font(font, 25), fill=MINT)
     draw.text((40, 853), scene.caption, font=load_font(font, 22), fill=WHITE)
@@ -107,24 +114,28 @@ def timecode(seconds: int) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=MEDIA / OUTPUT_NAME)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--continuity", action="store_true", help="生成 v1.5 的两周复盘导览")
     args = parser.parse_args()
-    if sum(scene.duration for scene in SCENES) != 60:
+    media = MEDIA.parent / "v1.5.0" if args.continuity else MEDIA
+    scenes = CONTINUITY_SCENES if args.continuity else SCENES
+    output = args.output or media / ("two-week-review-60s.mp4" if args.continuity else OUTPUT_NAME)
+    if sum(scene.duration for scene in scenes) != 60:
         raise RuntimeError("导览必须正好 60 秒")
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
         raise RuntimeError("需要安装 ffmpeg 和 ffprobe")
     font = font_path()
-    args.output.parent.mkdir(parents=True, exist_ok=True)
+    output.parent.mkdir(parents=True, exist_ok=True)
     captions = ["WEBVTT", ""]
     elapsed = 0
     with tempfile.TemporaryDirectory(prefix="akdesk-demo-video-") as temp:
         directory = Path(temp)
         manifest: list[str] = []
-        for index, scene in enumerate(SCENES):
+        for index, scene in enumerate(scenes):
             frame = directory / f"scene-{index:02d}.png"
-            render_scene(scene, frame, font, index)
+            render_scene(scene, frame, font, index, media, len(scenes))
             if index == 0:
-                shutil.copyfile(frame, MEDIA / "video-poster.png")
+                shutil.copyfile(frame, media / "video-poster.png")
             manifest.extend([f"file '{frame.as_posix()}'", f"duration {scene.duration}"])
             captions.extend([str(index + 1), f"{timecode(elapsed)} --> {timecode(elapsed + scene.duration)}", scene.title, scene.caption, ""])
             elapsed += scene.duration
@@ -136,19 +147,19 @@ def main() -> None:
             "-f", "concat", "-safe", "0", "-i", str(input_file),
             "-vf", "fps=12,format=yuv420p", "-t", "60", "-an",
             "-c:v", "libx264", "-preset", "slow", "-crf", "25",
-            "-movflags", "+faststart", str(args.output),
+            "-movflags", "+faststart", str(output),
         ], check=True)
-    (MEDIA / "demo-tour.zh-CN.vtt").write_text("\n".join(captions), encoding="utf-8")
+    (media / "demo-tour.zh-CN.vtt").write_text("\n".join(captions), encoding="utf-8")
     result = subprocess.run([
         "ffprobe", "-v", "error", "-show_entries", "format=duration,size:stream=codec_name,width,height,pix_fmt",
-        "-of", "json", str(args.output),
+        "-of", "json", str(output),
     ], check=True, capture_output=True, text=True)
     report = json.loads(result.stdout)
     if abs(float(report["format"]["duration"]) - 60) > 0.1:
         raise RuntimeError("视频时长验证失败")
-    if args.output.stat().st_size > 5 * 1024 * 1024:
+    if output.stat().st_size > 5 * 1024 * 1024:
         raise RuntimeError("视频超过 5 MiB；请检查画面和编码参数")
-    report.update({"output": str(args.output), "source": "real UI screenshots", "sample": "fixed synthetic data", "font": str(font)})
+    report.update({"output": str(output), "source": "real UI screenshots", "sample": "fixed synthetic data", "font": str(font)})
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 

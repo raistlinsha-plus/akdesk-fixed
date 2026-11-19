@@ -59,6 +59,8 @@ RESEARCH_OBJECT_TYPES = {
     "release_event",
 }
 
+SCHEMA_VERSION = 1700
+
 
 class Database:
     def __init__(self, path: Path) -> None:
@@ -86,6 +88,19 @@ class Database:
             connection.executescript(
                 """
                 PRAGMA journal_mode=WAL;
+                CREATE TABLE IF NOT EXISTS market_week_revisions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    revision TEXT NOT NULL UNIQUE,
+                    week_end TEXT NOT NULL,
+                    judgment TEXT NOT NULL,
+                    next_question TEXT NOT NULL,
+                    assessment TEXT NOT NULL,
+                    assessment_note TEXT NOT NULL,
+                    previous_revision TEXT,
+                    created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_market_week_revision
+                    ON market_week_revisions(week_end, id DESC);
                 CREATE TABLE IF NOT EXISTS watchlist_items (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     object_type TEXT NOT NULL,
@@ -633,7 +648,13 @@ class Database:
                 self._save_credit_history(
                     connection, row, str(row["updated_at"] or datetime.now().isoformat())
                 )
-            connection.execute("PRAGMA user_version=1600")
+            connection.execute(
+                "INSERT OR IGNORE INTO schema_migrations(version, description, applied_at) "
+                "VALUES (?, 'v1.5.0 local market-week review revisions', ?)",
+                (SCHEMA_VERSION, datetime.now().isoformat()),
+            )
+            if connection.execute("PRAGMA user_version").fetchone()[0] < SCHEMA_VERSION:
+                connection.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
             watchlist_columns = {
                 str(row["name"])
                 for row in connection.execute("PRAGMA table_info(watchlist_items)")

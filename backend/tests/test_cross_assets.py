@@ -252,7 +252,7 @@ def test_api_no_store_unsupported_inputs_watchlist_and_no_numeric_disk(
             and enriched["source_meta"]["demo"] is True
         )
         with main.database._connect() as connection:
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 1600
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 1700
             assert not connection.execute("SELECT 1 FROM research_evidence").fetchall()
 
 

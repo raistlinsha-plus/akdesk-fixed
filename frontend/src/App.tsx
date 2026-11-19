@@ -37,6 +37,7 @@ import { AlertsPanel } from "./components/AlertsPanel";
 import { AiAssistantPanel } from "./components/AiAssistantPanel";
 import { classNames } from "./components/UI";
 import type { WeekDraft } from "./crossAssetWeek";
+import type { JournalDraft } from "./weekJournal";
 import { APP_VERSION } from "./release";
 import { trapFocus } from "./focus";
 import { marketSessionLabel, researchAvailability } from "./healthStatus";
@@ -89,6 +90,7 @@ const ResearchPage = lazy(() => import("./pages/ResearchPage").then((module) => 
 const ScenariosPage = lazy(() => import("./pages/ScenariosPage").then((module) => ({ default: module.ScenariosPage })));
 const CrossAssetPage = lazy(() => import("./pages/CrossAssetPage").then(module=>({default:module.CrossAssetPage})));
 const CrossAssetWeekPage = lazy(() => import("./pages/CrossAssetWeekPage").then(module=>({default:module.CrossAssetWeekPage})));
+const WeekContinuityDemo = lazy(() => import("./components/WeekContinuityDemo").then(module => ({ default: module.WeekContinuityDemo })));
 const ProjectsPage = lazy(()=>import("./pages/ProjectsPage").then(module=>({default:module.ProjectsPage})));
 
 type PageId =
@@ -330,6 +332,7 @@ export default function App() {
   const [page, setPage] = useState<PageId>(initialRoute.page);
   const [pageQuery, setPageQuery] = useState(initialRoute.query);
   const [weekDraft, setWeekDraft] = useState<WeekDraft | null>(null);
+  const [journalDrafts, setJournalDrafts] = useState<Record<string, JournalDraft>>({});
   const [weekSource, setWeekSource] = useState<{ page: string; query: string; date: string } | null>(null);
   const [refreshSeed, setRefreshSeed] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -376,6 +379,13 @@ export default function App() {
     setInstrumentResults([]);
     window.setTimeout(() => searchTriggerRef.current?.focus(), 20);
   }
+
+  useEffect(() => {
+    if (!Object.keys(journalDrafts).length) return;
+    const confirm = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", confirm);
+    return () => window.removeEventListener("beforeunload", confirm);
+  }, [journalDrafts]);
 
   function closeAlerts() {
     setAlertsOpen(false);
@@ -810,7 +820,7 @@ export default function App() {
           {page === "cross-assets" ? <Suspense fallback={<p role="status">正在打开跨资产观察…</p>}><CrossAssetPage refreshSeed={refreshSeed} initialQuery={pageQuery} navigate={navigate}/></Suspense> : null}
           {page === "cross-asset-week" ? (
             <Suspense fallback={<p role="status">正在打开股债金汇周复盘…</p>}>
-              <CrossAssetWeekPage
+              {pageQuery === "story" ? <WeekContinuityDemo onReturn={() => navigate("cross-asset-week")} /> : <CrossAssetWeekPage
                 key={pageQuery === "sample" ? "sample" : "local"}
                 sample={pageQuery === "sample"}
                 navigate={navigate}
@@ -818,11 +828,21 @@ export default function App() {
                   ? () => setEntrySettingsOpen(true) : undefined}
                 draft={weekDraft}
                 onDraftChange={setWeekDraft}
+                journal={pageQuery !== "sample" ? {
+                  drafts: journalDrafts,
+                  update: (date, value, expected) => setJournalDrafts(previous => {
+                    if (expected && previous[date] !== expected) return previous;
+                    const next = { ...previous };
+                    if (value) next[date] = value;
+                    else delete next[date];
+                    return next;
+                  }),
+                } : undefined}
                 onSource={link => {
                   setWeekSource(link);
                   navigate(link.page, link.query);
                 }}
-              />
+              />}
             </Suspense>
           ) : null}
           {page === "help" ? <Suspense fallback={<p role="status">正在打开帮助与反馈…</p>}><HelpPage navigate={navigate} initialQuery={pageQuery} /></Suspense> : null}

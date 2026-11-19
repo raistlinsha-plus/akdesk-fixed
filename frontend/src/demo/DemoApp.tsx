@@ -25,12 +25,14 @@ import { ScenarioFeedback } from "../components/ScenarioFeedback";
 const LineChart = lazy(() => import("../components/Charts").then((module) => ({ default: module.LineChart })));
 const CrossAssetPage = lazy(()=>import("../pages/CrossAssetPage").then(module=>({default:module.CrossAssetPage})));
 const CrossAssetWeekPage = lazy(()=>import("../pages/CrossAssetWeekPage").then(module=>({default:module.CrossAssetWeekPage})));
+const WeekContinuityDemo = lazy(() => import("../components/WeekContinuityDemo").then(module => ({ default: module.WeekContinuityDemo })));
 const ExperienceTask = lazy(() => import("../components/ExperienceTask").then((module) => ({ default: module.ExperienceTask })));
 const BarChart = lazy(() => import("../components/Charts").then((module) => ({ default: module.BarChart })));
 const FEEDBACK = feedbackUrl("feature", "demo", "demo");
-type DemoPage = "overview" | "start" | "changes" | "curves" | "brief" | "scenarios" | "cross-assets" | "cross-asset-week";
+type DemoPage = "overview" | "start" | "changes" | "curves" | "brief" | "scenarios" | "cross-assets" | "cross-asset-week" | "week-story";
 const PAGES: Array<{ id: DemoPage; label: string; step?: string }> = [
   { id: "overview", label: "产品概览" },
+  { id: "week-story", label: "连续两周体验" },
   { id: "cross-asset-week", label: "股债金汇周复盘样例" },
   { id: "start", label: "ETF 首任务" },
   { id: "cross-assets", label: "股债金汇体验" },
@@ -143,6 +145,7 @@ export function DemoApp() {
                 <p className="demo-intro-description">选一周，核对每项变化和观测日，写下自己的判断与待核验事项。先用固定合成数据练习，再在 Mac 上做自己的复盘。</p>
                 <div className="demo-intro-actions">
                   <button className="demo-button demo-button-primary" onClick={() => navigate("cross-asset-week")}>在线做一份周复盘 <ArrowRight size={16} /></button>
+                  <button className="demo-button demo-button-outline" onClick={() => navigate("week-story")}>用两周接续一次判断 <ArrowRight size={16} /></button>
                   <button className="demo-button demo-button-outline" onClick={() => navigate("brief")}>查看一页固收简报 <FileText size={15} /></button>
                 </div>
                 <ul className="demo-proof-points">
@@ -228,6 +231,7 @@ export function DemoApp() {
         {page === "scenarios" ? <ScenariosPage key={resetSeed} selectedId={scenarioId} surface="online" onSelect={id => navigate("scenarios", id)} /> : null}
         {page === "cross-assets" ? <Suspense fallback={<p role="status">正在打开合成跨资产体验…</p>}><CrossAssetPage key={resetSeed} synthetic initialQuery={scenarioId}/></Suspense> : null}
         {page === "cross-asset-week" ? <Suspense fallback={<p role="status">正在打开合成周复盘…</p>}><CrossAssetWeekPage key={resetSeed} sample online /></Suspense> : null}
+        {page === "week-story" ? <Suspense fallback={<p role="status">正在打开两周合成体验…</p>}><WeekContinuityDemo key={resetSeed} mediaBase={import.meta.env.BASE_URL} /></Suspense> : null}
       </main>
 
       <footer className="demo-footer"><div><strong>AKDesk Fixed</strong><span>MIT 开源 · 本地优先 · 个人研究</span></div><p>当前为固定合成样例，不代表真实行情。本地版使用公开数据，适合个人学习与研究。</p><a href={FEEDBACK} target="_blank" rel="noreferrer">反馈体验 <ArrowUpRight size={13} /></a></footer>

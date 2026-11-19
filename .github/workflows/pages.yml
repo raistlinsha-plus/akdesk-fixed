@@ -6,6 +6,7 @@ on:
     paths:
       - frontend/**
       - docs/media/v1.1.0/**
+      - docs/media/v1.5.0/**
       - .github/workflows/pages.yml
   workflow_dispatch:
 

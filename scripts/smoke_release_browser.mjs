@@ -80,9 +80,12 @@ try {
     }
   };
   const click = async text => assert(await evaluate(`(() => { const button = [...document.querySelectorAll("button")].find(b => b.textContent.trim() === ${JSON.stringify(text)}); if (!button || button.disabled) return false; button.click(); return true; })()`), `Cannot click: ${text}`);
-  async function writeNote(text) {
+  async function writeNote(text, label) {
     assert(await evaluate(`(() => {
-      const area = document.querySelector("textarea");
+      const label = ${JSON.stringify(label ?? "")};
+      const area = label
+        ? [...document.querySelectorAll("label")].find(item => item.textContent.startsWith(label))?.querySelector("textarea")
+        : document.querySelector("textarea");
       if (!area) return false;
       Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(area, ${JSON.stringify(text)});
       area.dispatchEvent(new Event("input", {bubbles: true}));
@@ -110,6 +113,15 @@ try {
     assert.match(note, /固定合成样例 · 非真实行情/);
     assert.match(note, /人民币参考价缺前期观测/);
     assert.match(note, /区间观测不足/);
+    await go(demoPath + "#/week-story");
+    await contains("用两周做一次连续复盘");
+    await writeNote("资金与曲线变化分开看，先观察长端。", "第一周判断");
+    await writeNote("下一周长端收益率是否继续下行？", "下一周要核验什么？");
+    await click("保存样例并进入下一周");
+    await contains("上周待核验：下一周长端收益率是否继续下行？");
+    await writeNote("长端方向可继续观察，汇率缺数不能支持跨资产结论。", "第二周判断");
+    await click("下载两周合成底稿");
+    assert.match(await downloaded("两周合成样例.md"), /固定合成样例.*非真实行情/);
     if (screenshot) {
       await evaluate("window.scrollTo(0, 0)");
       const clip = await evaluate(`(() => {
@@ -122,13 +134,22 @@ try {
     }
     await cdp("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
     assert(await evaluate("document.querySelector('.asset-week').scrollWidth <= document.querySelector('.asset-week').clientWidth + 1"));
-    console.log("PASS browser: static Pages layout, weekly sample, markdown and narrow viewport");
+    console.log("PASS browser: static Pages layout, original and two-week samples, Markdown and narrow viewport");
   } else if (live) {
     await contains("股债金汇周复盘");
     await contains("最近已过周五");
     assert.equal(await evaluate('document.querySelector(".workspace-onboarding")'), null);
     assert.equal(await evaluate('document.querySelector(".asset-week-card")'), null);
     const date = await evaluate('document.querySelector(".asset-week input[type=date]").value');
+    await contains("尚无上周复盘");
+    await click("前一周");
+    await contains("尚无上周复盘");
+    await writeNote("第一周：保留当时的观察。", "本周判断");
+    await writeNote("下一周回看利率的方向。", "下周待核验事项");
+    await click("保存到本机");
+    await contains("已保存到本机。");
+    await click("后一周");
+    await contains("下一周回看利率的方向。");
     await click("读取本周");
     await until(() => evaluate(`(() => {
       const cards = [...document.querySelectorAll(".asset-week-card")];
@@ -137,13 +158,21 @@ try {
     const states = await evaluate(`[...document.querySelectorAll(".asset-week-card")].map(card =>
       [card.querySelector("h2").textContent, card.querySelector("small").textContent, card.querySelector("strong").textContent !== "—"])`);
     assert(states.every(([, state]) => !/演示|合成/.test(state)), "Unexpected demo values in real app");
-    await writeNote("冷启动验收：记录缺项并保留查询线索。");
-    await click("下载查询引用底稿");
+    await writeNote("冷启动验收：记录缺项并保留查询线索。", "本周判断");
+    await click("保存到本机");
+    await contains("已保存到本机。");
+    await evaluate("window.akdeskSmokeBeforeReload = true; true");
+    await cdp("Page.reload");
+    await until(() => evaluate("!window.akdeskSmokeBeforeReload"), "New document did not load");
+    await contains("下一周回看利率的方向。");
+    assert.equal(await evaluate('document.querySelector(".asset-week textarea").value'), "冷启动验收：记录缺项并保留查询线索。");
+    await click("导出已保存底稿");
     const markdown = await downloaded(date + "-查询引用.md");
     assert.match(markdown, /冷启动验收/);
-    assert.match(markdown, /查询引用版/);
+    assert.match(markdown, /用户自撰记录与查询引用/);
+    assert.match(markdown, /第一周：保留当时的观察/);
     assert.doesNotMatch(markdown, /固定合成样例|前期观测|本期观测/);
-    console.log("PASS cold real-mode UI and reference export", JSON.stringify(states));
+    console.log("PASS cold real-mode: two weeks, restart recovery, market reads and reference export", JSON.stringify(states));
   } else {
   await contains("股债金汇周复盘");
   await contains("最近已过周五");
@@ -178,7 +207,8 @@ try {
   assert.match(date, /^\d{4}-\d{2}-\d{2}$/);
   await click("读取本周");
   await contains("当前服务为演示模式");
-  await writeNote("核验后保留的人工备注");
+  await contains("本地演示模式不保存个人周复盘");
+  assert(await evaluate('[...document.querySelectorAll("button")].find(button => button.textContent === "保存到本机")?.disabled'));
   assert(await evaluate(`(() => {
     const card = [...document.querySelectorAll(".asset-week-card")].find(item => item.querySelector("h2").textContent === "10年期国债收益率");
     const button = card?.querySelector(".asset-week-link");
@@ -189,22 +219,14 @@ try {
   await contains("返回周复盘 · " + date);
   await click("← 返回周复盘 · " + date);
   await contains("仅重读10年期国债收益率");
-  assert.equal(await evaluate('document.querySelector(".asset-week textarea").value'), "核验后保留的人工备注");
   assert.equal(await evaluate('document.querySelector(".asset-week input[type=date]").value'), date);
   await click("仅重读10年期国债收益率");
   await contains("3 项尚未读取");
-  await until(() => evaluate(`[...document.querySelectorAll("button")].some(button => button.textContent.trim() === "下载查询引用底稿" && !button.disabled)`),
-    "Single-series read did not finish");
-  await click("下载查询引用底稿");
-  const reference = await downloaded(date + "-查询引用.md");
-  assert.match(reference, /核验后保留的人工备注/);
-  assert.match(reference, /查询引用版/);
-  assert.doesNotMatch(reference, /-3\.00 BP|\+1\.00%|固定合成样例/);
   await evaluate(`localStorage.setItem("akdesk.experience-profile.v1", "rates"); true`);
   await evaluate(`history.replaceState(null, "", "/"); setTimeout(() => location.reload(), 0); true`);
   await until(() => evaluate(`document.querySelector("main h1")?.textContent === "宏观固收投研工作台"`),
     "Saved research profile did not keep its normal landing page");
-  console.log("PASS browser: fresh entry, legacy ETF task, weekly sample, source return, single read and reference download");
+  console.log("PASS browser: fresh entry, legacy ETF task, weekly sample, source return and demo journal isolation");
   }
 } finally {
   socket?.close();

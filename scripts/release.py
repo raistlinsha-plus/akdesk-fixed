@@ -42,6 +42,8 @@ ROOT_DOCUMENTS = {
     "DATA_USAGE.md",
 }
 BASELINE_DOCUMENTS = {
+    "docs/AKDesk-Fixed-v1.5.0-使用与验收指南.md",
+    "docs/examples/AKDesk-v1.5.0-连续两周复盘样例.md",
     "docs/AKDesk-Fixed-v1.4.2-使用与验收指南.md",
     "docs/examples/AKDesk-v1.4.2-股债金汇周复盘样例.md",
     "docs/AKDesk-Fixed-v1.4.1-使用与验收指南.md",
@@ -88,7 +90,11 @@ SYNTHETIC_MEDIA = {
         "demo-tour.zh-CN.vtt",
         "示例-固收简报.md",
     )
-} | {Path("docs/media/v1.4.2/weekly-review.png")}
+} | {Path("docs/media/v1.4.2/weekly-review.png")} | {
+    Path("docs/media/v1.5.0") / name for name in (
+        "two-week-review.png", "two-week-review-60s.mp4", "video-poster.png", "demo-tour.zh-CN.vtt",
+    )
+}
 EXECUTABLES = {
     Path("start-macos.command"),
     Path("start-macos-demo.command"),

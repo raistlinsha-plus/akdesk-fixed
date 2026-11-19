@@ -15,11 +15,11 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
-from app.database import Database  # noqa: E402
+from app.database import Database, SCHEMA_VERSION  # noqa: E402
 
-TARGET_SCHEMA = 1600
+TARGET_SCHEMA = SCHEMA_VERSION
 REQUIRED_SOURCE_SCHEMAS = (701, 800, 900, 1100, 1201, 1301)
-REQUIRED_MIGRATIONS = (700, 701, 800, 900, 1100, 1201, 1301, 1410, 1600)
+REQUIRED_MIGRATIONS = (700, 701, 800, 900, 1100, 1201, 1301, 1410, 1600, TARGET_SCHEMA)
 PRESERVED_TABLES = (
     "watchlist_items",
     "alert_rules",

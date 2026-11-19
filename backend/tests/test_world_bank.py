@@ -156,7 +156,7 @@ def test_world_bank_compare_paginates_aligns_missing_and_uses_cache(tmp_path) ->
     assert cached.meta.fetched_at == result.meta.fetched_at
     assert database.world_bank_stats()["points"] == 6
     with sqlite3.connect(database.path) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1600
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1700
 
 
 def test_world_bank_views_keep_year_alignment() -> None:

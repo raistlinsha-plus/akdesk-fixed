@@ -4,9 +4,12 @@ import { readFileSync } from "node:fs";
 
 const base = process.env.AKDESK_DEMO_BASE || "/akdesk-fixed/";
 const media = [
-  ["AKDesk-60秒导览.mp4", "akdesk-demo-60s.mp4", "video/mp4"],
-  ["video-poster.png", "media/video-poster.png", "image/png"],
-  ["demo-tour.zh-CN.vtt", "media/demo-tour.zh-CN.vtt", "text/vtt; charset=utf-8"],
+  ["v1.1.0/AKDesk-60秒导览.mp4", "akdesk-demo-60s.mp4", "video/mp4"],
+  ["v1.1.0/video-poster.png", "media/video-poster.png", "image/png"],
+  ["v1.1.0/demo-tour.zh-CN.vtt", "media/demo-tour.zh-CN.vtt", "text/vtt; charset=utf-8"],
+  ["v1.5.0/two-week-review-60s.mp4", "akdesk-continuity-60s.mp4", "video/mp4"],
+  ["v1.5.0/video-poster.png", "media/continuity-poster.png", "image/png"],
+  ["v1.5.0/demo-tour.zh-CN.vtt", "media/continuity.zh-CN.vtt", "text/vtt; charset=utf-8"],
 ] as const;
 
 export default defineConfig({
@@ -22,7 +25,7 @@ export default defineConfig({
           const match = media.find(([, fileName]) => pathname === `${base}${fileName}` || pathname === `/${fileName}`);
           if (!match) return next();
           response.setHeader("Content-Type", match[2]);
-          response.end(readFileSync(new URL(`../docs/media/v1.1.0/${match[0]}`, import.meta.url)));
+          response.end(readFileSync(new URL(`../docs/media/${match[0]}`, import.meta.url)));
         });
       },
       generateBundle(_options, bundle) {
@@ -33,7 +36,7 @@ export default defineConfig({
           delete bundle["demo.html"];
         }
         for (const [name, fileName] of media) {
-          this.emitFile({ type: "asset", fileName, source: readFileSync(new URL(`../docs/media/v1.1.0/${name}`, import.meta.url)) });
+          this.emitFile({ type: "asset", fileName, source: readFileSync(new URL(`../docs/media/${name}`, import.meta.url)) });
         }
       },
     },

@@ -3,8 +3,8 @@
     "file": "assets/OnePageBrief-BqT2trFY.css",
     "src": "_OnePageBrief-BqT2trFY.css"
   },
-  "_OnePageBrief-DdS0_nqe.js": {
-    "file": "assets/OnePageBrief-DdS0_nqe.js",
+  "_OnePageBrief-vn1XMpxW.js": {
+    "file": "assets/OnePageBrief-vn1XMpxW.js",
     "name": "OnePageBrief",
     "imports": [
       "index.html"
@@ -13,34 +13,48 @@
       "assets/OnePageBrief-BqT2trFY.css"
     ]
   },
+  "_crossAssetWeek-B4d21rJx.js": {
+    "file": "assets/crossAssetWeek-B4d21rJx.js",
+    "name": "crossAssetWeek",
+    "imports": [
+      "index.html"
+    ],
+    "css": [
+      "assets/crossAssetWeek-BkPSvXHC.css"
+    ]
+  },
+  "_crossAssetWeek-BkPSvXHC.css": {
+    "file": "assets/crossAssetWeek-BkPSvXHC.css",
+    "src": "_crossAssetWeek-BkPSvXHC.css"
+  },
   "_crossAssets-C6IsRQFK.js": {
     "file": "assets/crossAssets-C6IsRQFK.js",
     "name": "crossAssets"
   },
-  "_feedback-BOZtG3r3.js": {
-    "file": "assets/feedback-BOZtG3r3.js",
+  "_feedback-CvE8BA6X.js": {
+    "file": "assets/feedback-CvE8BA6X.js",
     "name": "feedback",
     "imports": [
       "index.html",
-      "_scenarios-Cyj76mJX.js"
+      "_scenarios-BdEVIlQC.js"
     ]
   },
-  "_rotate-ccw-dYMv5d7C.js": {
-    "file": "assets/rotate-ccw-dYMv5d7C.js",
+  "_rotate-ccw-DxFv_7ll.js": {
+    "file": "assets/rotate-ccw-DxFv_7ll.js",
     "name": "rotate-ccw",
     "imports": [
       "index.html"
     ]
   },
-  "_scenarios-Cyj76mJX.js": {
-    "file": "assets/scenarios-Cyj76mJX.js",
+  "_scenarios-BdEVIlQC.js": {
+    "file": "assets/scenarios-BdEVIlQC.js",
     "name": "scenarios",
     "imports": [
       "index.html"
     ]
   },
   "index.html": {
-    "file": "assets/index-BZXBW4qo.js",
+    "file": "assets/index-DuCTdhcz.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -57,6 +71,7 @@
       "src/pages/ScenariosPage.tsx",
       "src/pages/CrossAssetPage.tsx",
       "src/pages/CrossAssetWeekPage.tsx",
+      "src/components/WeekContinuityDemo.tsx",
       "src/pages/ProjectsPage.tsx"
     ],
     "css": [
@@ -64,7 +79,7 @@
     ]
   },
   "src/components/Charts.tsx": {
-    "file": "assets/Charts-BlYc2sEd.js",
+    "file": "assets/Charts-B8uPUzmZ.js",
     "name": "Charts",
     "src": "src/components/Charts.tsx",
     "isDynamicEntry": true,
@@ -72,16 +87,27 @@
       "index.html"
     ]
   },
+  "src/components/WeekContinuityDemo.tsx": {
+    "file": "assets/WeekContinuityDemo-CN2QPBHF.js",
+    "name": "WeekContinuityDemo",
+    "src": "src/components/WeekContinuityDemo.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_crossAssetWeek-B4d21rJx.js",
+      "_scenarios-BdEVIlQC.js"
+    ]
+  },
   "src/pages/CrossAssetPage.tsx": {
-    "file": "assets/CrossAssetPage-CANnEc1w.js",
+    "file": "assets/CrossAssetPage-CVaW8iGi.js",
     "name": "CrossAssetPage",
     "src": "src/pages/CrossAssetPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
       "_crossAssets-C6IsRQFK.js",
-      "_scenarios-Cyj76mJX.js",
-      "_feedback-BOZtG3r3.js"
+      "_scenarios-BdEVIlQC.js",
+      "_feedback-CvE8BA6X.js"
     ],
     "dynamicImports": [
       "src/components/Charts.tsx"
@@ -91,70 +117,68 @@
     ]
   },
   "src/pages/CrossAssetWeekPage.tsx": {
-    "file": "assets/CrossAssetWeekPage-CCX803u1.js",
+    "file": "assets/CrossAssetWeekPage-DZ16aq3_.js",
     "name": "CrossAssetWeekPage",
     "src": "src/pages/CrossAssetWeekPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_scenarios-Cyj76mJX.js"
-    ],
-    "css": [
-      "assets/CrossAssetWeekPage-BO3nSGNM.css"
+      "_crossAssetWeek-B4d21rJx.js",
+      "_scenarios-BdEVIlQC.js"
     ]
   },
   "src/pages/HelpPage.tsx": {
-    "file": "assets/HelpPage-BKttva2P.js",
+    "file": "assets/HelpPage-D98Uov8j.js",
     "name": "HelpPage",
     "src": "src/pages/HelpPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_feedback-BOZtG3r3.js",
+      "_feedback-CvE8BA6X.js",
       "src/pages/ScenariosPage.tsx",
       "_crossAssets-C6IsRQFK.js",
-      "_scenarios-Cyj76mJX.js",
-      "_OnePageBrief-DdS0_nqe.js",
-      "_rotate-ccw-dYMv5d7C.js"
+      "_scenarios-BdEVIlQC.js",
+      "_OnePageBrief-vn1XMpxW.js",
+      "_rotate-ccw-DxFv_7ll.js"
     ],
     "css": [
       "assets/HelpPage-TY-bY2to.css"
     ]
   },
   "src/pages/ProjectsPage.tsx": {
-    "file": "assets/ProjectsPage-bR7LcwVY.js",
+    "file": "assets/ProjectsPage-Ulk9U5A7.js",
     "name": "ProjectsPage",
     "src": "src/pages/ProjectsPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_rotate-ccw-dYMv5d7C.js"
+      "_rotate-ccw-DxFv_7ll.js"
     ],
     "css": [
       "assets/ProjectsPage-QMwQkNGD.css"
     ]
   },
   "src/pages/ResearchPage.tsx": {
-    "file": "assets/ResearchPage-ldv-Sg2S.js",
+    "file": "assets/ResearchPage-CSVO6RAH.js",
     "name": "ResearchPage",
     "src": "src/pages/ResearchPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_OnePageBrief-DdS0_nqe.js"
+      "_OnePageBrief-vn1XMpxW.js"
     ]
   },
   "src/pages/ScenariosPage.tsx": {
-    "file": "assets/ScenariosPage-CZWt1KqD.js",
+    "file": "assets/ScenariosPage-BFPmlg89.js",
     "name": "ScenariosPage",
     "src": "src/pages/ScenariosPage.tsx",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_OnePageBrief-DdS0_nqe.js",
-      "_feedback-BOZtG3r3.js",
-      "_scenarios-Cyj76mJX.js",
-      "_rotate-ccw-dYMv5d7C.js"
+      "_OnePageBrief-vn1XMpxW.js",
+      "_feedback-CvE8BA6X.js",
+      "_scenarios-BdEVIlQC.js",
+      "_rotate-ccw-DxFv_7ll.js"
     ],
     "css": [
       "assets/ScenariosPage-DhapHK4r.css"

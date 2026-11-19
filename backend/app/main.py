@@ -115,6 +115,7 @@ from .topics import (
     topic_markdown,
 )
 from .watchlist import enrich_watchlist
+from . import week_journal
 from .cross_assets import CrossAssetService, asset_spec
 from .world_bank import WorldBankProviderError, WorldBankService
 from .workflow import (
@@ -206,6 +207,47 @@ cross_assets_service = CrossAssetService(market_service=service)
 
 def cross_response(payload: dict) -> Response:
     return Response(json.dumps(payload, ensure_ascii=False), media_type="application/json", headers={"Cache-Control": "no-store"})
+
+
+def _journal_ready() -> None:
+    if service.demo_only:
+        raise HTTPException(status_code=403, detail="本地演示模式不保存个人周复盘。")
+
+
+def _journal_call(operation, *args):
+    _journal_ready()
+    try:
+        return cross_response(operation(database, *args))
+    except week_journal.JournalConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/week-journal")
+def journal_history(q: str = Query(default="", max_length=80), offset: int = Query(default=0, ge=0)):
+    return _journal_call(week_journal.history, q.strip(), offset)
+
+
+@app.get("/api/v1/week-journal/{week}")
+def journal_get(week: date):
+    return _journal_call(week_journal.view_week, week)
+
+
+@app.get("/api/v1/week-journal/{week}/revisions")
+def journal_revisions(week: date, offset: int = Query(default=0, ge=0)):
+    return _journal_call(week_journal.revisions, week, offset)
+
+
+@app.post("/api/v1/week-journal/{week}")
+def journal_save(week: date, item: week_journal.WeekSave):
+    return _journal_call(week_journal.save_week, week, item)
+
+
+@app.post("/api/v1/week-journal/{week}/delete")
+def journal_delete(week: date, item: week_journal.WeekDelete):
+    _journal_call(week_journal.delete_week, week, item)
+    return cross_response({"deleted": True})
 
 
 @app.get("/api/v1/cross-assets/catalog")

@@ -42,7 +42,7 @@ def _dataset(data, observation: str = "2026-07-15") -> Dataset:
 def test_v070_schema_and_research_entry_lifecycle(tmp_path) -> None:
     database = Database(tmp_path / "v070.db")
     with sqlite3.connect(database.path) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1600
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1700
         tables = {
             row[0]
             for row in connection.execute(
@@ -95,7 +95,7 @@ def test_schema_800_migration_preserves_v070_projects(tmp_path) -> None:
 
     assert upgraded.get_research_project(project.id).title == "升级前项目"  # type: ignore[union-attr]
     with sqlite3.connect(path) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1600
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1700
         assert connection.execute(
             "SELECT COUNT(*) FROM schema_migrations WHERE version = 800"
         ).fetchone()[0] == 1
@@ -180,7 +180,7 @@ def test_database_backup_restore_is_a_roundtrip(tmp_path) -> None:
     assert [item.title for item in database.list_research_projects()] == ["备份前项目"]
     with sqlite3.connect(database.path) as connection:
         assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1600
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1700
 
 
 def test_signal_settings_control_threshold_and_explain_trigger() -> None:

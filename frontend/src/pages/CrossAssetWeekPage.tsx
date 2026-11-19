@@ -9,6 +9,8 @@ import {
 import { shanghaiDate } from "../researchUtils";
 import { downloadScenarioFile } from "../scenarios";
 import { DOWNLOAD_URL, WEEK_FEEDBACK_URL } from "../release";
+import { WeekJournal } from "../components/WeekJournal";
+import type { JournalDraft } from "../weekJournal";
 import "./crossAssetWeek.css";
 
 const STATES: Record<WeekResult["state"], string> = {
@@ -40,7 +42,7 @@ function gapMessage(row: WeekResult, missing: string) {
   return `${missing}没有有效观测，不跨期取值或补零。`;
 }
 
-export function CrossAssetWeekPage({ sample = false, online = false, navigate, draft, onDraftChange, onSource, onChooseEntry }: {
+export function CrossAssetWeekPage({ sample = false, online = false, navigate, draft, onDraftChange, onSource, onChooseEntry, journal }: {
   sample?: boolean;
   online?: boolean;
   navigate?: (page: string, query?: string) => void;
@@ -48,6 +50,10 @@ export function CrossAssetWeekPage({ sample = false, online = false, navigate, d
   onDraftChange?: (draft: WeekDraft) => void;
   onSource?: (link: SourceLink) => void;
   onChooseEntry?: () => void;
+  journal?: {
+    drafts: Record<string, JournalDraft>;
+    update: (date: string, draft: JournalDraft | undefined, expected?: JournalDraft) => void;
+  };
 }) {
   const today = shanghaiDate();
   const earliest = shiftWeekDate(today, -90);
@@ -71,6 +77,7 @@ export function CrossAssetWeekPage({ sample = false, online = false, navigate, d
   }, []);
 
   const dateValid = sample ? SAMPLE_ENDS.some(end => end === date) : validWeekDate(date) && date >= earliest && date <= latest;
+  const journalValid = Boolean(journal && !sample && validWeekDate(date) && date >= "1900-01-08" && date <= latest);
   const current = report?.end === date ? report : null;
   const period = current ? weeklyWindow(current.end) : null;
   const cards = useMemo(() => current ? WEEK_SERIES.map(spec => {
@@ -155,47 +162,7 @@ export function CrossAssetWeekPage({ sample = false, online = false, navigate, d
     }
   }
 
-  return <section className="asset-week">
-    <header>
-      <span className="asset-week-kicker">CROSS-ASSET · WEEKLY REVIEW</span>
-      <h1>股债金汇周复盘</h1>
-      <p>用四条固定序列回顾一周，核验各自的观测日，再写下你的判断与下周关注点。</p>
-    </header>
-    <p className="asset-week-notice" role="note">{sample
-      ? `固定合成样例 · 非真实行情。${online ? "不用安装、登录或 API Key" : "不用登录或配置 API Key"}；不调用行情、研究或 AI 接口。`
-      : "股、金按需读取既有日线；债、汇只读本地历史。未取得有效观测不补零，不拿实时价、抓取时间或合成样例替代。"}</p>
-    <ol className="asset-week-steps" aria-label="周复盘步骤">
-      <li>选一周并读取</li><li>核对观测日与缺项</li><li>写下判断并导出</li>
-    </ol>
-    {navigate || onChooseEntry ? <div className="asset-week-card-actions">
-      {navigate ? <button className="asset-week-link" type="button" onClick={() => navigate("cross-asset-week", sample ? "" : "sample")}>
-        {sample ? "返回本地真实数据入口" : "先用合成样例练习"} <ArrowRight size={14} aria-hidden="true" />
-      </button> : null}
-      {!sample && onChooseEntry ? <button className="asset-week-link" type="button" onClick={onChooseEntry}>设置默认入口</button> : null}
-    </div> : null}
-    <div className="asset-week-toolbar">
-      <label>周结束日 {sample
-        ? <select value={date} onChange={event => selectDate(event.target.value)}>
-            {SAMPLE_ENDS.map(end => <option key={end} value={end}>{end} · 合成</option>)}
-          </select>
-        : <input type="date" value={date} min={earliest} max={latest} onChange={event => selectDate(event.target.value)} />}
-      </label>
-      {!sample ? <div className="asset-week-dates-actions" aria-label="切换复盘日期" role="group">
-        <button type="button" className="asset-week-button asset-week-secondary"
-          disabled={!dateValid || date < shiftWeekDate(earliest, 7)} onClick={() => selectDate(shiftWeekDate(date, -7))}>前一周</button>
-        <button type="button" className="asset-week-button asset-week-secondary"
-          disabled={!dateValid || date > shiftWeekDate(latest, -7)} onClick={() => selectDate(shiftWeekDate(date, 7))}>后一周</button>
-        <button type="button" className="asset-week-button asset-week-secondary"
-          disabled={date === completedFriday} onClick={() => selectDate(completedFriday)}>最近已过周五</button>
-      </div> : null}
-      <button type="button" className="asset-week-button" disabled={!dateValid || pendingCount > 0} onClick={load}>
-        <RefreshCcw size={15} aria-hidden="true" />{pendingCount > 0 ? "正在读取…" : "读取本周"}
-      </button>
-      {reviewed && dateValid ? <button type="button" className="asset-week-button asset-week-secondary"
-        onClick={() => retry(reviewed)}>仅重读{reviewed.name}</button> : null}
-      {!dateValid ? <span role="alert">请选择过去 90 天内、早于今天的周结束日。</span> : null}
-    </div>
-    {current && period ? <>
+  const market = current && period ? <>
       <p className="asset-week-period">本期 {period.start} 至 {date} · 对照 {period.previousStart} 至 {period.previousEnd}。每项取各区间最后一个有效观测；日期不一定相同，不计算组合回报或归因。</p>
       <p className="asset-week-coverage" role="status">可计算 {readyCount}/4 项
         {pendingCount > 0 ? ` · ${pendingCount} 项读取中，其余可先看` : ""}
@@ -229,8 +196,52 @@ export function CrossAssetWeekPage({ sample = false, online = false, navigate, d
           </article>;
         })}
       </div>
-    </> : <p>选好日期后点击「读取本周」。切换日期不会自动取数，也不会沿用上一周的结果。</p>}
-    {current || (dateValid && note) ? <div className="asset-week-draft">
+    </> : <p>{journalValid && !dateValid ? "旧周可以回看记录，但行情只读取过去 90 天内的复盘区间。" : "选好日期后点击「读取本周」。切换日期不会自动取数，也不会沿用上一周的结果。"}</p>;
+
+  return <section className="asset-week">
+    <header>
+      <span className="asset-week-kicker">CROSS-ASSET · WEEKLY REVIEW</span>
+      <h1>股债金汇周复盘</h1>
+      <p>用四条固定序列回顾一周，核验各自的观测日，再写下你的判断与下周关注点。</p>
+    </header>
+    <p className="asset-week-notice" role="note">{sample
+      ? `固定合成样例 · 非真实行情。${online ? "不用安装、登录或 API Key" : "不用登录或配置 API Key"}；不调用行情、研究或 AI 接口。`
+      : "股、金按需读取既有日线；债、汇只读本地历史。未取得有效观测不补零，不拿实时价、抓取时间或合成样例替代。"}</p>
+    <ol className="asset-week-steps" aria-label="周复盘步骤">
+      <li>选一周</li><li>核对观测日与缺项</li><li>{journal ? "保存判断，下周接着验证" : "写下判断并导出"}</li>
+    </ol>
+    {navigate || onChooseEntry ? <div className="asset-week-card-actions">
+      {navigate ? <button className="asset-week-link" type="button" onClick={() => navigate("cross-asset-week", sample ? "" : "sample")}>
+        {sample ? "返回本地真实数据入口" : "先用合成样例练习"} <ArrowRight size={14} aria-hidden="true" />
+      </button> : null}
+      {!sample && onChooseEntry ? <button className="asset-week-link" type="button" onClick={onChooseEntry}>设置默认入口</button> : null}
+      {!sample && journal && navigate ? <button className="asset-week-link" type="button" onClick={() => navigate("cross-asset-week", "story")}>练习连续两周</button> : null}
+    </div> : null}
+    <div className="asset-week-toolbar">
+      <label>周结束日 {sample
+        ? <select value={date} onChange={event => selectDate(event.target.value)}>
+            {SAMPLE_ENDS.map(end => <option key={end} value={end}>{end} · 合成</option>)}
+          </select>
+        : <input type="date" value={date} min={journal ? "1900-01-08" : earliest} max={latest} onChange={event => selectDate(event.target.value)} />}
+      </label>
+      {!sample ? <div className="asset-week-dates-actions" aria-label="切换复盘日期" role="group">
+        <button type="button" className="asset-week-button asset-week-secondary"
+          disabled={!(journalValid || dateValid) || date < shiftWeekDate(journal ? "1900-01-08" : earliest, 7)} onClick={() => selectDate(shiftWeekDate(date, -7))}>前一周</button>
+        <button type="button" className="asset-week-button asset-week-secondary"
+          disabled={!(journalValid || dateValid) || date > shiftWeekDate(latest, -7)} onClick={() => selectDate(shiftWeekDate(date, 7))}>后一周</button>
+        <button type="button" className="asset-week-button asset-week-secondary"
+          disabled={date === completedFriday} onClick={() => selectDate(completedFriday)}>最近已过周五</button>
+      </div> : null}
+      <button type="button" className="asset-week-button" disabled={!dateValid || pendingCount > 0} onClick={load}>
+        <RefreshCcw size={15} aria-hidden="true" />{pendingCount > 0 ? "正在读取…" : "读取本周"}
+      </button>
+      {reviewed && dateValid ? <button type="button" className="asset-week-button asset-week-secondary"
+        onClick={() => retry(reviewed)}>仅重读{reviewed.name}</button> : null}
+      {!dateValid && !journalValid ? <span role="alert">请选择早于今天的有效周结束日。</span> : null}
+    </div>
+    {journalValid && journal ? <WeekJournal key={date} date={date} draft={journal.drafts[date]}
+      onDraft={(value, expected) => journal.update(date, value, expected)} onSelectDate={selectDate}>{market}</WeekJournal> : market}
+    {!journal && (current || (dateValid && note)) ? <div className="asset-week-draft">
       <h2>整理周复盘底稿</h2>
       <label>我的判断与下周待核验事项<textarea rows={4} value={note} maxLength={WEEK_NOTE_LIMIT}
         placeholder="例如：哪些方向一致？哪些因观测日不同还需要核验？"
@@ -249,6 +260,7 @@ export function CrossAssetWeekPage({ sample = false, online = false, navigate, d
       <h2>{sampleDownloaded ? "确认底稿后，用你自己的日期再做一份" : "接下来可以做什么？"}</h2>
       <p>本地版第一次打开会进入同一个周复盘。真实底稿只导出查询引用、所选区间和人工备注，不附行情数值。</p>
       <div className="asset-week-card-actions">
+        <a className="asset-week-link" href="#/week-story">继续做两周连续复盘</a>
         <a className="asset-week-button asset-week-secondary" href={DOWNLOAD_URL} target="_blank" rel="noreferrer">查看 macOS 安装包</a>
         <a className="asset-week-link" href={WEEK_FEEDBACK_URL} target="_blank" rel="noreferrer">自愿反馈：做完了吗、卡在哪、下周再用了吗？</a>
       </div>

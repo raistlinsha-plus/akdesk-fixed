@@ -31,3 +31,7 @@
 .asset-week-period { font-size: .9rem; }
 .asset-week .asset-week-coverage { color: #c7f5ef; font-size: .88rem; font-variant-numeric: tabular-nums; }
 .asset-week pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: .75rem; background: #0a1523; border-radius: 7px; }
+.asset-week-user-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.asset-week-record-list { padding-inline-start: 1.25rem; overflow-wrap: anywhere; }
+.asset-week-record-list button { text-align: start; max-width: 100%; }
+.asset-week-video { display: block; width: min(100%, 880px); margin-top: .75rem; }

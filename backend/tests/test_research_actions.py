@@ -46,7 +46,7 @@ def test_action_drafts_cannot_be_accepted_twice(tmp_path) -> None:
         database.accept_research_action_drafts(project.id, [draft.id])
 
     with sqlite3.connect(database.path) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1600
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1700
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
 
 

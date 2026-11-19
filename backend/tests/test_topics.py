@@ -65,7 +65,7 @@ def test_schema_1201_and_topic_lifecycle_preserve_existing_projects(tmp_path) ->
     assert imported_bundle["research_objects"][0]["name"] == "中美利率联动"
 
     with sqlite3.connect(path) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1600
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1700
         assert connection.execute(
             "SELECT COUNT(*) FROM schema_migrations WHERE version = 900"
         ).fetchone()[0] == 1
@@ -110,7 +110,7 @@ def test_schema_1201_migrates_an_existing_schema_800_database(tmp_path) -> None:
 
     assert upgraded.get_research_project(project.id).title == "v0.8.2 既有项目"  # type: ignore[union-attr]
     with sqlite3.connect(path) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1600
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1700
         assert connection.execute(
             "SELECT COUNT(*) FROM schema_migrations WHERE version = 900"
         ).fetchone()[0] == 1
