@@ -37,8 +37,8 @@
 - 正式 Release：[v1.4.2](https://github.com/raistlinsha-plus/akdesk-fixed/releases/tag/v1.4.2)。标签指向 `55bed95f88a618535f0dd36a090f6461f2700ebc`，不因本次补充记录移动标签或替换已公开产物。
 - 发布时 npm 仍报告已撤回的 [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)。本次重新执行包含开发依赖的全量审计结果为 0；不修改锁文件或审计规则。
 - 对同一提交完整重跑，[CI 第二次运行](https://github.com/raistlinsha-plus/akdesk-fixed/actions/runs/44339944754/attempts/2)的 Python 3.11／3.12／3.13 与 Node.js 22 均成功。原记录中的审计失败与取消任务属于第一次运行，不用其他提交的绿色结果替代。
-- Pages [部署运行](https://github.com/raistlinsha-plus/akdesk-fixed/actions/runs/44339944563)成功；发布时已从公网获取页面资源，确认版本与本地静态构建一致。本次匿名入口 HTTP 200，但连接有波动，不代表所有地区或网络均可用。
-- 正式 ZIP 的 SHA-256 为 `b6751165d36167afced77de5c23313c0ce7df0e42ce64a88584c935e6c9ba435`，与 GitHub 附件摘要、回下载包及校验文件一致。本次匿名校验文件完整下载且匹配；匿名 ZIP 曾返回 200，但完整传输超时，不将部分下载写成成功。
+- Pages [部署运行](https://github.com/raistlinsha-plus/akdesk-fixed/actions/runs/44339944563)成功；本次从公网完整回下载 v1.4.2 的主 JavaScript 资源，与本地已验证静态构建逐字节一致，版本和周复盘入口正确。连接有波动，不代表所有地区或网络均可用。
+- 正式 ZIP 的 SHA-256 为 `b6751165d36167afced77de5c23313c0ce7df0e42ce64a88584c935e6c9ba435`，与 GitHub 附件摘要、回下载包及校验文件一致。本次匿名校验文件完整下载且匹配；另经不带令牌的公开附件 API 分段获取全部 2,290,933 字节，拼接后哈希一致，安装包结构验证通过。匿名下载直链返回 200，但单次完整传输仍出现超时，分段验证不等同于所有网络下浏览器下载稳定。
 - 后续发布执行 [发布顺序与检查](../CONTRIBUTING.md#正式发布顺序与检查)，使用 `scripts/check_release_ci.py` 对准确标签做只读检查。此流程改进和文档补充不改 v1.4.2 的运行功能；Safari、其他机器默认联网冷装与复访仍待真实验证。
 
 ## 反馈与下一步
