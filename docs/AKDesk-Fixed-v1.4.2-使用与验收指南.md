@@ -32,6 +32,15 @@
 - 本机从全新解压包、空数据目录和未创建的虚拟环境启动：从预先经 PyPI 获取的本地依赖包安装锁定版本，约 16 秒后服务就绪；真实首读、导出和停止验证通过。这个结果验证了从空环境安装与运行，不能代替默认联网下载。默认联网尝试曾遇到下载或证书问题；已修正错误分类，未放宽 TLS 或改动锁定依赖。
 - Safari WebDriver 的远程自动化未启用，未更改系统设置；Safari 实测、另一台 Mac 默认联网冷装和外部复访仍待验证。现有 Pages 可经 IPv4 访问，旧版正式 ZIP 的匿名下载完成且哈希匹配；新版公开站点和附件须在发布后重新验收。
 
+## 发布后复核（2026-11-19）
+
+- 正式 Release：[v1.4.2](https://github.com/raistlinsha-plus/akdesk-fixed/releases/tag/v1.4.2)。标签指向 `55bed95f88a618535f0dd36a090f6461f2700ebc`，不因本次补充记录移动标签或替换已公开产物。
+- 发布时 npm 仍报告已撤回的 [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)。本次重新执行包含开发依赖的全量审计结果为 0；不修改锁文件或审计规则。
+- 对同一提交完整重跑，[CI 第二次运行](https://github.com/raistlinsha-plus/akdesk-fixed/actions/runs/44339944754/attempts/2)的 Python 3.11／3.12／3.13 与 Node.js 22 均成功。原记录中的审计失败与取消任务属于第一次运行，不用其他提交的绿色结果替代。
+- Pages [部署运行](https://github.com/raistlinsha-plus/akdesk-fixed/actions/runs/44339944563)成功；发布时已从公网获取页面资源，确认版本与本地静态构建一致。本次匿名入口 HTTP 200，但连接有波动，不代表所有地区或网络均可用。
+- 正式 ZIP 的 SHA-256 为 `b6751165d36167afced77de5c23313c0ce7df0e42ce64a88584c935e6c9ba435`，与 GitHub 附件摘要、回下载包及校验文件一致。本次匿名校验文件完整下载且匹配；匿名 ZIP 曾返回 200，但完整传输超时，不将部分下载写成成功。
+- 后续发布执行 [发布顺序与检查](../CONTRIBUTING.md#正式发布顺序与检查)，使用 `scripts/check_release_ci.py` 对准确标签做只读检查。此流程改进和文档补充不改 v1.4.2 的运行功能；Safari、其他机器默认联网冷装与复访仍待真实验证。
+
 ## 反馈与下一步
 
 可在 [使用场景讨论](https://github.com/raistlinsha-plus/akdesk-fixed/discussions/16) 自愿回答「做完了吗？卡在哪？下周有没有再用？」。不上传 API Key、个人路径、数据库、真实行情和私人底稿。反馈入口不预填草稿或行情，不等同于提交反馈。
